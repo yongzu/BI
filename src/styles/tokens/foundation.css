@@ -1,35 +1,27 @@
 /* ==========================================================================
-   Form tokens — radius, spacing, motion (Apple product page)
+   Layout & motion tokens — Figma "Phi Design Institute" (node 1650:6417)
    --------------------------------------------------------------------------
-   Radius: 28px cards & modals, 980px pills, 50% round icon buttons.
-   Rhythm: generous section padding, 980px text column, 1260px gallery width.
+   Content: 1140px column, 5-column item grid with 40px gaps (196px columns).
+   Section header: title column + 710px lead column.
+   Page TOC sits at the left, 237px wide.
    ========================================================================== */
 
 :root {
-  --radius-card: 28px;
-  --radius-control: 18px;
-  --radius-pill: 980px;
+  --content-width: 1140px;
+  --grid-gap: 40px;
+  --lead-width: 710px;
+  --gutter: max(24px, 4vw);
 
-  --space-1: 4px;
-  --space-2: 8px;
-  --space-3: 12px;
-  --space-4: 16px;
-  --space-5: 20px;
-  --space-6: 24px;
-  --space-8: 32px;
-  --space-10: 40px;
-  --space-12: 48px;
-  --space-16: 64px;
-  --space-20: 80px;
-  --space-30: 120px;
+  --toc-left: clamp(24px, 3vw, 59px);
+  --toc-width: 237px;
+  --toc-space: calc(var(--toc-left) + var(--toc-width) + 40px);
+  --design-offset: 88px; /* content sits 88px right of center on the 1920 frame */
 
-  --width-text: 980px;
-  --width-wide: 1260px;
-  --gutter: max(22px, 4vw);
-  --toc-width: 168px;
-  --toc-space: calc(var(--toc-width) + 56px); /* width + left offset + breathing room */
+  --space-hero-top: clamp(96px, 12.4vw, 238px);
+  --space-section: clamp(160px, 22vw, 430px);
+  --space-group: clamp(64px, 5.7vw, 110px);
 
   --ease: cubic-bezier(0.25, 0.1, 0.25, 1);
-  --duration: 300ms;
   --ease-reveal: cubic-bezier(0.16, 1, 0.3, 1);
+  --duration: 300ms;
 }

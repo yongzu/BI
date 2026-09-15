@@ -30,9 +30,9 @@ body {
   color: var(--color-text-primary);
   font-family: var(--font-family-sans);
   font-size: var(--typo-body-size);
-  line-height: var(--typo-body-line-height);
+  line-height: 1.6;
   font-weight: var(--font-weight-regular);
-  letter-spacing: -0.01em;
+  letter-spacing: var(--tracking-body);
 
   /* Rendering optimization */
   -webkit-font-smoothing: antialiased;
@@ -57,7 +57,7 @@ h1, h2, h3, h4 { font: inherit; }
   outline-offset: 3px;
 }
 
-::selection { background: var(--palette-gray-300); color: var(--color-text-primary); }
+::selection { background: var(--color-border); color: var(--color-text-primary); }
 
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }

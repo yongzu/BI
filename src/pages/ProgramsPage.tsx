@@ -1,12 +1,8 @@
-import { useState, type ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import { Text } from '../components/Text/Text';
-import { Button, IconButton } from '../components/Button/Button';
-import { Gallery, GalleryItem } from '../components/Gallery/Gallery';
-import { Accordion } from '../components/Accordion/Accordion';
-import { Segmented } from '../components/Segmented/Segmented';
-import { Modal } from '../components/Modal/Modal';
 import { Toc, type TocItem } from '../components/Toc/Toc';
 import { useScrollReveal } from '../hooks/useScrollReveal';
+import labelRule from '../assets/label-rule.svg';
 import {
   attitudes,
   camps,
@@ -19,8 +15,6 @@ import {
   stages,
   timetable,
   weekdays,
-  type Course,
-  type CourseType,
 } from '../data/programs';
 import './programs.css';
 
@@ -48,312 +42,277 @@ const toc: TocItem[] = [
   { id: 'career', label: '채용 연계' },
 ];
 
-/** Text blocks that rise in on scroll */
-const revealTargets = [
-  '.hero > *',
-  '.section-header > *',
-  '.pillar-group__title',
-  '.course-type__head > *',
-  '.courses__filter',
-  '.stats__note',
-  '.viewer__detail > *',
-  '.cta-row > *',
-].join(', ');
+/** Blocks that rise in on scroll */
+const revealTargets = ['.hero > *', '.section-header > *', '.group-label', '.group__lead', '.course-type__head', '.item', '.timeline', '.week-scroll'].join(', ');
 
-const go = (id: string) => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+/* ------------------------------------------------------------------ */
 
-/** Section header: optional eyebrow + headline + optional intro, in the 980px column. */
-function SectionHeader({ eyebrow, headline, intro }: { eyebrow?: string; headline: string; intro?: ReactNode }) {
+/** Section title (64) + lead (28, 70%) in two columns */
+function SectionHeader({ title, lead }: { title: string; lead?: string }) {
   return (
-    <header className="section-header text-column">
-      {eyebrow && <Text typography="Eyebrow" color="secondary" className="section-header__eyebrow">{eyebrow}</Text>}
-      <Text as={eyebrow ? 'p' : 'h2'} typography="Headline">{headline}</Text>
-      {intro && <Text typography="Intro" color="secondary" className="section-header__intro">{intro}</Text>}
+    <header className="section-header">
+      <Text typography="Heading">{title}</Text>
+      {lead && <Text typography="Lead" color="secondary">{lead}</Text>}
     </header>
   );
 }
 
-function CourseCard({ course, onOpen }: { course: Course; onOpen: () => void }) {
+/** Group label with the short vertical rule from the design */
+function GroupLabel({ children, meta }: { children: ReactNode; meta?: string }) {
   return (
-    <article className="course-card">
-      <Text typography="Caption" color="secondary">{course.ko}</Text>
-      <Text as="h3" typography="Eyebrow" className="course-card__name">{course.en}</Text>
-      <Text typography="Body" className="course-card__lead">{course.lead}</Text>
-      <div className="course-card__foot">
-        <Text as="span" typography="Footnote" color="secondary">{course.tags.join(' · ')}</Text>
-        <IconButton icon="plus" label={`${course.en} 자세히 보기`} tone="action" onClick={onOpen} />
-      </div>
+    <div className="group-label">
+      <span className="group-label__rule" aria-hidden="true">
+        <img src={labelRule} alt="" />
+      </span>
+      <Text as="h3" typography="Title">{children}</Text>
+      {meta && <Text as="span" typography="Label" color="tertiary">{meta}</Text>}
+    </div>
+  );
+}
+
+/** Title (24) · English/meta label (16, 20%) · body (16, 70%) */
+function Item({ title, label, children }: { title: ReactNode; label?: ReactNode; children?: ReactNode }) {
+  return (
+    <article className="item">
+      <Text as="h4" typography="Title">{title}</Text>
+      {label && <Text typography="Label" color="tertiary" className="item__label">{label}</Text>}
+      {children && <div className="item__body">{children}</div>}
     </article>
   );
 }
 
+/* ------------------------------------------------------------------ */
+
 export function ProgramsPage() {
-  const [stage, setStage] = useState(0);
-  const [filter, setFilter] = useState<CourseType['id'] | 'all'>('all');
-  const [openCourse, setOpenCourse] = useState<Course | null>(null);
-
-  const visibleTypes = filter === 'all' ? courseTypes : courseTypes.filter((t) => t.id === filter);
-  const openType = openCourse ? courseTypes.find((t) => t.courses.includes(openCourse)) : undefined;
-
-  useScrollReveal(revealTargets, filter);
+  useScrollReveal(revealTargets);
 
   return (
     <>
-      {/* ---------- Right-side table of contents ---------- */}
-      <Toc items={toc} onNavigate={(id) => { if (id.startsWith('type-')) setFilter('all'); }} />
+      <Toc items={toc} />
 
-      <main>
+      <main className="page">
         {/* ---------- Hero ---------- */}
-        <section id="overview" className="hero">
-          <Text typography="Eyebrow" as="p" className="hero__eyebrow">Phi의 1년제 프로그램</Text>
-          <Text typography="Hero" className="hero__title">도구보다<br />사고방식.</Text>
+        <section className="hero container" aria-labelledby="hero-title">
+          <Text id="hero-title" typography="Display" className="hero__title">
+            Phi Programs
+            <br />
+            도구보다 사고방식
+          </Text>
           <Text typography="Intro" color="secondary" className="hero__intro">{intro[0]}</Text>
-          <div className="hero__actions">
-            <Button size="lg" onClick={() => go('courses')}>주요 수업 보기</Button>
-            <Button size="lg" variant="secondary" onClick={() => go('curriculum')}>커리큘럼 살펴보기</Button>
-          </div>
-        </section>
 
-        {/* ---------- Highlights ---------- */}
-        <section className="section section--alt" aria-labelledby="highlights">
-          <header className="section-header text-column">
-            <Text id="highlights" typography="Headline">일단 핵심부터.</Text>
-          </header>
-          <ul className="stats wide-column">
-            {facts.map((f) => (
-              <li key={f.label} className="stat-card">
-                <Text typography="Caption" color="secondary">{f.label}</Text>
-                <Text typography="Stat" className="stat-card__value">{f.value}</Text>
-                <Text typography="Body" color="secondary">{f.note}</Text>
-              </li>
-            ))}
-          </ul>
-          <Text typography="Intro" color="secondary" className="text-column stats__note">{intro[1]}</Text>
+          <details className="overview">
+            <summary className="overview__summary">
+              <Text as="span" typography="Label">과정 개요</Text>
+              <Text as="span" typography="Body" color="secondary">1년 · 전일제 오프라인 · 2026년 8월 24일 개강</Text>
+              <span className="overview__chevron" aria-hidden="true" />
+            </summary>
+            <dl className="overview__list">
+              {facts.map((f) => (
+                <div key={f.label} className="overview__row">
+                  <Text as="dt" typography="Label" color="tertiary">{f.label}</Text>
+                  <Text as="dd" typography="Body">{f.value}</Text>
+                </div>
+              ))}
+            </dl>
+          </details>
         </section>
 
         {/* ---------- 역량과 태도 ---------- */}
-        <section id="pillars" className="section">
-          <SectionHeader
-            eyebrow="역량과 태도"
-            headline="어떤 환경에서도 스스로 답을 찾는 사고방식."
-            intro="어떤 환경에서도 스스로 답을 찾을 수 있는 사고방식을 만들기 위해, Phi는 아래 역량과 태도를 중요시합니다."
-          />
+        <section id="pillars" className="section container">
+          <SectionHeader title="역량과 태도" lead="어떤 환경에서도 스스로 답을 찾을 수 있는 사고방식을 만들기 위해, Phi는 아래 역량과 태도를 중요시합니다." />
           {[
-            { id: 'pillars-competency', title: '역량', en: 'Competency', items: competencies },
-            { id: 'pillars-attitude', title: '태도', en: 'Phi OS', items: attitudes },
+            { id: 'pillars-competency', label: '역량 · Competency', items: competencies },
+            { id: 'pillars-attitude', label: '태도 · Phi OS', items: attitudes },
           ].map((group) => (
-            <div key={group.en} id={group.id} className="pillar-group">
-              <Text typography="Title" className="text-column pillar-group__title">{group.title} <span className="color-secondary">{group.en}</span></Text>
-              <Gallery label={`${group.title} ${group.en}`}>
-                {group.items.map((item, i) => (
-                  <GalleryItem key={item.en}>
-                    <article className="tile">
-                      <Text typography="Caption" color="secondary">{String(i + 1).padStart(2, '0')} · {item.en}</Text>
-                      <Text as="h3" typography="Eyebrow" className="tile__title">{item.ko}</Text>
-                      <Text typography="Body" color="secondary">{item.body}</Text>
-                    </article>
-                  </GalleryItem>
+            <div key={group.id} id={group.id} className="group">
+              <GroupLabel>{group.label}</GroupLabel>
+              <div className="grid-5">
+                {group.items.map((p) => (
+                  <Item key={p.en} title={p.ko} label={p.en}>
+                    <Text typography="Body" color="secondary">{p.body}</Text>
+                  </Item>
                 ))}
-              </Gallery>
+              </div>
             </div>
           ))}
         </section>
 
         {/* ---------- 커리큘럼 ---------- */}
-        <section id="curriculum" className="section section--alt">
-          <SectionHeader eyebrow="커리큘럼" headline="2026년 8월 24일 개강." intro="1년 동안 두 학기와 방학 캠프, 그리고 졸업 프로젝트로 이어집니다." />
-          <div id="curriculum-annual" className="viewer wide-column">
-            <div className="viewer__stage">
-              <div className="timeline" aria-hidden="true">
-                <div className="timeline__months">
-                  {months.map((m, i) => <span key={i}>{m}월</span>)}
+        <section id="curriculum" className="section container">
+          <SectionHeader title="커리큘럼" lead="2026년 8월 개강부터 2027년 8월 졸업까지, 두 학기와 방학 캠프, 졸업 프로젝트로 이어지는 1년입니다." />
+
+          <div id="curriculum-annual" className="group">
+            <GroupLabel>연간 구조</GroupLabel>
+            <div className="timeline__months" aria-hidden="true">
+              {months.map((m, i) => (
+                <Text key={i} as="span" typography="Label" color="tertiary">{m}월</Text>
+              ))}
+            </div>
+            <div className="timeline" aria-hidden="true">
+              {stages.map((s, i) => (
+                <span key={s.name} className="timeline__bar" style={{ gridColumn: `${Math.floor(s.start) + 1} / ${Math.ceil(s.end) + 1}` }}>
+                  <Text as="span" typography="Label" color={i % 2 ? 'tertiary' : 'primary'}>{String(i + 1).padStart(2, '0')}</Text>
+                </span>
+              ))}
+            </div>
+            <ol className="grid-4">
+              {stages.map((s, i) => (
+                <li key={s.name} className="item stage">
+                  <Text as="h4" typography="Title">{String(i + 1).padStart(2, '0')} {s.name}</Text>
+                  <Text typography="Label" color="tertiary" className="item__label">{s.period}</Text>
+                  <div className="item__body">
+                    <Text typography="Body" color="secondary">{s.body}</Text>
+                  </div>
+                </li>
+              ))}
+            </ol>
+          </div>
+
+          <div id="courses" className="group">
+            <GroupLabel>주요 수업들</GroupLabel>
+            <Text typography="Body" color="secondary" className="group__lead">
+              상기된 역량과 태도를 중심으로 설계된 1학기 수업들입니다. 2학기는 1학기의 성취에 따라 학습 효과를 보완, 증폭할 수 있는 방향으로 준비됩니다.
+            </Text>
+
+            {courseTypes.map((type) => (
+              <div key={type.id} id={`type-${type.id}`} className="course-type">
+                <div className="course-type__head">
+                  <Text as="h4" typography="Title">{type.name}</Text>
+                  <Text typography="Label" color="tertiary">{type.cadence} · {type.courses.length}개 수업</Text>
+                  <Text typography="Body" color="secondary" className="course-type__body">{type.body}</Text>
                 </div>
-                <div className="timeline__bars">
-                  {stages.map((s, i) => (
-                    <span
-                      key={s.name}
-                      className={`timeline__bar${stage === i ? ' is-active' : ''}`}
-                      style={{ gridColumn: `${Math.floor(s.start) + 1} / ${Math.ceil(s.end) + 1}` }}
-                    />
+                <div className="grid-5">
+                  {type.courses.map((c) => (
+                    <Item key={c.slug} title={c.en} label={c.ko}>
+                      <Text typography="Body">{c.lead}</Text>
+                      <Text typography="Body" color="secondary">{c.body}</Text>
+                      <Text typography="Label" color="tertiary">{c.tags.join(' · ')}</Text>
+                      <a className="link typo-label" href={`https://www.phi.design/programs/courses/${c.slug}`} target="_blank" rel="noreferrer">
+                        Course Profile →
+                      </a>
+                    </Item>
                   ))}
                 </div>
               </div>
-              <div className="viewer__detail" aria-live="polite">
-                <Text typography="Caption" color="secondary">{stages[stage].period}</Text>
-                <Text as="h3" typography="Headline">{stages[stage].name}</Text>
-                <Text typography="Intro" color="secondary">{stages[stage].body}</Text>
-              </div>
-            </div>
-            <ul className="viewer__controls" role="tablist" aria-label="연간 구조">
-              {stages.map((s, i) => (
-                <li key={s.name}>
-                  <button type="button" role="tab" aria-selected={stage === i} className="control-pill typo-label" onClick={() => setStage(i)}>
-                    <span className="control-pill__icon" aria-hidden="true" />
-                    {s.name}
-                  </button>
-                </li>
+            ))}
+          </div>
+        </section>
+
+        {/* ---------- 수업을 관통하는 접근 ---------- */}
+        <section id="devices" className="section container">
+          <SectionHeader
+            title="수업을 관통하는 접근"
+            lead="Phi의 교육은 인지적 도제(Cognitive Apprenticeship)를 토대로 설계되었습니다. 전문가의 사고 과정을 학습자가 능동적으로 관찰할 수 있도록 다양한 장치가 준비되어있습니다."
+          />
+          <div className="group">
+            <GroupLabel>핵심 수업 장치</GroupLabel>
+            <div className="grid-3">
+              {devices.map((d, i) => (
+                <Item key={d.name} title={d.name} label={String(i + 1).padStart(2, '0')}>
+                  <Text typography="Body" color="secondary">{d.body}</Text>
+                </Item>
               ))}
-            </ul>
-          </div>
-        </section>
-
-        {/* ---------- 주요 수업 ---------- */}
-        <section id="courses" className="section">
-          <SectionHeader
-            eyebrow="주요 수업"
-            headline="학습 목표에 따라 다른 시수와 기간."
-            intro="Phi의 코스는 일관된 시수가 아니라, 학습 목표에 따라 각기 다른 시수와 기간으로 구성됩니다. 본 주요 수업들은 1학기에 진행되는 수업들입니다."
-          />
-          <div className="text-column courses__filter">
-            <Segmented
-              label="코스 타입"
-              value={filter}
-              onChange={setFilter}
-              options={[{ value: 'all', label: '전체' }, ...courseTypes.map((t) => ({ value: t.id, label: t.name }))]}
-            />
-          </div>
-          {visibleTypes.map((type) => (
-            <div key={type.id} id={`type-${type.id}`} className="course-type">
-              <div className="text-column course-type__head">
-                <Text as="h3" typography="Title">{type.name}</Text>
-                <Text typography="Body" color="secondary">{type.cadence} · {type.courses.length}개 수업</Text>
-                <Text typography="Body" color="secondary" className="course-type__body">{type.body}</Text>
-              </div>
-              <Gallery label={`${type.name} 수업`}>
-                {type.courses.map((course) => (
-                  <GalleryItem key={course.slug}>
-                    <CourseCard course={course} onOpen={() => setOpenCourse(course)} />
-                  </GalleryItem>
-                ))}
-              </Gallery>
             </div>
-          ))}
-        </section>
-
-        {/* ---------- 수업 장치 (FAQ accordion) ---------- */}
-        <section id="devices" className="section section--alt">
-          <SectionHeader
-            eyebrow="수업을 관통하는 접근"
-            headline="전문가의 사고 과정을 관찰하는 여섯 가지 장치."
-            intro="Phi의 교육은 인지적 도제(Cognitive Apprenticeship)를 토대로 설계되었습니다."
-          />
-          <div className="text-column">
-            <Accordion items={devices.map((d) => ({ id: d.name, title: d.name, content: <Text typography="Body">{d.body}</Text> }))} />
           </div>
         </section>
 
         {/* ---------- 주간 시간표 ---------- */}
-        <section id="week" className="section">
+        <section id="week" className="section container">
           <SectionHeader
-            eyebrow="주간 시간표"
-            headline="매주 월–금, 전일제 오프라인."
-            intro="화, 수, 목은 오전-오후 풀타임으로 진행되며 월, 금은 학기 수업 스케줄에 따라 유동적으로 진행됩니다."
+            title="주간 시간표"
+            lead="매주 월-금 수업이 진행됩니다. 화, 수, 목은 오전-오후 풀타임으로 진행되며 월, 금은 학기 수업 스케줄에 따라 유동적으로 진행됩니다."
           />
-          <div className="text-column">
-            <div className="week-card">
-              <div className="table-scroll">
-                <table className="week">
-                  <thead>
-                    <tr>
-                      <th scope="col"><span className="visually-hidden">시간</span></th>
-                      {weekdays.map((d) => <th key={d} scope="col" className="typo-label">{d}</th>)}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {(['am', 'pm'] as const).map((slot) => (
-                      <tr key={slot}>
-                        <th scope="row" className="typo-caption color-secondary">{slot === 'am' ? '10:00–13:00' : '15:00–18:00'}</th>
-                        {timetable.map((day, i) => (
-                          <td key={i}>
-                            {day[slot] ? <span className="week__cell typo-caption">{day[slot]}</span> : <span className="visually-hidden">없음</span>}
-                          </td>
-                        ))}
-                      </tr>
+          <div className="group">
+            <GroupLabel>1학기 기준</GroupLabel>
+            <div className="week-scroll">
+              <table className="week">
+                <thead>
+                  <tr>
+                    <th scope="col"><span className="visually-hidden">시간</span></th>
+                    {weekdays.map((d) => (
+                      <th key={d} scope="col" className="typo-title">{d}</th>
                     ))}
-                  </tbody>
-                </table>
-              </div>
+                  </tr>
+                </thead>
+                <tbody>
+                  {(['am', 'pm'] as const).map((slot) => (
+                    <tr key={slot}>
+                      <th scope="row">
+                        <Text as="span" typography="Label" color="tertiary">{slot === 'am' ? '오전 10:00–13:00' : '오후 15:00–18:00'}</Text>
+                      </th>
+                      {timetable.map((day, i) => (
+                        <td key={i}>
+                          <Text as="span" typography="Body" color={day[slot] ? 'primary' : 'tertiary'}>{day[slot] ?? '—'}</Text>
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
-            <a className="text-link typo-body" href="https://www.phi.design/lab-pdf/timetable-monthly" target="_blank" rel="noreferrer">1학기 일정 자세히보기 ›</a>
+            <a className="link typo-label" href="https://www.phi.design/lab-pdf/timetable-monthly" target="_blank" rel="noreferrer">1학기 일정 자세히보기 →</a>
           </div>
         </section>
 
         {/* ---------- 방학 + 캠프 ---------- */}
-        <section id="camp" className="section section--alt">
+        <section id="camp" className="section container">
           <SectionHeader
-            eyebrow="방학 + 캠프"
-            headline="4개월의 루틴에서 벗어나."
-            intro="휴식과 함께 진행되는 워크숍 프로그램. 캠프는 별도 비용 없이 희망자 모두 참석할 수 있습니다."
+            title="방학 + 캠프"
+            lead="4개월의 학기 루틴에서 벗어나 휴식과 함께 진행되는 워크숍 프로그램. 캠프는 별도 비용 없이 희망자 모두 참석할 수 있습니다."
           />
-          <Gallery label="방학 + 캠프">
-            {camps.map((c) => (
-              <GalleryItem key={c.name}>
-                <article className="tile">
-                  <Text typography="Caption" color="secondary">{c.partner}</Text>
-                  <Text as="h3" typography="Eyebrow" className="tile__title">{c.name}</Text>
+          <div className="group">
+            <GroupLabel>2027년 1월 – 2월</GroupLabel>
+            <div className="grid-3">
+              {camps.map((c) => (
+                <Item key={c.name} title={c.name} label={c.partner}>
                   <Text typography="Body" color="secondary">{c.body}</Text>
-                </article>
-              </GalleryItem>
-            ))}
-          </Gallery>
+                </Item>
+              ))}
+            </div>
+          </div>
         </section>
 
         {/* ---------- 수료 & 졸업 ---------- */}
-        <section id="graduation" className="section">
-          <SectionHeader eyebrow="수료 & 졸업" headline="외부에 실제로 발표 또는 출시." />
-          <div className="duo wide-column">
-            <article className="duo__card">
-              <Text as="h3" typography="Eyebrow">수료</Text>
-              <Text typography="Body" color="secondary">2026년 8월부터 2027년 6월까지 예정된 모든 수업을 이수한 상태.</Text>
-            </article>
-            <article className="duo__card">
-              <Text as="h3" typography="Eyebrow">졸업</Text>
-              <Text typography="Body" color="secondary">수료 조건 달성 후, 2027년 7–8월에 본인의 목표에 따른 프로젝트를 완성합니다. 해당 프로젝트는 외부에 실제로 발표 또는 출시되어야 합니다.</Text>
-            </article>
-            <article id="career" className="duo__card duo__card--dark">
-              <Text typography="Caption" color="inverse">채용 연계</Text>
-              <Text as="h3" typography="Eyebrow" color="inverse">토스 별도 채용 전형</Text>
-              <Text typography="Body" color="inverse">2027년 8월, Phi 1년제 1기 졸업자를 위한 토스의 별도 채용 전형이 마련됩니다.</Text>
-            </article>
-            <article className="duo__card duo__card--dark">
-              <Text typography="Caption" color="inverse">채용 연계</Text>
-              <Text as="h3" typography="Eyebrow" color="inverse">우수 졸업자 입사 특전</Text>
-              <Text typography="Body" color="inverse">우수 졸업자에게는 채용 전형에 더해 별도의 입사 특전*이 제공됩니다.</Text>
-            </article>
+        <section id="graduation" className="section container">
+          <SectionHeader title="수료 & 졸업" lead="졸업 프로젝트는 외부에 실제로 발표 또는 출시되어야 합니다." />
+          <div className="group">
+            <GroupLabel>2027년 6월 – 8월</GroupLabel>
+            <div className="grid-3">
+              <Item title="수료" label="Completion">
+                <Text typography="Body" color="secondary">2026년 8월부터 2027년 6월까지 예정된 모든 수업을 이수한 상태.</Text>
+              </Item>
+              <Item title="졸업" label="Graduation">
+                <Text typography="Body" color="secondary">수료 조건 달성 후, 2027년 7–8월에 본인의 목표에 따른 프로젝트를 완성합니다. 해당 프로젝트는 외부에 실제로 발표 또는 출시되어야 합니다.</Text>
+              </Item>
+            </div>
           </div>
-          <div className="text-column cta-row">
-            <Button size="lg">오픈 알림 신청</Button>
-            <Text typography="Footnote" color="tertiary">*채용 특전의 세부 내용은 현재 검토 중입니다.</Text>
+        </section>
+
+        {/* ---------- 채용 연계 ---------- */}
+        <section id="career" className="section section--last container">
+          <SectionHeader title="채용 연계" lead="Phi의 1년제 프로그램 졸업자들은 토스의 별도 채용 전형에 지원할 수 있습니다." />
+          <div className="group">
+            <GroupLabel>with Toss</GroupLabel>
+            <div className="grid-3">
+              <Item title="토스 별도 채용 전형" label="2027년 8월">
+                <Text typography="Body" color="secondary">2027년 8월, Phi 1년제 1기 졸업자를 위한 토스의 별도 채용 전형이 마련됩니다.</Text>
+              </Item>
+              <Item title="우수 졸업자 입사 특전" label="Benefit">
+                <Text typography="Body" color="secondary">우수 졸업자에게는 채용 전형에 더해 별도의 입사 특전*이 제공됩니다.</Text>
+                <Text typography="Label" color="tertiary">*채용 특전의 세부 내용은 현재 검토 중입니다.</Text>
+              </Item>
+            </div>
           </div>
         </section>
       </main>
 
-      {/* ---------- Footer ---------- */}
-      <footer className="footer">
-        <div className="text-column">
-          <Text typography="Footnote" color="tertiary">
-            파이인스티튜트오브디자인 · 02-556-8461 · contact@phi.design · 평일 10:00 - 18:00 (점심시간 13:00 - 14:00)
-          </Text>
-          <Text typography="Footnote" color="tertiary" className="footer__legal">
-            © 2026 Phi Institute of Design · <a href="#system" className="text-link">Design System</a>
-          </Text>
-        </div>
+      <footer className="footer container">
+        <Text typography="Title">Phi Institute of Design</Text>
+        <Text typography="Body" color="secondary">파이인스티튜트오브디자인 · 02-556-8461 · contact@phi.design</Text>
+        <Text typography="Label" color="tertiary">
+          평일 10:00 - 18:00 (점심시간 13:00 - 14:00) · © 2026 Phi Institute of Design · <a href="#system" className="link">Design System</a>
+        </Text>
       </footer>
-
-      {/* ---------- Course modal ---------- */}
-      <Modal open={openCourse !== null} onClose={() => setOpenCourse(null)} labelledBy="course-modal-title">
-        {openCourse && (
-          <div className="course-modal">
-            <Text typography="Caption" color="secondary">{openType?.name} · {openType?.cadence}</Text>
-            <Text as="h2" id="course-modal-title" typography="Headline">{openCourse.en}</Text>
-            <Text typography="Intro" color="secondary">{openCourse.ko}</Text>
-            <Text typography="Eyebrow" as="p" className="course-modal__lead">{openCourse.lead}</Text>
-            <Text typography="Body">{openCourse.body}</Text>
-            <Text typography="Caption" color="secondary">역량 · {openCourse.tags.join(', ')}</Text>
-            <a className="text-link typo-body" href={`https://www.phi.design/programs/courses/${openCourse.slug}`} target="_blank" rel="noreferrer">Course Profile 보기 ›</a>
-          </div>
-        )}
-      </Modal>
     </>
   );
 }

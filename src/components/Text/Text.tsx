@@ -6,21 +6,18 @@ import type { Typography, TextColor } from './typography';
  * Every piece of text goes through one semantic typography + one semantic color,
  * so the page can never drift into ad-hoc sizes, weights or grays.
  *
- * <Text typography="Headline" color="primary">한눈에 보기.</Text>
+ * <Text typography="Heading" color="primary">역량과 태도</Text>
  */
 
 /** Sensible default element per style, overridable with `as`. */
 const defaultElement: Record<Typography, ElementType> = {
-  Hero: 'h1',
-  Headline: 'h2',
-  Stat: 'p',
-  Eyebrow: 'h2',
-  Title: 'h3',
+  Display: 'h1',
+  Heading: 'h2',
+  Lead: 'p',
   Intro: 'p',
-  Body: 'p',
+  Title: 'h3',
   Label: 'p',
-  Caption: 'p',
-  Footnote: 'p',
+  Body: 'p',
 };
 
 type TextProps<E extends ElementType> = {

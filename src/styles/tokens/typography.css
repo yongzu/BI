@@ -1,76 +1,48 @@
 /* ==========================================================================
-   Typography tokens — Apple product page scale, Phi restraint
+   Typography tokens — Figma "Phi Design Institute" (node 1650:6417)
    --------------------------------------------------------------------------
-   Measured on apple.com/kr/iphone-duo (1440px):
-     80/600 hero · 48/600 section headline · 28/600 tile/eyebrow ·
-     24/600 accordion · 21/400 intro (gray) · 17/400 body · 14 · 12 footnote
-   Two weights only (400 / 600), like Phi's single-voice page.
+   Pretendard only. Values measured on a 1920px frame; large sizes scale down
+   fluidly below that width. Tracking is -3% everywhere except body (-2%).
 
-   Font: SF Pro KR is Apple's and can't be bundled. The stack uses the system
-   face on Apple devices and falls back to Pretendard everywhere else.
+     Display   100 / Bold    / 1.19 / -3%   hero lines
+     Heading    64 / Bold    / 1.2  / -3%   section titles
+     Lead       28 / Regular / 1.4  / -3%   section intro (70%)
+     Intro      20 / Regular / 1.4  / -3%   hero copy (70%)
+     Title      24 / Bold    / 1.2  / -3%   item & group titles
+     Label      16 / Medium  / 1.2  / -3%   English sub-labels (20%)
+     Body       16 / Regular / 1.6  / -2%   item copy (70%)
    ========================================================================== */
 
 :root {
-  --font-family-sans: -apple-system, BlinkMacSystemFont, 'SF Pro KR', 'SF Pro Display', 'SF Pro Text',
-    'Apple SD Gothic Neo', 'Pretendard Variable', Pretendard, 'Malgun Gothic', sans-serif;
+  --font-family-sans: 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont,
+    'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
 
   --font-weight-regular: 400;
-  --font-weight-semibold: 600;
+  --font-weight-medium: 500;
+  --font-weight-bold: 700;
 
-  /* size / line-height / letter-spacing per role */
-  --typo-hero-size: clamp(3rem, 5.6vw, 5rem);        /* 48 → 80 */
-  --typo-hero-line-height: 1.1;
-  --typo-hero-letter-spacing: -0.015em;
+  --tracking-tight: -0.03em;
+  --tracking-body: -0.02em;
 
-  --typo-headline-size: clamp(2rem, 3.4vw, 3rem);     /* 32 → 48 */
-  --typo-headline-line-height: 1.17;
-  --typo-headline-letter-spacing: -0.005em;
-
-  --typo-stat-size: 2.5rem;                           /* 40 */
-  --typo-stat-line-height: 1.1;
-
-  --typo-eyebrow-size: 1.75rem;                       /* 28 */
-  --typo-eyebrow-line-height: 1.25;
-
-  --typo-title-size: 1.5rem;                          /* 24 */
-  --typo-title-line-height: 1.25;
-
-  --typo-intro-size: 1.3125rem;                       /* 21 */
-  --typo-intro-line-height: 1.52;
-
-  --typo-body-size: 1.0625rem;                        /* 17 */
-  --typo-body-line-height: 1.47;
-
-  --typo-caption-size: 0.875rem;                      /* 14 */
-  --typo-caption-line-height: 1.43;
-
-  --typo-footnote-size: 0.75rem;                      /* 12 */
-  --typo-footnote-line-height: 1.33;
-}
-
-@media (max-width: 734px) {
-  :root {
-    --typo-eyebrow-size: 1.3125rem;   /* 21 */
-    --typo-title-size: 1.25rem;       /* 20 */
-    --typo-intro-size: 1.1875rem;     /* 19 */
-    --typo-stat-size: 2rem;           /* 32 */
-  }
+  --typo-display-size: clamp(3rem, 5.21vw, 6.25rem);    /* 48 → 100 */
+  --typo-heading-size: clamp(2.5rem, 3.34vw, 4rem);     /* 40 → 64 */
+  --typo-lead-size: clamp(1.25rem, 1.46vw, 1.75rem);    /* 20 → 28 */
+  --typo-intro-size: clamp(1.0625rem, 1.05vw, 1.25rem); /* 17 → 20 */
+  --typo-title-size: clamp(1.25rem, 1.25vw, 1.5rem);    /* 20 → 24 */
+  --typo-label-size: 1rem;                              /* 16 */
+  --typo-body-size: 1rem;                               /* 16 */
 }
 
 /* ---------- Semantic styles (consumed by <Text />) ---------- */
-.typo-hero     { font-size: var(--typo-hero-size); line-height: var(--typo-hero-line-height); font-weight: var(--font-weight-semibold); letter-spacing: var(--typo-hero-letter-spacing); }
-.typo-headline { font-size: var(--typo-headline-size); line-height: var(--typo-headline-line-height); font-weight: var(--font-weight-semibold); letter-spacing: var(--typo-headline-letter-spacing); }
-.typo-stat     { font-size: var(--typo-stat-size); line-height: var(--typo-stat-line-height); font-weight: var(--font-weight-semibold); letter-spacing: -0.005em; }
-.typo-eyebrow  { font-size: var(--typo-eyebrow-size); line-height: var(--typo-eyebrow-line-height); font-weight: var(--font-weight-semibold); }
-.typo-title    { font-size: var(--typo-title-size); line-height: var(--typo-title-line-height); font-weight: var(--font-weight-semibold); }
-.typo-intro    { font-size: var(--typo-intro-size); line-height: var(--typo-intro-line-height); font-weight: var(--font-weight-regular); letter-spacing: 0.011em; }
-.typo-body     { font-size: var(--typo-body-size); line-height: var(--typo-body-line-height); font-weight: var(--font-weight-regular); }
-.typo-label    { font-size: var(--typo-body-size); line-height: var(--typo-body-line-height); font-weight: var(--font-weight-semibold); }
-.typo-caption  { font-size: var(--typo-caption-size); line-height: var(--typo-caption-line-height); font-weight: var(--font-weight-regular); }
-.typo-footnote { font-size: var(--typo-footnote-size); line-height: var(--typo-footnote-line-height); font-weight: var(--font-weight-regular); }
+.typo-display { font-size: var(--typo-display-size); line-height: 1.19; font-weight: var(--font-weight-bold); letter-spacing: var(--tracking-tight); }
+.typo-heading { font-size: var(--typo-heading-size); line-height: 1.2; font-weight: var(--font-weight-bold); letter-spacing: var(--tracking-tight); }
+.typo-lead    { font-size: var(--typo-lead-size); line-height: 1.4; font-weight: var(--font-weight-regular); letter-spacing: var(--tracking-tight); }
+.typo-intro   { font-size: var(--typo-intro-size); line-height: 1.4; font-weight: var(--font-weight-regular); letter-spacing: var(--tracking-tight); }
+.typo-title   { font-size: var(--typo-title-size); line-height: 1.2; font-weight: var(--font-weight-bold); letter-spacing: var(--tracking-tight); }
+.typo-label   { font-size: var(--typo-label-size); line-height: 1.2; font-weight: var(--font-weight-medium); letter-spacing: var(--tracking-tight); }
+.typo-body    { font-size: var(--typo-body-size); line-height: 1.6; font-weight: var(--font-weight-regular); letter-spacing: var(--tracking-body); }
 
 .color-primary   { color: var(--color-text-primary); }
 .color-secondary { color: var(--color-text-secondary); }
 .color-tertiary  { color: var(--color-text-tertiary); }
-.color-inverse   { color: var(--color-text-inverse); }
 .color-inherit   { color: inherit; }

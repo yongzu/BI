@@ -1,55 +1,37 @@
 /* ==========================================================================
-   Color tokens — Phi monotone × Apple neutrals
+   Color tokens — Figma "Phi Design Institute" (node 1650:6417)
    --------------------------------------------------------------------------
-   Phi's page is strictly black & white; Apple's page gets its calm from a few
-   cool-neutral grays and an alternating #f5f5f7 band. We take Apple's neutrals
-   and drop its blue: every action is ink, so the palette stays monotone.
-
-     white     #ffffff  page, cards on the alt band
-     gray-50   #fafafc  footer
-     gray-100  #f5f5f7  alternating section band, cards on white
-     gray-200  #e8e8ed  controls (segmented track, round buttons)
-     gray-300  #d2d2d7  borders, control hover
-     gray-500  #6e6e73  secondary text (5.1:1 on white — AA)
-     gray-900  #1d1d1f  primary text, primary buttons
+   One ink (#333) on white. Hierarchy comes from the ink's opacity, exactly as
+   in the design: 100% titles · 70% copy · 20% English sub-labels.
+   The page TOC keeps its own three grays from the 1st redesign.
    ========================================================================== */
 
 :root {
   /* ---------- Palette ---------- */
   --palette-white: #ffffff;
-  --palette-gray-50: #fafafc;
-  --palette-gray-100: #f5f5f7;
-  --palette-gray-200: #e8e8ed;
-  --palette-gray-300: #d2d2d7;
-  --palette-gray-500: #6e6e73;
-  --palette-gray-800: #333336;
-  --palette-gray-900: #1d1d1f;
+  --palette-ink: #333333;
+  --palette-rule: #e3e3e3;
+  --palette-nav-strong: #141414;
+  --palette-nav: #666666;
+  --palette-nav-faint: #9c9c9c;
 
   /* ---------- Semantic: Background ---------- */
   --color-bg-default: var(--palette-white);
-  --color-bg-alt: var(--palette-gray-100);       /* alternating band */
-  --color-bg-footer: var(--palette-gray-50);
-  --color-surface: var(--palette-white);         /* card on alt band */
-  --color-surface-on-default: var(--palette-gray-100); /* card on white band */
-  --color-nav: rgba(250, 250, 252, 0.8);
-
-  /* ---------- Semantic: Controls ---------- */
-  --color-control: var(--palette-gray-200);
-  --color-control-hover: var(--palette-gray-300);
-  --color-action: var(--palette-gray-900);
-  --color-action-hover: var(--palette-gray-800);
-  --color-disabled: var(--palette-gray-300);
+  --color-bg-hover: rgba(51, 51, 51, 0.04);
 
   /* ---------- Semantic: Text ---------- */
-  --color-text-primary: var(--palette-gray-900);
-  --color-text-secondary: var(--palette-gray-500);
-  --color-text-tertiary: rgba(0, 0, 0, 0.56);    /* footnotes */
-  --color-text-inverse: var(--palette-white);
+  --color-text-primary: var(--palette-ink);             /* 100% — titles */
+  --color-text-secondary: rgba(51, 51, 51, 0.7);        /*  70% — copy */
+  --color-text-tertiary: rgba(51, 51, 51, 0.2);         /*  20% — English sub-labels */
 
-  /* ---------- Semantic: Border ---------- */
-  --color-border: var(--palette-gray-300);
-  --color-focus-ring: var(--palette-gray-900);
+  /* ---------- Semantic: Lines ---------- */
+  --color-border: var(--palette-rule);
+  --color-label-rule: var(--palette-ink);
+  --color-focus-ring: var(--palette-ink);
 
-  --shadow-card: 0 4px 24px rgba(0, 0, 0, 0.06);
-  --shadow-modal: 0 20px 60px rgba(0, 0, 0, 0.18);
+  /* ---------- Semantic: Page TOC ---------- */
+  --color-nav-strong: var(--palette-nav-strong);
+  --color-nav: var(--palette-nav);
+  --color-nav-faint: var(--palette-nav-faint);
+  --color-nav-rule: var(--palette-rule);
 }

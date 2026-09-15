@@ -3,12 +3,13 @@
  * Course-type grouping and competency tags follow the 1st redesign.
  */
 
+/** 과정 개요 — original wording from the page */
 export const facts = [
-  { label: '과정 기간', value: '1년', note: '2학기' },
-  { label: '총 시수', value: '1,000+', note: '시간' },
-  { label: '수업 방식', value: '월–금', note: '전일제 오프라인' },
-  { label: '학습자 규모', value: '60명', note: '30명씩, 2개 클래스로 운영' },
-  { label: '개강', value: '8.24', note: '2026년' },
+  { label: '과정 기간', value: '1년 (2학기)' },
+  { label: '총 시수', value: '약 1,000시간+' },
+  { label: '수업 방식', value: '월-금, 전일제 오프라인' },
+  { label: '학습자 규모', value: '60명 (30명씩, 2개 클래스로 운영)' },
+  { label: '개강', value: '2026년 8월 24일' },
 ];
 
 export const intro = [

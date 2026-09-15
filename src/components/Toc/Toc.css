@@ -1,57 +1,60 @@
-/* Left-side, compact, transparent TOC. Hierarchy from the 1st redesign, scaled down. */
+/* Page TOC — values from Figma node 1654:6874 ("Nav - 페이지 목차"), placed at the left. */
 .toc {
   position: fixed;
-  top: 120px;
-  left: 24px;
+  top: clamp(96px, 12.4vw, 238px);
+  left: var(--toc-left);
   z-index: 40;
   width: var(--toc-width);
-  max-height: calc(100vh - 180px);
+  max-height: min(1020px, calc(100vh - 140px));
   overflow-y: auto;
-  padding-left: 12px;
-  border-left: 1px solid var(--palette-gray-200);
+  padding-left: 14px;
+  border-left: 1px solid var(--color-nav-rule);
   background: transparent;
-  font-size: 12px;
-  line-height: 1.45;
-  letter-spacing: 0;
   scrollbar-width: none;
 }
 .toc::-webkit-scrollbar { display: none; }
 
 .toc__title {
-  margin-bottom: 10px;
-  font-size: 10px;
-  font-weight: var(--font-weight-semibold);
-  letter-spacing: 0.04em;
-  color: var(--color-text-tertiary);
+  margin-bottom: 12px;
+  font-size: 11px;
+  line-height: 16.5px;
+  font-weight: var(--font-weight-bold);
+  letter-spacing: 0.02em;
+  color: var(--color-nav-faint);
 }
+
+.toc ul { display: flex; flex-direction: column; }
+.toc > ul { gap: 14px; }
 
 .toc a {
   position: relative;
   display: block;
-  margin-left: -13px;
-  padding: 3px 0 3px 9px;
-  color: var(--color-text-secondary);
+  margin-left: -15px;
+  padding: 5px 0 5px 10px;
+  font-size: 13px;
+  line-height: 19.5px;
+  letter-spacing: -0.16px;
+  color: var(--color-nav);
+  white-space: nowrap;
   transition: color 150ms;
 }
-.toc a:hover { color: var(--color-text-primary); }
-.toc a.is-active { color: var(--color-text-primary); font-weight: var(--font-weight-semibold); }
+.toc a:hover { color: var(--color-nav-strong); }
+.toc a.is-active { color: var(--color-nav-strong); font-weight: var(--font-weight-bold); }
 .toc a.is-active::before {
   content: '';
   position: absolute;
   left: -1px;
-  top: 3px;
-  bottom: 3px;
-  width: 2px;
-  border-radius: 1px;
-  background: var(--color-text-primary);
+  top: 4px;
+  bottom: 4px;
+  width: 3px;
+  border-radius: 2px;
+  background: var(--color-nav-strong);
 }
 
-.toc__lv1 { margin-top: 10px; }
-.toc__lv1:first-child { margin-top: 0; }
-.toc__lv1 > a { font-weight: var(--font-weight-semibold); color: var(--color-text-primary); }
-.toc__lv2 > a { padding-left: 19px; }
-.toc__lv3 > a { padding-left: 29px; font-size: 11px; }
+.toc__lv1 > a { font-weight: var(--font-weight-bold); color: var(--color-nav-strong); }
+.toc__lv2 > a { padding-left: 24px; }
+.toc__lv3 > a { padding-left: 38px; font-size: 12px; line-height: 18px; }
 
-@media (max-width: 1199px) {
+@media (max-width: 1279px) {
   .toc { display: none; }
 }

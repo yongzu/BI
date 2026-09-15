@@ -1,186 +1,168 @@
-/* Programs page — Phi content & monotone × Apple product page layout. Tokens only. */
+/* Programs page — Figma "Phi Design Institute" (node 1650:6417) and its imagined continuation. Tokens only. */
 
 .visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 
-.text-column { width: 100%; max-width: calc(var(--width-text) + 2 * var(--gutter)); margin-inline: auto; padding-inline: var(--gutter); }
-.wide-column { width: 100%; max-width: calc(var(--width-wide) + 2 * var(--gutter)); margin-inline: auto; padding-inline: var(--gutter); }
+.link { color: var(--color-text-primary); transition: opacity var(--duration) var(--ease); }
+.link:hover { text-decoration: underline; text-underline-offset: 4px; }
 
-.text-link { color: var(--color-text-primary); text-decoration: underline; text-underline-offset: 3px; text-decoration-thickness: 1px; }
-.text-link:hover { text-decoration-thickness: 2px; }
+/* ---------- Content column ----------
+   1140px column. On wide screens it keeps the design's position (88px right of
+   center) but never slides under the fixed TOC. */
+.container {
+  width: 100%;
+  max-width: calc(var(--content-width) + 2 * var(--gutter));
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}
+@media (min-width: 1280px) {
+  .container {
+    width: min(var(--content-width), calc(100% - var(--toc-space) - var(--gutter)));
+    max-width: none;
+    margin-left: max(var(--toc-space), calc((100% - var(--content-width)) / 2 + var(--design-offset)));
+    margin-right: auto;
+    padding-inline: 0;
+  }
+}
 
 /* ---------- Hero ---------- */
 .hero {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: var(--space-20) var(--gutter) var(--space-30);
+  padding-top: var(--space-hero-top);
   text-align: center;
 }
-.hero__eyebrow { font-size: var(--typo-intro-size); }
-.hero__title { margin-top: var(--space-2); }
-.hero__intro { max-width: 692px; margin-top: var(--space-6); }
-.hero__actions { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--space-4); margin-top: var(--space-10); }
+.hero__title { color: var(--color-text-primary); }
+.hero__intro { max-width: 783px; margin-top: clamp(48px, 5.2vw, 100px); }
 
-/* ---------- Sections ---------- */
-.section { padding-block: var(--space-30); }
-.section--alt { background: var(--color-bg-alt); }
-.section-header { margin-bottom: var(--space-12); }
-.section-header__eyebrow { margin-bottom: var(--space-2); }
-.section-header__intro { max-width: 692px; margin-top: var(--space-5); }
-@media (max-width: 734px) { .section { padding-block: var(--space-20); } }
-
-/* Cards on the alt band are white; cards on white are gray */
-.tile, .course-card, .stat-card, .week-card, .duo__card { border-radius: var(--radius-card); background: var(--color-surface-on-default); }
-.section--alt .tile, .section--alt .stat-card, .section--alt .week-card, .section--alt .viewer__stage { background: var(--color-surface); }
-
-/* ---------- Highlights ---------- */
-.stats {
-  display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: var(--space-5);
+/* 과정 개요 dropdown */
+.overview {
+  width: min(100%, 783px);
+  margin-top: 56px;
+  border-top: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--color-border);
+  text-align: left;
 }
-.stat-card { display: flex; flex-direction: column; gap: var(--space-1); padding: var(--space-8) var(--space-6); }
-.stat-card__value { margin-top: var(--space-6); white-space: nowrap; }
-.stats__note { margin-top: var(--space-12); max-width: calc(692px + 2 * var(--gutter)); margin-left: max(0px, calc((100% - var(--width-text) - 2 * var(--gutter)) / 2)); }
-@media (max-width: 1068px) { .stats { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
-@media (max-width: 734px) { .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-
-/* ---------- Tiles (gallery cards) ---------- */
-.tile {
+.overview__summary {
   display: flex;
-  flex-direction: column;
-  gap: var(--space-3);
-  height: 100%;
-  min-height: 420px;
-  padding: var(--space-10) var(--space-8);
-}
-.tile__title { margin-bottom: var(--space-2); }
-
-.pillar-group + .pillar-group { margin-top: var(--space-16); }
-.pillar-group__title { margin-bottom: var(--space-5); }
-
-/* ---------- Curriculum viewer ---------- */
-.viewer {
-  display: grid;
-  grid-template-columns: 260px minmax(0, 1fr);
-  grid-template-areas: 'controls stage';
-  gap: var(--space-6);
-  align-items: start;
-}
-.viewer__controls { grid-area: controls; display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-3); }
-.viewer__stage {
-  grid-area: stage;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  gap: var(--space-16);
-  min-height: 480px;
-  padding: var(--space-12);
-  border-radius: var(--radius-card);
-}
-.viewer__detail { display: flex; flex-direction: column; gap: var(--space-3); max-width: 560px; }
-
-.control-pill {
-  display: inline-flex;
   align-items: center;
-  gap: var(--space-3);
-  min-height: 56px;
-  padding: 0 var(--space-6) 0 var(--space-3);
-  border-radius: var(--radius-card);
-  background: var(--color-control);
-  color: var(--color-text-primary);
-  transition: background var(--duration) var(--ease);
+  gap: 16px;
+  padding: 18px 4px;
+  list-style: none;
+  cursor: pointer;
 }
-.control-pill:hover { background: var(--color-control-hover); }
-.control-pill[aria-selected='true'] { background: var(--color-surface); box-shadow: var(--shadow-card); }
-.control-pill__icon {
-  position: relative;
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background: var(--color-action);
-}
-.control-pill__icon::before,
-.control-pill__icon::after {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 12px;
-  height: 2px;
-  border-radius: 1px;
-  background: var(--color-text-inverse);
-  transform: translate(-50%, -50%);
+.overview__summary::-webkit-details-marker { display: none; }
+.overview__summary > :nth-child(2) { flex: 1; }
+.overview__chevron {
+  width: 9px;
+  height: 9px;
+  margin-right: 4px;
+  border-right: 1.5px solid var(--color-text-primary);
+  border-bottom: 1.5px solid var(--color-text-primary);
+  transform: translateY(-3px) rotate(45deg);
   transition: transform var(--duration) var(--ease);
 }
-.control-pill__icon::after { transform: translate(-50%, -50%) rotate(90deg); }
-.control-pill[aria-selected='true'] .control-pill__icon::after { transform: translate(-50%, -50%) rotate(0deg); }
-
-.timeline__months, .timeline__bars { display: grid; grid-template-columns: repeat(13, minmax(0, 1fr)); gap: 0 4px; }
-.timeline__months span { color: var(--color-text-secondary); font-size: var(--typo-footnote-size); }
-.timeline__bars { margin-top: var(--space-2); }
-.timeline__bar { grid-row: 1; height: 8px; border-radius: var(--radius-pill); background: var(--color-control); transition: background var(--duration) var(--ease); }
-.timeline__bar.is-active { background: var(--color-action); }
-
-@media (max-width: 860px) {
-  .viewer { grid-template-columns: 1fr; grid-template-areas: 'stage' 'controls'; }
-  .viewer__controls { flex-direction: row; flex-wrap: wrap; }
-  .viewer__stage { min-height: 0; padding: var(--space-8) var(--space-6); }
-  .control-pill { min-height: 44px; padding-right: var(--space-4); }
-  .control-pill__icon { width: 24px; height: 24px; }
+.overview[open] .overview__chevron { transform: translateY(2px) rotate(225deg); }
+.overview__summary:hover { background: var(--color-bg-hover); }
+.overview__list { padding: 4px 4px 20px; }
+.overview__row {
+  display: grid;
+  grid-template-columns: 120px minmax(0, 1fr);
+  gap: 16px;
+  padding: 10px 0;
 }
+.overview__row + .overview__row { border-top: 1px solid var(--color-border); }
+.overview__row dt { align-self: center; }
+
+/* ---------- Sections ---------- */
+.section { padding-top: var(--space-section); }
+.section--last { padding-bottom: var(--space-section); }
+
+.section-header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, var(--lead-width));
+  gap: 24px;
+  align-items: start;
+}
+.section-header > :last-child { padding-top: 2px; }
+
+.group { margin-top: var(--space-group); scroll-margin-top: 48px; }
+.section-header + .group { margin-top: clamp(80px, 5.8vw, 110px); }
+.group + .group { margin-top: clamp(56px, 3.6vw, 72px); }
+.group__lead { max-width: var(--lead-width); margin-top: 16px; }
+
+/* Label with the short vertical rule (asset from Figma) */
+.group-label { position: relative; display: flex; flex-wrap: wrap; align-items: baseline; gap: 12px; }
+.group-label__rule {
+  position: absolute;
+  left: -20px;
+  top: 2px;
+  width: 2px;
+  height: 28.46px;
+  overflow: hidden;
+}
+.group-label__rule img {
+  display: block;
+  width: 28.46px;
+  height: 2px;
+  max-width: none;
+  transform-origin: 0 0;
+  transform: translateX(2px) rotate(90deg);
+  opacity: 0.8;
+}
+
+/* ---------- Item grids ---------- */
+.grid-5,
+.grid-3 {
+  display: grid;
+  gap: 56px var(--grid-gap);
+  margin-top: 45px;
+}
+.grid-5 { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+.grid-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+
+.item { display: flex; flex-direction: column; }
+.item__label { margin-top: 9px; }
+.item__body { display: flex; flex-direction: column; gap: 12px; margin-top: 40px; }
+.item__body .link { margin-top: 4px; }
+
+/* ---------- Curriculum: annual timeline ----------
+   Proportional bars on a 13-month grid, stage details below in 4 even columns. */
+.timeline__months,
+.timeline {
+  display: grid;
+  grid-template-columns: repeat(13, minmax(0, 1fr));
+  column-gap: 8px;
+}
+.timeline__months { margin-top: 45px; }
+.timeline { margin-top: 10px; }
+.timeline__bar { grid-row: 1; padding-top: 10px; border-top: 2px solid var(--color-text-primary); }
+.timeline__bar:nth-child(even) { border-top-color: var(--color-text-tertiary); }
+.grid-4 { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 56px var(--grid-gap); margin-top: 45px; }
 
 /* ---------- Courses ---------- */
-.courses__filter { margin-bottom: var(--space-16); }
-.course-type + .course-type { margin-top: var(--space-16); }
-.course-type__head { margin-bottom: var(--space-6); }
-.course-type__body { max-width: 692px; margin-top: var(--space-2); }
-
-.course-card {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-  height: 100%;
-  min-height: 440px;
-  padding: var(--space-10) var(--space-8) var(--space-6);
-}
-.course-card__name { margin-bottom: var(--space-4); }
-.course-card__lead { flex: 1; }
-.course-card__foot { display: flex; align-items: flex-end; justify-content: space-between; gap: var(--space-4); }
-
-.course-modal { display: flex; flex-direction: column; gap: var(--space-3); }
-.course-modal__lead { margin-top: var(--space-8); }
+.course-type { margin-top: clamp(64px, 5vw, 96px); scroll-margin-top: 48px; }
+.course-type__head { display: flex; flex-direction: column; gap: 9px; padding-top: 20px; border-top: 1px solid var(--color-border); }
+.course-type__body { max-width: var(--lead-width); margin-top: 8px; }
 
 /* ---------- Week ---------- */
-.week-card { padding: var(--space-8); margin-bottom: var(--space-5); }
-.table-scroll { overflow-x: auto; }
-.week { width: 100%; min-width: 520px; border-collapse: separate; border-spacing: 6px; table-layout: fixed; }
-.week th { text-align: left; font-weight: inherit; padding: 0 var(--space-2); }
-.week thead th:first-child, .week tbody th { width: 110px; }
-.week td { height: 72px; }
-.week__cell {
-  display: flex;
-  align-items: flex-end;
-  height: 100%;
-  padding: var(--space-3);
-  border-radius: var(--radius-control);
-  background: var(--color-bg-alt);
-}
-.section--alt .week__cell { background: var(--color-bg-alt); }
-
-/* ---------- Graduation ---------- */
-.duo { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-5); }
-.duo__card { display: flex; flex-direction: column; gap: var(--space-3); min-height: 260px; padding: var(--space-12) var(--space-10); }
-.duo__card--dark { background: var(--color-action); }
-.cta-row { display: flex; flex-direction: column; align-items: center; gap: var(--space-4); margin-top: var(--space-16); text-align: center; }
-@media (max-width: 734px) { .duo { grid-template-columns: 1fr; } .duo__card { min-height: 0; padding: var(--space-8) var(--space-6); } }
+.week-scroll { overflow-x: auto; margin: 45px 0 24px; }
+.week { width: 100%; min-width: 640px; border-collapse: collapse; table-layout: fixed; }
+.week th, .week td { text-align: left; font-weight: inherit; }
+.week thead th { padding-bottom: 16px; }
+.week thead th:first-child, .week tbody th { width: 196px; }
+.week tbody th, .week td { padding: 20px 12px 20px 0; border-top: 1px solid var(--color-border); vertical-align: top; }
 
 /* ---------- Footer ---------- */
-.footer { padding-block: var(--space-6) var(--space-10); background: var(--color-bg-footer); border-top: 1px solid var(--color-border); }
-.footer__legal { margin-top: var(--space-3); }
+.footer {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-block: 64px 96px;
+  border-top: 1px solid var(--color-border);
+}
 
-/* ---------- Scroll reveal (Apple) ----------
-   Transparent and 40px lower → rises into place and fades to its full color. */
+/* ---------- Scroll reveal ---------- */
 [data-reveal] {
   transition:
     opacity 1s var(--ease-reveal) var(--reveal-delay, 0ms),
@@ -189,9 +171,21 @@
 [data-reveal='pending'] { opacity: 0; transform: translateY(40px); }
 [data-reveal='in'] { opacity: 1; transform: none; }
 
-/* ---------- Room for the fixed left-side TOC ----------
-   Band backgrounds stay full-bleed; only the content inside each band is
-   pushed right so nothing runs under the TOC. */
-@media (min-width: 1200px) {
-  .hero, .section, .footer { padding-left: var(--toc-space); }
+/* ---------- Responsive ---------- */
+@media (max-width: 1100px) {
+  .grid-5 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .section-header { grid-template-columns: 1fr; gap: 16px; }
+}
+@media (max-width: 900px) {
+  .grid-4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .timeline__months span:nth-child(even) { visibility: hidden; }
+}
+@media (max-width: 720px) {
+  .grid-5, .grid-3 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .item__body { margin-top: 20px; }
+  .group-label__rule { left: -12px; }
+}
+@media (max-width: 480px) {
+  .grid-5, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+  .overview__row { grid-template-columns: 1fr; gap: 2px; }
 }
