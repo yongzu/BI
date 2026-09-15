@@ -5,7 +5,7 @@
    fluidly below that width. Tracking is -3% everywhere except body (-2%).
 
      Display   100 / Bold    / 1.19 / -3%   hero lines
-     Heading    64 / Bold    / 1.2  / -3%   section titles
+     Heading    48 / Bold    / 1.2  / -3%   section titles
      Subheading 36 / Bold    / 1.2  / -3%   panel titles
      Lead       20 / Regular / 1.4  / -3%   section intro (70%)
      Intro      20 / Regular / 1.4  / -3%   hero copy (70%)
@@ -26,7 +26,7 @@
   --tracking-body: -0.02em;
 
   --typo-display-size: clamp(3rem, 5.21vw, 6.25rem);    /* 48 → 100 */
-  --typo-heading-size: clamp(2.5rem, 3.34vw, 4rem);     /* 40 → 64 */
+  --typo-heading-size: clamp(2.25rem, 3.34vw, 3rem);    /* 36 → 48 */
   --typo-subheading-size: clamp(1.75rem, 1.88vw, 2.25rem); /* 28 → 36 */
   --typo-lead-size: 1.25rem;                            /* 20 */
   --typo-intro-size: clamp(1.0625rem, 1.05vw, 1.25rem); /* 17 → 20 */

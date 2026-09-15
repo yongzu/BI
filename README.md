@@ -17,7 +17,7 @@ npm run deploy   # dist → gh-pages 브랜치 (GitHub Pages)
 | 역할 | 값 |
 |---|---|
 | Display | Pretendard Bold 100 / 1.19 / -3% |
-| Heading | Bold 64 / -3% |
+| Heading | Bold 48 / -3% |
 | Lead | Regular 20 / 1.4 / -3%, 잉크 70% |
 | Intro | Regular 20 / 1.4 / -3%, 잉크 70% |
 | Title | Bold 24 / -3% |

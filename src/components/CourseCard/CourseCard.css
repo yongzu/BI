@@ -49,9 +49,14 @@
   flex-direction: column;
   gap: 10px;
   padding: 36px 36px 32px;
-  filter: blur(12px);
+}
+/* Each line wipes in from the left through a light blur, one after another */
+.course-card__preview-inner > * {
   opacity: 0;
-  transition: filter 260ms var(--pv-ease), opacity 200ms var(--pv-ease);
+  filter: blur(5px);
+  transform: translateX(-14px);
+  clip-path: inset(0 100% 0 0);
+  transition: opacity 180ms var(--pv-ease), filter 180ms var(--pv-ease), transform 220ms var(--pv-ease), clip-path 200ms var(--pv-ease);
 }
 .course-card__goals { display: flex; flex-direction: column; gap: 8px; margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--color-border); }
 .course-card__goal { padding-left: 14px; position: relative; }
@@ -64,10 +69,21 @@
     transform: none;
     transition: opacity 280ms var(--pv-ease), transform 520ms var(--pv-ease);
   }
-  .course-card__hit:hover .course-card__preview-inner {
-    filter: blur(0);
+  .course-card__hit:hover .course-card__preview-inner > * {
     opacity: 1;
-    transition: filter 600ms var(--pv-ease) 120ms, opacity 400ms var(--pv-ease) 120ms;
+    filter: blur(0);
+    transform: none;
+    clip-path: inset(0 0 0 0);
+    transition:
+      opacity 360ms var(--pv-ease) var(--line-delay),
+      filter 520ms var(--pv-ease) var(--line-delay),
+      transform 620ms var(--pv-ease) var(--line-delay),
+      clip-path 620ms var(--pv-ease) var(--line-delay);
   }
+  .course-card__preview-inner > :nth-child(1) { --line-delay: 120ms; }
+  .course-card__preview-inner > :nth-child(2) { --line-delay: 170ms; }
+  .course-card__preview-inner > :nth-child(3) { --line-delay: 220ms; }
+  .course-card__preview-inner > :nth-child(4) { --line-delay: 270ms; }
+  .course-card__preview-inner > :nth-child(5) { --line-delay: 320ms; }
   .course-card__hit:hover .course-card__face { opacity: 0; }
 }
