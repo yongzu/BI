@@ -49,6 +49,7 @@
 
 /* ---------- Sections ---------- */
 .section { padding-top: var(--space-section); }
+#pillars { padding-top: 200px; } /* first section sits closer to the hero */
 .section--last { padding-bottom: var(--space-section); }
 
 .section-header {
