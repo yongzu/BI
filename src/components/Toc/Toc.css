@@ -1,34 +1,35 @@
-/* Sizes follow the 1st redesign's TOC (13 / 12 / 11px); colors map to this system's tokens. */
+/* Left-side, compact, transparent TOC. Hierarchy from the 1st redesign, scaled down. */
 .toc {
   position: fixed;
   top: 120px;
-  right: 32px;
+  left: 24px;
   z-index: 40;
   width: var(--toc-width);
   max-height: calc(100vh - 180px);
   overflow-y: auto;
-  padding-left: 14px;
+  padding-left: 12px;
   border-left: 1px solid var(--palette-gray-200);
-  font-size: 13px;
-  line-height: 1.5;
+  background: transparent;
+  font-size: 12px;
+  line-height: 1.45;
   letter-spacing: 0;
   scrollbar-width: none;
 }
 .toc::-webkit-scrollbar { display: none; }
 
 .toc__title {
-  margin-bottom: 12px;
-  font-size: 11px;
+  margin-bottom: 10px;
+  font-size: 10px;
   font-weight: var(--font-weight-semibold);
-  letter-spacing: 0.02em;
+  letter-spacing: 0.04em;
   color: var(--color-text-tertiary);
 }
 
 .toc a {
   position: relative;
   display: block;
-  margin-left: -15px;
-  padding: 5px 0 5px 10px;
+  margin-left: -13px;
+  padding: 3px 0 3px 9px;
   color: var(--color-text-secondary);
   transition: color 150ms;
 }
@@ -38,18 +39,18 @@
   content: '';
   position: absolute;
   left: -1px;
-  top: 4px;
-  bottom: 4px;
-  width: 3px;
-  border-radius: 2px;
+  top: 3px;
+  bottom: 3px;
+  width: 2px;
+  border-radius: 1px;
   background: var(--color-text-primary);
 }
 
-.toc__lv1 { margin-top: 14px; }
+.toc__lv1 { margin-top: 10px; }
 .toc__lv1:first-child { margin-top: 0; }
 .toc__lv1 > a { font-weight: var(--font-weight-semibold); color: var(--color-text-primary); }
-.toc__lv2 > a { padding-left: 24px; }
-.toc__lv3 > a { padding-left: 38px; font-size: 12px; }
+.toc__lv2 > a { padding-left: 19px; }
+.toc__lv3 > a { padding-left: 29px; font-size: 11px; }
 
 @media (max-width: 1199px) {
   .toc { display: none; }

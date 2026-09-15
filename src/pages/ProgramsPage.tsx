@@ -6,6 +6,7 @@ import { Accordion } from '../components/Accordion/Accordion';
 import { Segmented } from '../components/Segmented/Segmented';
 import { Modal } from '../components/Modal/Modal';
 import { Toc, type TocItem } from '../components/Toc/Toc';
+import { useScrollReveal } from '../hooks/useScrollReveal';
 import {
   attitudes,
   camps,
@@ -47,6 +48,18 @@ const toc: TocItem[] = [
   { id: 'career', label: '채용 연계' },
 ];
 
+/** Text blocks that rise in on scroll */
+const revealTargets = [
+  '.hero > *',
+  '.section-header > *',
+  '.pillar-group__title',
+  '.course-type__head > *',
+  '.courses__filter',
+  '.stats__note',
+  '.viewer__detail > *',
+  '.cta-row > *',
+].join(', ');
+
 const go = (id: string) => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
 /** Section header: optional eyebrow + headline + optional intro, in the 980px column. */
@@ -81,6 +94,8 @@ export function ProgramsPage() {
 
   const visibleTypes = filter === 'all' ? courseTypes : courseTypes.filter((t) => t.id === filter);
   const openType = openCourse ? courseTypes.find((t) => t.courses.includes(openCourse)) : undefined;
+
+  useScrollReveal(revealTargets, [filter]);
 
   return (
     <>

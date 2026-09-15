@@ -24,7 +24,11 @@ npm run deploy   # dist → gh-pages 브랜치 (GitHub Pages)
 
 ## 내비게이션
 
-상단 바 대신 1차 리디자인의 우측 계층 목차(ON THIS PAGE)를 씁니다. 3단계 들여쓰기, 현재 위치는 3px 막대로 표시하고, 1200px 미만에서는 숨깁니다.
+상단 바 대신 1차 리디자인의 계층 목차(ON THIS PAGE)를 좌측에 작고 투명하게 둡니다. 3단계 들여쓰기, 현재 위치는 막대로 표시하고, 1200px 미만에서는 숨깁니다.
+
+## 인터랙션
+
+스크롤로 텍스트 블록이 화면에 들어오면 투명한 상태에서 40px 아래로부터 올라오며 나타납니다(Apple). 같은 묶음 안에서는 90ms씩 순차로 등장하고, 동작 줄이기 설정에서는 꺼집니다.
 
 ## 섹션 매핑
 
@@ -50,7 +54,8 @@ src/
 │  ├─ Accordion/                FAQ 아코디언
 │  ├─ Segmented/                세그먼트 컨트롤
 │  ├─ Modal/                    카드 상세 모달
-│  └─ Toc/                      우측 계층 목차
+│  └─ Toc/                      좌측 계층 목차
+├─ hooks/useScrollReveal.ts     스크롤 텍스트 등장 인터랙션
 ├─ data/programs.ts             원본 페이지 콘텐츠
 └─ pages/                       ProgramsPage, SystemPage
 ```
