@@ -6,7 +6,10 @@ Beautiful Interface 1주차 과제. Phi [Programs 페이지](https://www.phi.des
 npm install
 npm run dev      # http://localhost:5173
 npm run build
+npm run deploy   # dist → gh-pages 브랜치 (GitHub Pages)
 ```
+
+배포 주소: https://yongzu.github.io/BI/
 
 `#system` 해시로 이동하면 토큰·컴포넌트 명세 페이지가 열립니다.
 
