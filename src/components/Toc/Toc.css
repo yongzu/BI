@@ -1,7 +1,7 @@
 /* Page TOC — values from Figma node 1654:6874 ("Nav - 페이지 목차"), placed at the left. */
 .toc {
   position: fixed;
-  top: clamp(96px, 12.4vw, 238px);
+  top: max(24px, calc(clamp(96px, 12.4vw, 238px) - 100px)); /* 100px above the hero line */
   left: var(--toc-left);
   z-index: 40;
   width: var(--toc-width);

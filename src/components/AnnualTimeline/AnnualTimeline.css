@@ -1,0 +1,128 @@
+/* Rounded, monotone take on the zooming annual timeline. Tokens only. */
+.annual {
+  --tl-ease: cubic-bezier(0.65, 0, 0.35, 1);
+  --tl-duration: 640ms;
+  --tl-bar-height: 36px;
+}
+
+/* ---------- Chips ---------- */
+.annual__chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.annual__chip {
+  height: 34px;
+  padding: 0 16px;
+  border-radius: var(--radius-pill, 999px);
+  box-shadow: inset 0 0 0 1px var(--color-border);
+  color: var(--color-text-secondary);
+  transition: background var(--duration) var(--ease), color var(--duration) var(--ease), box-shadow var(--duration) var(--ease);
+}
+.annual__chip:hover { color: var(--color-text-primary); box-shadow: inset 0 0 0 1px var(--color-text-tertiary); }
+.annual__chip[aria-pressed='true'] { background: var(--color-text-primary); color: var(--color-bg-default); box-shadow: none; }
+
+/* ---------- Chart ---------- */
+.annual__chart {
+  position: relative;
+  margin-top: 32px;
+  padding-top: 36px; /* room for month labels */
+  overflow: hidden;
+}
+
+.annual__axis { position: absolute; inset: 0; pointer-events: none; }
+.annual__tick {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 0;
+  border-left: 1px dashed var(--color-border);
+  transition: left var(--tl-duration) var(--tl-ease), border-color var(--tl-duration) var(--tl-ease);
+}
+.annual__month {
+  position: absolute;
+  top: 6px;
+  left: 0;
+  transform: translateX(-50%);
+  padding: 0 4px;
+  background: var(--color-bg-default);
+  font-size: 12px;
+  line-height: 1;
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-tertiary);
+  transition: color var(--tl-duration) var(--tl-ease);
+}
+.annual__tick[data-focus='true'] { border-left-color: var(--color-text-tertiary); }
+.annual__tick[data-focus='true'] .annual__month { color: var(--color-text-primary); font-weight: var(--font-weight-bold); }
+
+/* ---------- Rows & bars ---------- */
+.annual__rows { position: relative; display: flex; flex-direction: column; gap: 12px; padding-bottom: 24px; }
+.annual__row { display: block; }
+
+.annual__bar {
+  position: relative;
+  display: block;
+  min-height: var(--tl-bar-height);
+  border-radius: 18px;
+  text-align: left;
+  background: rgba(51, 51, 51, 0.08);
+  color: var(--color-text-primary);
+  white-space: normal;
+  transition:
+    margin-left var(--tl-duration) var(--tl-ease),
+    width var(--tl-duration) var(--tl-ease),
+    background var(--tl-duration) var(--tl-ease),
+    color var(--tl-duration) var(--tl-ease),
+    border-radius var(--tl-duration) var(--tl-ease);
+}
+.annual__bar:hover { background: rgba(51, 51, 51, 0.14); }
+.annual__bar[data-state='selected'] {
+  border-radius: 24px;
+  background: var(--color-text-primary);
+  color: var(--color-bg-default);
+}
+.annual__bar[data-state='muted'] { background: rgba(51, 51, 51, 0.05); color: var(--color-text-tertiary); }
+
+.annual__bar-head {
+  display: flex;
+  align-items: center;
+  min-height: var(--tl-bar-height);
+  padding: 0 16px;
+  overflow: hidden;
+}
+.annual__bar-name {
+  font-size: 14px;
+  font-weight: var(--font-weight-bold);
+  letter-spacing: var(--tracking-tight);
+  white-space: nowrap;
+  transition: font-size var(--tl-duration) var(--tl-ease);
+}
+.annual__bar[data-state='selected'] .annual__bar-head { min-height: 64px; padding: 20px 28px 0; align-items: flex-end; }
+.annual__bar[data-state='selected'] .annual__bar-name { font-size: var(--typo-title-size); }
+
+/* Detail: grid-rows 0fr → 1fr so the card's height animates to its content */
+.annual__detail {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  transition: grid-template-rows var(--tl-duration) var(--tl-ease), opacity 320ms var(--tl-ease);
+}
+.annual__bar[data-state='selected'] .annual__detail {
+  grid-template-rows: 1fr;
+  opacity: 1;
+  transition: grid-template-rows var(--tl-duration) var(--tl-ease), opacity 400ms var(--tl-ease) 240ms;
+}
+.annual__detail-inner { display: flex; flex-direction: column; gap: 12px; min-height: 0; overflow: hidden; padding: 0 28px; }
+.annual__bar[data-state='selected'] .annual__detail-inner { padding-block: 10px 26px; }
+.annual__meta { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.annual__badge {
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.16);
+  font-size: 12px;
+  font-weight: var(--font-weight-bold);
+}
+.annual__bar[data-state='selected'] .annual__meta { color: rgba(255, 255, 255, 0.6); }
+.annual__bar[data-state='selected'] .annual__body { color: rgba(255, 255, 255, 0.78); max-width: 520px; }
+.annual__badge { color: var(--color-bg-default); }
+
+@media (max-width: 720px) {
+  .annual__bar[data-state='selected'] .annual__bar-head { padding: 16px 20px 0; }
+  .annual__detail-inner { padding: 0 20px; }
+}

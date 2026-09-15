@@ -18,7 +18,7 @@ npm run deploy   # dist → gh-pages 브랜치 (GitHub Pages)
 |---|---|
 | Display | Pretendard Bold 100 / 1.19 / -3% |
 | Heading | Bold 64 / -3% |
-| Lead | Regular 28 / 1.4 / -3%, 잉크 70% |
+| Lead | Regular 32 / 1.4 / -3%, 잉크 70% |
 | Intro | Regular 20 / 1.4 / -3%, 잉크 70% |
 | Title | Bold 24 / -3% |
 | Label | Medium 16 / -3%, 잉크 20% |
@@ -30,8 +30,9 @@ npm run deploy   # dist → gh-pages 브랜치 (GitHub Pages)
 
 ## Figma 밖에서 이어 설계한 부분
 
-- **과정 개요** 드롭다운 (히어로 아래): 과정 기간·총 시수·수업 방식·학습자 규모·개강
-- **커리큘럼**: 13개월 비례 막대 + 4열 단계 설명, 코스 타입별 수업 5열 그리드
+- **과정 개요** 드롭다운 (히어로 아래): 높이·내용이 부드럽게 열리고 닫힘
+- **연간 구조** 줌 타임라인: 칩이나 막대를 누르면 축이 해당 기간으로 확대되고 막대가 상세 카드로 펼쳐짐, 나머지 막대는 흐려지며 밀려남
+- **주요 수업들**: 코스 타입별 수업 5열 그리드
 - **수업을 관통하는 접근 · 방학 + 캠프 · 수료 & 졸업 · 채용 연계**: 섹션 헤더 + 그룹 라벨 + 3열 아이템
 - **주간 시간표**: 가는 선만 쓰는 표
 - 스크롤 시 텍스트가 투명한 상태에서 아래로부터 올라오며 나타남
@@ -45,6 +46,8 @@ src/
 ├─ assets/label-rule.svg        그룹 라벨 세로선 (Figma 에셋)
 ├─ components/
 │  ├─ Text/                     <Text typography="Heading" color="primary" />
+│  ├─ AnnualTimeline/           연간 구조 줌 타임라인
+│  ├─ Dropdown/                 애니메이션 드롭다운
 │  └─ Toc/                      좌측 페이지 목차
 ├─ hooks/useScrollReveal.ts     스크롤 텍스트 등장 인터랙션
 ├─ data/programs.ts             원본 페이지 콘텐츠

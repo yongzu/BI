@@ -6,7 +6,7 @@
 
      Display   100 / Bold    / 1.19 / -3%   hero lines
      Heading    64 / Bold    / 1.2  / -3%   section titles
-     Lead       28 / Regular / 1.4  / -3%   section intro (70%)
+     Lead       32 / Regular / 1.4  / -3%   section intro (70%)
      Intro      20 / Regular / 1.4  / -3%   hero copy (70%)
      Title      24 / Bold    / 1.2  / -3%   item & group titles
      Label      16 / Medium  / 1.2  / -3%   English sub-labels (20%)
@@ -26,7 +26,7 @@
 
   --typo-display-size: clamp(3rem, 5.21vw, 6.25rem);    /* 48 → 100 */
   --typo-heading-size: clamp(2.5rem, 3.34vw, 4rem);     /* 40 → 64 */
-  --typo-lead-size: clamp(1.25rem, 1.46vw, 1.75rem);    /* 20 → 28 */
+  --typo-lead-size: clamp(1.375rem, 1.67vw, 2rem);      /* 22 → 32 */
   --typo-intro-size: clamp(1.0625rem, 1.05vw, 1.25rem); /* 17 → 20 */
   --typo-title-size: clamp(1.25rem, 1.25vw, 1.5rem);    /* 20 → 24 */
   --typo-label-size: 1rem;                              /* 16 */

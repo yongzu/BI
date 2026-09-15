@@ -1,6 +1,8 @@
 import type { ReactNode } from 'react';
 import { Text } from '../components/Text/Text';
 import { Toc, type TocItem } from '../components/Toc/Toc';
+import { AnnualTimeline } from '../components/AnnualTimeline/AnnualTimeline';
+import { Dropdown } from '../components/Dropdown/Dropdown';
 import { useScrollReveal } from '../hooks/useScrollReveal';
 import labelRule from '../assets/label-rule.svg';
 import {
@@ -43,7 +45,7 @@ const toc: TocItem[] = [
 ];
 
 /** Blocks that rise in on scroll */
-const revealTargets = ['.hero > *', '.section-header > *', '.group-label', '.group__lead', '.course-type__head', '.item', '.timeline', '.week-scroll'].join(', ');
+const revealTargets = ['.hero > *', '.section-header > *', '.group-label', '.group__lead', '.course-type__head', '.item', '.annual', '.week-scroll'].join(', ');
 
 /* ------------------------------------------------------------------ */
 
@@ -100,12 +102,11 @@ export function ProgramsPage() {
           </Text>
           <Text typography="Intro" color="secondary" className="hero__intro">{intro[0]}</Text>
 
-          <details className="overview">
-            <summary className="overview__summary">
-              <Text as="span" typography="Label">과정 개요</Text>
-              <Text as="span" typography="Body" color="secondary">1년 · 전일제 오프라인 · 2026년 8월 24일 개강</Text>
-              <span className="overview__chevron" aria-hidden="true" />
-            </summary>
+          <Dropdown
+            className="overview"
+            label={<Text as="span" typography="Label">과정 개요</Text>}
+            summary={<Text as="span" typography="Body" color="secondary">1년 · 전일제 오프라인 · 2026년 8월 24일 개강</Text>}
+          >
             <dl className="overview__list">
               {facts.map((f) => (
                 <div key={f.label} className="overview__row">
@@ -114,7 +115,7 @@ export function ProgramsPage() {
                 </div>
               ))}
             </dl>
-          </details>
+          </Dropdown>
         </section>
 
         {/* ---------- 역량과 태도 ---------- */}
@@ -143,29 +144,7 @@ export function ProgramsPage() {
 
           <div id="curriculum-annual" className="group">
             <GroupLabel>연간 구조</GroupLabel>
-            <div className="timeline__months" aria-hidden="true">
-              {months.map((m, i) => (
-                <Text key={i} as="span" typography="Label" color="tertiary">{m}월</Text>
-              ))}
-            </div>
-            <div className="timeline" aria-hidden="true">
-              {stages.map((s, i) => (
-                <span key={s.name} className="timeline__bar" style={{ gridColumn: `${Math.floor(s.start) + 1} / ${Math.ceil(s.end) + 1}` }}>
-                  <Text as="span" typography="Label" color={i % 2 ? 'tertiary' : 'primary'}>{String(i + 1).padStart(2, '0')}</Text>
-                </span>
-              ))}
-            </div>
-            <ol className="grid-4">
-              {stages.map((s, i) => (
-                <li key={s.name} className="item stage">
-                  <Text as="h4" typography="Title">{String(i + 1).padStart(2, '0')} {s.name}</Text>
-                  <Text typography="Label" color="tertiary" className="item__label">{s.period}</Text>
-                  <div className="item__body">
-                    <Text typography="Body" color="secondary">{s.body}</Text>
-                  </div>
-                </li>
-              ))}
-            </ol>
+            <AnnualTimeline stages={stages} months={months} />
           </div>
 
           <div id="courses" className="group">

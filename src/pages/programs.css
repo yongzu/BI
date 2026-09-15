@@ -35,41 +35,14 @@
 .hero__title { color: var(--color-text-primary); }
 .hero__intro { max-width: 783px; margin-top: clamp(48px, 5.2vw, 100px); }
 
-/* 과정 개요 dropdown */
-.overview {
-  width: min(100%, 783px);
-  margin-top: 56px;
-  border-top: 1px solid var(--color-border);
-  border-bottom: 1px solid var(--color-border);
-  text-align: left;
-}
-.overview__summary {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  padding: 18px 4px;
-  list-style: none;
-  cursor: pointer;
-}
-.overview__summary::-webkit-details-marker { display: none; }
-.overview__summary > :nth-child(2) { flex: 1; }
-.overview__chevron {
-  width: 9px;
-  height: 9px;
-  margin-right: 4px;
-  border-right: 1.5px solid var(--color-text-primary);
-  border-bottom: 1.5px solid var(--color-text-primary);
-  transform: translateY(-3px) rotate(45deg);
-  transition: transform var(--duration) var(--ease);
-}
-.overview[open] .overview__chevron { transform: translateY(2px) rotate(225deg); }
-.overview__summary:hover { background: var(--color-bg-hover); }
-.overview__list { padding: 4px 4px 20px; }
+/* 과정 개요 dropdown (behaviour in components/Dropdown) */
+.overview { width: min(100%, 783px); margin-top: 56px; }
+.overview__list { padding: 4px 0 24px; }
 .overview__row {
   display: grid;
   grid-template-columns: 120px minmax(0, 1fr);
   gap: 16px;
-  padding: 10px 0;
+  padding: 12px 0;
 }
 .overview__row + .overview__row { border-top: 1px solid var(--color-border); }
 .overview__row dt { align-self: center; }
@@ -126,19 +99,7 @@
 .item__body { display: flex; flex-direction: column; gap: 12px; margin-top: 40px; }
 .item__body .link { margin-top: 4px; }
 
-/* ---------- Curriculum: annual timeline ----------
-   Proportional bars on a 13-month grid, stage details below in 4 even columns. */
-.timeline__months,
-.timeline {
-  display: grid;
-  grid-template-columns: repeat(13, minmax(0, 1fr));
-  column-gap: 8px;
-}
-.timeline__months { margin-top: 45px; }
-.timeline { margin-top: 10px; }
-.timeline__bar { grid-row: 1; padding-top: 10px; border-top: 2px solid var(--color-text-primary); }
-.timeline__bar:nth-child(even) { border-top-color: var(--color-text-tertiary); }
-.grid-4 { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 56px var(--grid-gap); margin-top: 45px; }
+.annual { margin-top: 45px; }
 
 /* ---------- Courses ---------- */
 .course-type { margin-top: clamp(64px, 5vw, 96px); scroll-margin-top: 48px; }
@@ -176,16 +137,12 @@
   .grid-5 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .section-header { grid-template-columns: 1fr; gap: 16px; }
 }
-@media (max-width: 900px) {
-  .grid-4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .timeline__months span:nth-child(even) { visibility: hidden; }
-}
 @media (max-width: 720px) {
   .grid-5, .grid-3 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .item__body { margin-top: 20px; }
   .group-label__rule { left: -12px; }
 }
 @media (max-width: 480px) {
-  .grid-5, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+  .grid-5, .grid-3 { grid-template-columns: 1fr; }
   .overview__row { grid-template-columns: 1fr; gap: 2px; }
 }
