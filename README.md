@@ -14,7 +14,7 @@ npm run build
 
 | # | 문제 | 해결 방향 | 레퍼런스 |
 |---|---|---|---|
-| 0 | 굵기 5단계, 크기는 16·14·13px에 몰려 위계가 평평함 | 굵기는 400·700 두 개, 위계는 크기 대비로. 이정표에만 다른 서체(Instrument Serif) | 현대카드 |
+| 0 | 굵기 5단계, 크기는 16·14·13px에 몰려 위계가 평평함 | 굵기는 400·700 두 개, 위계는 크기 대비로. 이정표(Display)는 Helvetica | 현대카드 |
 | 1 | 코스 타입 경계가 안 보임 | Fundamental / Domain / Ritual / Study를 표지형 Display 타이포로 | 카카오 |
 | 2 | 12개 수업 목록을 훑어 읽기 어려움 | "굵고 큰 이름 + 가볍고 작은 정보" 한 줄 리듬, 설명은 아코디언 | 토스 채용 |
 | 3 | 핵심 질문이 문단에 묻힘 | 펼치면 질문을 제목(Title2)으로 끌어올림 | 당근 채용 |
@@ -43,8 +43,8 @@ src/
 
 | 시맨틱 | 매핑 | size / line-height / weight |
 |---|---|---|
-| Display1 | 프로젝트 확장 | Instrument Serif 64→160 / 0.9 / 400, -0.03em |
-| Display2 | 프로젝트 확장 | Instrument Serif 48→88 / 0.95 / 400, -0.02em |
+| Display1 | 프로젝트 확장 | Helvetica 64→160 / 0.9 / 700, -0.045em |
+| Display2 | 프로젝트 확장 | Helvetica 48→88 / 0.95 / 700, -0.035em |
 | Title1 | t14 | 48 / 60 / 700 |
 | Title2 | t12 | 32 / 42 / 700 |
 | Title3 | t10 (screenTitle) | 26 / 35 / 700 |
@@ -55,7 +55,7 @@ src/
 | Caption1 | t3 | 13 / 18 / 400 |
 | Caption2 | t2 | 12 / 16 / 700 |
 
-SEED 문서에는 웹 letter-spacing 값이 없어 SEED 기반 스타일은 0입니다. Display는 SEED 최대치(48px)를 넘는 표지용 확장입니다.
+SEED 문서에는 웹 letter-spacing 값이 없어 SEED 기반 스타일은 0입니다. Display는 SEED 최대치(48px)를 넘는 표지용 확장입니다. Helvetica는 무료 웹폰트가 아니라 번들하지 않으며, 설치된 환경(macOS/iOS)에서만 쓰이고 그 외에는 Pretendard로 대체됩니다.
 
 ## 컬러 (모노톤)
 

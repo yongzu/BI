@@ -10,8 +10,11 @@
    Notes
    - SEED defines no letter-spacing for web, so SEED-based styles use 0.
    - SEED stops at t14 (48px). Display1/Display2 are a PROJECT EXTENSION for
-     "signpost" headings (course-type covers). They use a different typeface
-     (Instrument Serif) and negative tracking, which large sizes need.
+     "signpost" headings (course-type covers). They use Helvetica with tight
+     tracking and leading, which large sizes need.
+   - Helvetica is not a free web font, so it is not bundled: it renders where
+     installed (macOS/iOS). Elsewhere it falls back to Pretendard, never Arial
+     (see the local() @font-face below).
    - This page only uses regular(400) and bold(700). Hierarchy comes from
      size contrast, not from many weights. medium stays defined for parity.
    ========================================================================== */
@@ -20,8 +23,8 @@
   /* ---------- Font family ---------- */
   --font-family-sans: 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont,
     system-ui, 'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', sans-serif;
-  /* Signpost face is Latin-only; Hangul falls through to Pretendard */
-  --font-family-signpost: 'Instrument Serif', 'Pretendard Variable', Pretendard, serif;
+  /* Signpost face: real Helvetica where installed, otherwise Pretendard (also covers Hangul) */
+  --font-family-signpost: 'Signpost Helvetica', 'Pretendard Variable', Pretendard, sans-serif;
 
   /* ---------- Weight (SEED) ---------- */
   --font-weight-regular: 400;
@@ -45,18 +48,18 @@
   --font-size-t14: 3rem;      --line-height-t14: 3.75rem;   /* 48 / 60 */
 
   /* ---------- Semantic styles ---------- */
-  /* Display (project extension, signpost typeface) */
+  /* Display (project extension, Helvetica) */
   --typo-display1-family: var(--font-family-signpost);
   --typo-display1-size: clamp(4rem, 12vw, 10rem);     /* 64 → 160 */
   --typo-display1-line-height: 0.9;
-  --typo-display1-weight: var(--font-weight-regular);
-  --typo-display1-letter-spacing: -0.03em;
+  --typo-display1-weight: var(--font-weight-bold);
+  --typo-display1-letter-spacing: -0.045em;
 
   --typo-display2-family: var(--font-family-signpost);
   --typo-display2-size: clamp(3rem, 7vw, 5.5rem);     /* 48 → 88 */
   --typo-display2-line-height: 0.95;
-  --typo-display2-weight: var(--font-weight-regular);
-  --typo-display2-letter-spacing: -0.02em;
+  --typo-display2-weight: var(--font-weight-bold);
+  --typo-display2-letter-spacing: -0.035em;
 
   /* Title */
   --typo-title1-size: var(--font-size-t14);
@@ -107,6 +110,23 @@
     --typo-title2-size: var(--font-size-t9);
     --typo-title2-line-height: var(--line-height-t9);
   }
+}
+
+/*
+  Why a local()-only @font-face instead of "font-family: Helvetica"?
+  Windows silently substitutes the family names Helvetica / Helvetica Neue with Arial.
+  local() matches installed fonts by their unique face name, so it only resolves to a
+  genuine Helvetica (macOS/iOS) and otherwise fails over to Pretendard — never Arial.
+*/
+@font-face {
+  font-family: 'Signpost Helvetica';
+  font-weight: 400;
+  src: local('Helvetica Neue'), local('HelveticaNeue'), local('Helvetica');
+}
+@font-face {
+  font-family: 'Signpost Helvetica';
+  font-weight: 700;
+  src: local('Helvetica Neue Bold'), local('HelveticaNeue-Bold'), local('Helvetica Bold'), local('Helvetica-Bold');
 }
 
 /* ---------- Utility classes (consumed by <Text />) ---------- */

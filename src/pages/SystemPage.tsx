@@ -8,8 +8,8 @@ import { Dialog } from '../examples/Dialog';
 import './system.css';
 
 const typeSpec: Record<Typography, string> = {
-  Display1: 'Instrument Serif · 64→160 · 400 · 0.9 · -0.03em  (project extension)',
-  Display2: 'Instrument Serif · 48→88 · 400 · 0.95 · -0.02em  (project extension)',
+  Display1: 'Helvetica → Pretendard · 64→160 · 700 · 0.9 · -0.045em  (project extension)',
+  Display2: 'Helvetica → Pretendard · 48→88 · 700 · 0.95 · -0.035em  (project extension)',
   Title1: 'SEED t14 · 48/60 · 700',
   Title2: 'SEED t12 · 32/42 · 700',
   Title3: 'SEED t10 · 26/35 · 700  (= screenTitle)',
