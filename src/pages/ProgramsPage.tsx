@@ -123,6 +123,7 @@ export function ProgramsPage() {
           <Text typography="Intro" color="secondary" className="hero__intro">{intro[0]}</Text>
 
           <Dropdown
+            autoOpen
             className="overview"
             label={<Text as="span" typography="Label">과정 개요</Text>}
             summary={<Text as="span" typography="Body" color="secondary">1년 · 전일제 오프라인 · 2026년 8월 24일 개강</Text>}

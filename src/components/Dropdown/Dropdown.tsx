@@ -1,11 +1,12 @@
-import { useId, useRef, useState, type PointerEvent, type ReactNode } from 'react';
+import { useEffect, useId, useRef, useState, type ReactNode } from 'react';
 import './Dropdown.css';
 
 /**
  * Dropdown panel with an animated open/close.
- * - Hover (mouse): opens as a preview while the pointer is over the dropdown.
- * - Click: pins it open; click again to unpin and close.
- * Height animates via grid-template-rows (0fr → 1fr), content fades and rises in,
+ * - autoOpen: opens by itself once the page is scrolled and the dropdown has risen
+ *   into the upper part of the viewport; folds back when the page returns to the top.
+ * - Click always toggles. A manual choice wins until the page is back at the top.
+ * Height animates via grid-template-rows (0fr → 1fr), content surfaces from a blur,
  * the chevron flips. Stays in the DOM so the transition runs both ways.
  */
 type DropdownProps = {
@@ -13,40 +14,39 @@ type DropdownProps = {
   summary?: ReactNode;
   children: ReactNode;
   className?: string;
+  autoOpen?: boolean;
 };
 
-export function Dropdown({ label, summary, children, className }: DropdownProps) {
-  const [pinned, setPinned] = useState(false);
-  const [hovered, setHovered] = useState(false);
-  const suppressHover = useRef(false);
-  const id = useId();
-  const open = pinned || hovered;
+const TOP_EPSILON = 8; // px — "back at the top of the page"
+const TRIGGER_LINE = 0.75; // opens when the dropdown's top passes 75% of the viewport height
 
-  const enter = (e: PointerEvent) => {
-    if (e.pointerType === 'mouse' && !suppressHover.current) setHovered(true);
-  };
-  const leave = () => {
-    suppressHover.current = false;
-    setHovered(false);
-  };
-  const toggle = () => {
-    if (pinned) {
-      // Unpinning while still hovering: close now, re-arm hover after the pointer leaves
-      suppressHover.current = true;
-      setHovered(false);
-    }
-    setPinned(!pinned);
-  };
+export function Dropdown({ label, summary, children, className, autoOpen = false }: DropdownProps) {
+  const [auto, setAuto] = useState(false);
+  const [manual, setManual] = useState<boolean | null>(null);
+  const root = useRef<HTMLDivElement>(null);
+  const id = useId();
+  const open = manual ?? auto;
+
+  useEffect(() => {
+    if (!autoOpen) return;
+    const update = () => {
+      const el = root.current;
+      if (!el) return;
+      if (window.scrollY <= TOP_EPSILON) {
+        setAuto(false);
+        setManual(null);
+        return;
+      }
+      if (el.getBoundingClientRect().top < window.innerHeight * TRIGGER_LINE) setAuto(true);
+    };
+    update();
+    window.addEventListener('scroll', update, { passive: true });
+    return () => window.removeEventListener('scroll', update);
+  }, [autoOpen]);
 
   return (
-    <div
-      className={['dropdown', className].filter(Boolean).join(' ')}
-      data-open={open}
-      data-pinned={pinned}
-      onPointerEnter={enter}
-      onPointerLeave={leave}
-    >
-      <button type="button" className="dropdown__trigger" aria-expanded={open} aria-pressed={pinned} aria-controls={id} onClick={toggle}>
+    <div ref={root} className={['dropdown', className].filter(Boolean).join(' ')} data-open={open}>
+      <button type="button" className="dropdown__trigger" aria-expanded={open} aria-controls={id} onClick={() => setManual(!open)}>
         <span className="dropdown__label">{label}</span>
         {summary && <span className="dropdown__summary">{summary}</span>}
         <span className="dropdown__chevron" aria-hidden="true" />
