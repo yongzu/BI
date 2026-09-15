@@ -4,6 +4,7 @@ import { Toc, type TocItem } from '../components/Toc/Toc';
 import { AnnualTimeline } from '../components/AnnualTimeline/AnnualTimeline';
 import { Dropdown } from '../components/Dropdown/Dropdown';
 import { CourseCard } from '../components/CourseCard/CourseCard';
+import { WeekGrid } from '../components/WeekGrid/WeekGrid';
 import { CoursePanel, type PanelEntry } from '../components/CoursePanel/CoursePanel';
 import { courseProfiles } from '../data/courseProfiles';
 import { useScrollReveal } from '../hooks/useScrollReveal';
@@ -210,30 +211,7 @@ export function ProgramsPage() {
           <div className="group">
             <GroupLabel>1학기 기준</GroupLabel>
             <div className="week-scroll">
-              <table className="week">
-                <thead>
-                  <tr>
-                    <th scope="col"><span className="visually-hidden">시간</span></th>
-                    {weekdays.map((d) => (
-                      <th key={d} scope="col" className="typo-title">{d}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {(['am', 'pm'] as const).map((slot) => (
-                    <tr key={slot}>
-                      <th scope="row">
-                        <Text as="span" typography="Label" color="tertiary">{slot === 'am' ? '오전 10:00–13:00' : '오후 15:00–18:00'}</Text>
-                      </th>
-                      {timetable.map((day, i) => (
-                        <td key={i}>
-                          <Text as="span" typography="Body" color={day[slot] ? 'primary' : 'tertiary'}>{day[slot] ?? '—'}</Text>
-                        </td>
-                      ))}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+              <WeekGrid weekdays={weekdays} days={timetable} />
             </div>
             <a className="link typo-label" href="https://www.phi.design/lab-pdf/timetable-monthly" target="_blank" rel="noreferrer">1학기 일정 자세히보기 →</a>
           </div>

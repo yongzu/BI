@@ -109,13 +109,8 @@
 @media (max-width: 1100px) { .grid-courses { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 560px) { .grid-courses { grid-template-columns: 1fr; } }
 
-/* ---------- Week ---------- */
-.week-scroll { overflow-x: auto; margin: 45px 0 24px; }
-.week { width: 100%; min-width: 640px; border-collapse: collapse; table-layout: fixed; }
-.week th, .week td { text-align: left; font-weight: inherit; }
-.week thead th { padding-bottom: 16px; }
-.week thead th:first-child, .week tbody th { width: 196px; }
-.week tbody th, .week td { padding: 20px 12px 20px 0; border-top: 1px solid var(--color-border); vertical-align: top; }
+/* ---------- Week (grid in components/WeekGrid) ---------- */
+.week-scroll { overflow-x: auto; margin: 45px 0 24px; padding-block: 8px; } /* room for the half-height 10 / 18 hour labels */
 
 /* ---------- Footer ---------- */
 .footer {

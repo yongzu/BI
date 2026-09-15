@@ -1,0 +1,78 @@
+.week-grid {
+  --week-axis: 40px;
+  --week-row: 38px;
+  --week-tone-1: rgba(51, 51, 51, 0.12);
+  --week-tone-2: rgba(51, 51, 51, 0.2);
+  --week-tone-3: rgba(51, 51, 51, 0.16);
+  min-width: 560px;
+}
+
+/* ---------- Day header ---------- */
+.week-grid__head {
+  display: grid;
+  grid-template-columns: var(--week-axis) repeat(5, minmax(0, 1fr));
+  padding-bottom: 14px;
+}
+.week-grid__day {
+  text-align: center;
+  font-size: 14px;
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+}
+
+/* ---------- Time body ----------
+   Rows are hour lines: row n spans hour (start+n-1) → (start+n). Items placed by line index. */
+.week-grid__body {
+  position: relative;
+  display: grid;
+  grid-template-columns: var(--week-axis) repeat(5, minmax(0, 1fr));
+  grid-template-rows: repeat(var(--week-hours), var(--week-row)) 0;
+}
+
+.week-grid__hour {
+  grid-column: 1 / -1;
+  position: relative;
+  border-top: 1px dashed var(--color-border);
+  pointer-events: none;
+}
+.week-grid__hour > span {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: var(--week-axis);
+  transform: translateY(-50%);
+  padding-right: 16px;
+  text-align: right;
+  font-size: 11px;
+  line-height: 1;
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-tertiary);
+  background: var(--color-bg-default);
+}
+
+.week-grid__col {
+  grid-row: 1 / -1;
+  border-left: 1px solid rgba(51, 51, 51, 0.06);
+  pointer-events: none;
+}
+
+.week-grid__lunch {
+  grid-column: 2 / -1;
+  display: grid;
+  place-items: center;
+  margin: 3px 0;
+  background: rgba(51, 51, 51, 0.035);
+  font-size: 12px;
+  color: var(--color-text-tertiary);
+}
+
+.week-grid__session {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 4px;
+  padding: 10px 8px;
+  overflow: hidden;
+}
+.week-grid__time { font-size: 12px; line-height: 1.3; color: var(--color-text-secondary); }
+.week-grid__name { font-size: 14px; line-height: 1.3; font-weight: var(--font-weight-bold); letter-spacing: var(--tracking-tight); color: var(--color-text-primary); }
