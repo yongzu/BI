@@ -79,21 +79,28 @@
 }
 .annual__bar[data-state='muted'] { background: rgba(51, 51, 51, 0.05); color: var(--color-text-tertiary); }
 
+/* The stage name never switches layout mode (align stays flex-end); only continuous
+   properties change — height, padding, size — all on the same curve as the bar, so
+   the name glides between states instead of jumping. */
 .annual__bar-head {
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   min-height: var(--tl-bar-height);
-  padding: 0 16px;
+  padding: 9px 16px;
   overflow: hidden;
+  transition:
+    min-height var(--tl-duration) var(--tl-ease),
+    padding var(--tl-duration) var(--tl-ease);
 }
 .annual__bar-name {
   font-size: 14px;
+  line-height: 1.3;
   font-weight: var(--font-weight-bold);
   letter-spacing: var(--tracking-tight);
   white-space: nowrap;
   transition: font-size var(--tl-duration) var(--tl-ease);
 }
-.annual__bar[data-state='selected'] .annual__bar-head { min-height: 64px; padding: 20px 28px 0; align-items: flex-end; }
+.annual__bar[data-state='selected'] .annual__bar-head { min-height: 64px; padding: 20px 28px 0; }
 .annual__bar[data-state='selected'] .annual__bar-name { font-size: var(--typo-title-size); }
 
 /* Detail: grid-rows 0fr → 1fr so the card's height animates to its content */
@@ -111,7 +118,15 @@
   filter: blur(0);
   transition: grid-template-rows var(--tl-duration) var(--tl-ease), opacity 420ms var(--tl-ease) 220ms, filter 640ms var(--tl-ease) 220ms;
 }
-.annual__detail-inner { display: flex; flex-direction: column; gap: 12px; min-height: 0; overflow: hidden; padding: 0 28px; }
+.annual__detail-inner {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 0;
+  overflow: hidden;
+  padding: 0 28px;
+  transition: padding var(--tl-duration) var(--tl-ease);
+}
 .annual__bar[data-state='selected'] .annual__detail-inner { padding-block: 10px 26px; }
 .annual__meta { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
 .annual__badge {
