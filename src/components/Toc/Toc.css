@@ -1,11 +1,12 @@
 /* Page TOC — values from Figma node 1654:6874 ("Nav - 페이지 목차"), placed at the left. */
+/* Responsive to scroll: scrolls with the page from its starting line,
+   then sticks below the pinned CTA, and releases at the end of the rail. */
 .toc {
-  position: fixed;
-  top: max(24px, calc(clamp(96px, 12.4vw, 238px) - 100px)); /* 100px above the hero line */
-  left: var(--toc-left);
+  position: sticky;
+  top: 88px;
   z-index: 40;
   width: var(--toc-width);
-  max-height: min(1020px, calc(100vh - 140px));
+  max-height: min(1020px, calc(100vh - 120px));
   overflow-y: auto;
   padding-left: 14px;
   border-left: 1px solid var(--color-nav-rule);
@@ -56,5 +57,5 @@
 .toc__lv3 > a { padding-left: 38px; font-size: 12px; line-height: 18px; }
 
 @media (max-width: 1279px) {
-  .toc { display: none; }
+  .toc-rail { display: none; }
 }

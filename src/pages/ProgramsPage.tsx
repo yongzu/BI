@@ -105,7 +105,12 @@ export function ProgramsPage() {
   return (
     <>
       <SiteHeader />
-      <Toc items={toc} />
+      {/* The TOC rides a rail inside the page shell: it starts beside the hero,
+          sticks while reading, and lets go before the footer. */}
+      <div className="page-shell">
+        <div className="toc-rail">
+          <Toc items={toc} />
+        </div>
 
       <main className="page">
         {/* ---------- Hero ---------- */}
@@ -270,6 +275,7 @@ export function ProgramsPage() {
           </div>
         </section>
       </main>
+      </div>
 
       <CoursePanel entry={openIndex === null ? null : entries[openIndex]} total={entries.length} onClose={closePanel} onStep={stepPanel} />
 
