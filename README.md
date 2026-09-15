@@ -32,7 +32,7 @@ npm run deploy   # dist → gh-pages 브랜치 (GitHub Pages)
 
 - **과정 개요** 드롭다운 (히어로 아래): 호버하면 미리 열리고, 클릭하면 고정. 높이·내용이 부드럽게 열리고 닫힘
 - **연간 구조** 줌 타임라인: 칩이나 막대에 호버하면 축이 해당 기간으로 확대되고 막대가 상세 카드로 펼쳐짐(나머지는 흐려지며 밀려남). 클릭하면 고정되고, 타임라인 밖을 클릭하면 전체로 복귀
-- **주요 수업들**: 코스 타입별 수업 5열 그리드
+- **주요 수업들**: 코스 타입별 수업 박스(4열). 호버하면 더 큰 미리보기 박스가 블러에서 드러나며 학습 목표 일부를 보여주고, 클릭하면 우측 패널에서 Course Profile 전체(수업 목표 · 수업 개요 · 학습 목표 Before/After · 전문가 소개)를 페이지 이동 없이 확인. 패널 안에서 ←/→로 12개 수업을 넘겨볼 수 있음
 - **수업을 관통하는 접근 · 방학 + 캠프 · 수료 & 졸업 · 채용 연계**: 섹션 헤더 + 그룹 라벨 + 3열 아이템
 - **주간 시간표**: 가는 선만 쓰는 표
 - 스크롤 시 텍스트가 투명한 상태에서 아래로부터 올라오며 나타남
@@ -47,9 +47,12 @@ src/
 ├─ components/
 │  ├─ Text/                     <Text typography="Heading" color="primary" />
 │  ├─ AnnualTimeline/           연간 구조 줌 타임라인
+│  ├─ CourseCard/               수업 박스 + 호버 미리보기
+│  ├─ CoursePanel/              코스 프로필 사이드 패널
 │  ├─ Dropdown/                 애니메이션 드롭다운
 │  └─ Toc/                      좌측 페이지 목차
 ├─ hooks/useScrollReveal.ts     스크롤 텍스트 등장 인터랙션
 ├─ data/programs.ts             원본 페이지 콘텐츠
+├─ data/courseProfiles.ts       12개 Course Profile (phi.design에서 가져온 원문)
 └─ pages/                       ProgramsPage, SystemPage
 ```

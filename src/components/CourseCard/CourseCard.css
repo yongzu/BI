@@ -1,0 +1,73 @@
+.course-card { position: relative; height: 100%; }
+
+.course-card__hit {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  text-align: left;
+  border-radius: 20px;
+}
+
+/* ---------- Resting box ---------- */
+.course-card__face {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  height: 100%;
+  padding: 24px 24px 28px;
+  border-radius: 20px;
+  background: rgba(51, 51, 51, 0.04);
+  transition: background var(--duration) var(--ease), opacity 300ms var(--ease);
+}
+.course-card__name { margin-top: 8px; }
+.course-card__lead { margin-top: 16px; flex: 1; }
+.course-card__tags { margin-top: 20px; }
+.course-card__hit:hover .course-card__face,
+.course-card__hit:focus-visible .course-card__face { background: rgba(51, 51, 51, 0.07); }
+
+/* ---------- Hover preview: a bigger box grows over the resting one ---------- */
+.course-card__preview {
+  --pv-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  position: absolute;
+  z-index: 5;
+  top: -14px;
+  left: -14px;
+  right: -14px;
+  min-height: calc(100% + 28px);
+  border-radius: 26px;
+  background: var(--color-bg-default);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.12), 0 2px 10px rgba(0, 0, 0, 0.06);
+  opacity: 0;
+  transform: scale(0.94);
+  transform-origin: 50% 20%;
+  pointer-events: none;
+  transition: opacity 260ms var(--pv-ease), transform 420ms var(--pv-ease);
+}
+.course-card__preview-inner {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 36px 36px 32px;
+  filter: blur(12px);
+  opacity: 0;
+  transition: filter 260ms var(--pv-ease), opacity 200ms var(--pv-ease);
+}
+.course-card__goals { display: flex; flex-direction: column; gap: 8px; margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--color-border); }
+.course-card__goal { padding-left: 14px; position: relative; }
+.course-card__goal::before { content: '—'; position: absolute; left: 0; color: var(--color-text-tertiary); }
+.course-card__more { margin-top: 10px; }
+
+@media (hover: hover) {
+  .course-card__hit:hover .course-card__preview {
+    opacity: 1;
+    transform: none;
+    transition: opacity 280ms var(--pv-ease), transform 520ms var(--pv-ease);
+  }
+  .course-card__hit:hover .course-card__preview-inner {
+    filter: blur(0);
+    opacity: 1;
+    transition: filter 600ms var(--pv-ease) 120ms, opacity 400ms var(--pv-ease) 120ms;
+  }
+  .course-card__hit:hover .course-card__face { opacity: 0; }
+}

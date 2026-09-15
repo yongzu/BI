@@ -6,6 +6,7 @@
 
      Display   100 / Bold    / 1.19 / -3%   hero lines
      Heading    64 / Bold    / 1.2  / -3%   section titles
+     Subheading 36 / Bold    / 1.2  / -3%   panel titles
      Lead       20 / Regular / 1.4  / -3%   section intro (70%)
      Intro      20 / Regular / 1.4  / -3%   hero copy (70%)
      Title      24 / Bold    / 1.2  / -3%   item & group titles
@@ -26,6 +27,7 @@
 
   --typo-display-size: clamp(3rem, 5.21vw, 6.25rem);    /* 48 → 100 */
   --typo-heading-size: clamp(2.5rem, 3.34vw, 4rem);     /* 40 → 64 */
+  --typo-subheading-size: clamp(1.75rem, 1.88vw, 2.25rem); /* 28 → 36 */
   --typo-lead-size: 1.25rem;                            /* 20 */
   --typo-intro-size: clamp(1.0625rem, 1.05vw, 1.25rem); /* 17 → 20 */
   --typo-title-size: clamp(1.25rem, 1.25vw, 1.5rem);    /* 20 → 24 */
@@ -36,6 +38,7 @@
 /* ---------- Semantic styles (consumed by <Text />) ---------- */
 .typo-display { font-size: var(--typo-display-size); line-height: 1.19; font-weight: var(--font-weight-bold); letter-spacing: var(--tracking-tight); }
 .typo-heading { font-size: var(--typo-heading-size); line-height: 1.2; font-weight: var(--font-weight-bold); letter-spacing: var(--tracking-tight); }
+.typo-subheading { font-size: var(--typo-subheading-size); line-height: 1.2; font-weight: var(--font-weight-bold); letter-spacing: var(--tracking-tight); }
 .typo-lead    { font-size: var(--typo-lead-size); line-height: 1.4; font-weight: var(--font-weight-regular); letter-spacing: var(--tracking-tight); }
 .typo-intro   { font-size: var(--typo-intro-size); line-height: 1.4; font-weight: var(--font-weight-regular); letter-spacing: var(--tracking-tight); }
 .typo-title   { font-size: var(--typo-title-size); line-height: 1.2; font-weight: var(--font-weight-bold); letter-spacing: var(--tracking-tight); }

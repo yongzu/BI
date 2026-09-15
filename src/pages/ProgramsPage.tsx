@@ -1,8 +1,11 @@
-import type { ReactNode } from 'react';
+import { useCallback, useMemo, useState, type ReactNode } from 'react';
 import { Text } from '../components/Text/Text';
 import { Toc, type TocItem } from '../components/Toc/Toc';
 import { AnnualTimeline } from '../components/AnnualTimeline/AnnualTimeline';
 import { Dropdown } from '../components/Dropdown/Dropdown';
+import { CourseCard } from '../components/CourseCard/CourseCard';
+import { CoursePanel, type PanelEntry } from '../components/CoursePanel/CoursePanel';
+import { courseProfiles } from '../data/courseProfiles';
 import { useScrollReveal } from '../hooks/useScrollReveal';
 import labelRule from '../assets/label-rule.svg';
 import {
@@ -45,7 +48,7 @@ const toc: TocItem[] = [
 ];
 
 /** Blocks that rise in on scroll */
-const revealTargets = ['.hero > *', '.section-header > *', '.group-label', '.group__lead', '.course-type__head', '.item', '.annual', '.week-scroll'].join(', ');
+const revealTargets = ['.hero > *', '.section-header > *', '.group-label', '.group__lead', '.course-type__head', '.course-card', '.item', '.annual', '.week-scroll'].join(', ');
 
 /* ------------------------------------------------------------------ */
 
@@ -87,6 +90,15 @@ function Item({ title, label, children }: { title: ReactNode; label?: ReactNode;
 
 export function ProgramsPage() {
   useScrollReveal(revealTargets);
+
+  // All 12 courses in page order, for numbering and prev/next inside the panel
+  const entries = useMemo<PanelEntry[]>(
+    () => courseTypes.flatMap((type) => type.courses.map((course) => ({ course, type, profile: courseProfiles[course.slug] }))).map((e, index) => ({ ...e, index })),
+    [],
+  );
+  const [openIndex, setOpenIndex] = useState<number | null>(null);
+  const closePanel = useCallback(() => setOpenIndex(null), []);
+  const stepPanel = useCallback((dir: -1 | 1) => setOpenIndex((i) => (i === null ? i : (i + dir + entries.length) % entries.length)), [entries.length]);
 
   return (
     <>
@@ -160,17 +172,11 @@ export function ProgramsPage() {
                   <Text typography="Label" color="tertiary">{type.cadence} · {type.courses.length}개 수업</Text>
                   <Text typography="Body" color="secondary" className="course-type__body">{type.body}</Text>
                 </div>
-                <div className="grid-5">
-                  {type.courses.map((c) => (
-                    <Item key={c.slug} title={c.en} label={c.ko}>
-                      <Text typography="Body">{c.lead}</Text>
-                      <Text typography="Body" color="secondary">{c.body}</Text>
-                      <Text typography="Label" color="tertiary">{c.tags.join(' · ')}</Text>
-                      <a className="link typo-label" href={`https://www.phi.design/programs/courses/${c.slug}`} target="_blank" rel="noreferrer">
-                        Course Profile →
-                      </a>
-                    </Item>
-                  ))}
+                <div className="grid-courses">
+                  {type.courses.map((c) => {
+                    const entry = entries.find((e) => e.course.slug === c.slug)!;
+                    return <CourseCard key={c.slug} index={entry.index} course={c} profile={entry.profile} onOpen={() => setOpenIndex(entry.index)} />;
+                  })}
                 </div>
               </div>
             ))}
@@ -284,6 +290,8 @@ export function ProgramsPage() {
           </div>
         </section>
       </main>
+
+      <CoursePanel entry={openIndex === null ? null : entries[openIndex]} total={entries.length} onClose={closePanel} onStep={stepPanel} />
 
       <footer className="footer container">
         <Text typography="Title">Phi Institute of Design</Text>
