@@ -17,7 +17,8 @@ npm run build
 - 서체: Pretendard 1종
 - 크기: 12pt(제목) · 10pt(나머지) 2단계 — SEED t5 · t3에 해당
 - 굵기: 400 · 700
-- 컬러: white + fill  · line  · gray  · ink - 위계는 크기가 아니라 **굵기와 톤**으로 만듭니다.
+- 컬러: white + fill `#f5f5f5` · line `#ededed` · gray `#999` · ink `#333`
+- 위계는 크기가 아니라 **굵기와 톤**으로 만듭니다.
 
 ## 해결한 문제 (1 Pager)
 
@@ -32,7 +33,22 @@ Form 규칙: 누를 수 있는 요소만 반응합니다. 호버·선택 시 10p
 
 ## 구조
 
-\
+```
+src/
+├─ index.css                    글로벌: 폰트 로딩, 리셋, 렌더링 최적화
+├─ styles/tokens/
+│  ├─ typography.css            12pt/10pt · 400/700 시맨틱 스타일
+│  ├─ color.css                 white + 4 tones → 시맨틱 컬러
+│  └─ foundation.css            radius, spacing, motion
+├─ components/
+│  ├─ Text/                     <Text typography="Title" color="primary" />
+│  ├─ Pill/                     필터 / 토글
+│  └─ Reveal/                   점→화살표 디스클로저 행
+├─ examples/                    ArticleCard, Dialog 사용 예시
+├─ data/programs.ts             원본 페이지 콘텐츠
+└─ pages/                       ProgramsPage, SystemPage
+```
+
 ## 타이포그래피
 
 | 시맨틱 | size / weight / line-height |
