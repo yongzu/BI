@@ -1,0 +1,16 @@
+.system { display: flex; flex-direction: column; gap: var(--space-6); padding-block: var(--space-12) var(--space-32); }
+.system__section { display: flex; flex-direction: column; gap: var(--space-6); margin-top: var(--space-16); padding-top: var(--space-4); border-top: 1px solid var(--color-border-strong); }
+.system__sub { margin-top: var(--space-6); }
+.system__row { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.system__cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr)); gap: var(--space-4); }
+
+.type-list { display: flex; flex-direction: column; }
+.type-list li { display: flex; flex-direction: column; gap: var(--space-2); padding-block: var(--space-5); border-bottom: 1px solid var(--color-border-default); overflow-wrap: anywhere; }
+
+.swatches { display: grid; grid-template-columns: repeat(auto-fill, minmax(6rem, 1fr)); gap: var(--space-4); }
+.swatches li { display: flex; flex-direction: column; gap: var(--space-2); }
+.swatch { display: block; aspect-ratio: 1; box-shadow: inset 0 0 0 1px var(--color-border-default); }
+.swatch--sm { width: 1.5rem; height: 1.5rem; aspect-ratio: auto; }
+
+.semantic { display: grid; grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr)); gap: var(--space-3) var(--space-6); }
+.semantic li { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: var(--space-3); }

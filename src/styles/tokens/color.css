@@ -1,0 +1,65 @@
+/* ==========================================================================
+   Color tokens — Monotone only
+   --------------------------------------------------------------------------
+   1) Palette  : Pure black, pure white, and a neutral grayscale (R = G = B).
+                 No hue, no tint — every step is a true gray.
+   2) Semantic : UI roles (bg / text / border / state) composed ONLY from the
+                 palette. Components must use semantic tokens, never palette.
+
+   Why this grayscale?
+   - Steps are dense at the light end (50–300): surfaces, dividers and hover
+     fills need subtle, distinguishable differences on a white page.
+   - Steps are wider in the middle (400–600): this is where text contrast
+     crosses WCAG thresholds on white.
+       gray-400 #a3a3a3 → 2.5:1  (decoration / disabled only)
+       gray-500 #737373 → 4.7:1  (smallest step that passes AA for text)
+       gray-600 #525252 → 7.8:1  (secondary text, passes AAA)
+   - Dark end (700–950) mirrors the light end for inverse (black) sections.
+   ========================================================================== */
+
+:root {
+  /* ---------- Palette ---------- */
+  --palette-white: #ffffff;
+  --palette-gray-50: #fafafa;
+  --palette-gray-100: #f2f2f2;
+  --palette-gray-200: #e5e5e5;
+  --palette-gray-300: #d4d4d4;
+  --palette-gray-400: #a3a3a3;
+  --palette-gray-500: #737373;
+  --palette-gray-600: #525252;
+  --palette-gray-700: #404040;
+  --palette-gray-800: #262626;
+  --palette-gray-900: #171717;
+  --palette-gray-950: #0a0a0a;
+  --palette-black: #000000;
+
+  /* ---------- Semantic: Background ---------- */
+  --color-bg-default: var(--palette-white);   /* page */
+  --color-bg-subtle: var(--palette-gray-50);  /* resting interactive surface (cards, rows) */
+  --color-bg-muted: var(--palette-gray-100);  /* filled blocks, timetable cells */
+  --color-bg-inverse: var(--palette-black);   /* emphasis sections, selected pill */
+  --color-bg-inverse-subtle: var(--palette-gray-900); /* resting surface inside inverse sections */
+
+  /* ---------- Semantic: State ---------- */
+  --color-bg-hover: var(--palette-gray-100);
+  --color-bg-pressed: var(--palette-gray-200);
+  --color-bg-inverse-hover: var(--palette-gray-800);
+  --color-bg-disabled: var(--palette-gray-100);
+
+  /* ---------- Semantic: Text ---------- */
+  --color-text-primary: var(--palette-black);     /* titles, key content */
+  --color-text-secondary: var(--palette-gray-600); /* body copy, descriptions */
+  --color-text-tertiary: var(--palette-gray-500);  /* meta, captions (AA minimum) */
+  --color-text-disabled: var(--palette-gray-300);
+  --color-text-inverse: var(--palette-white);
+  --color-text-inverse-secondary: var(--palette-gray-400);
+  --color-text-inverse-tertiary: var(--palette-gray-500);
+
+  /* ---------- Semantic: Border ---------- */
+  --color-border-subtle: var(--palette-gray-100);
+  --color-border-default: var(--palette-gray-200);
+  --color-border-strong: var(--palette-black);
+  --color-border-inverse: var(--palette-gray-800);
+  --color-border-disabled: var(--palette-gray-200);
+  --color-focus-ring: var(--palette-black);
+}

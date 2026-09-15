@@ -1,0 +1,133 @@
+/* ==========================================================================
+   Typography tokens — based on SEED Design (Karrot / 당근)
+   https://seed-design.io/docs/foundation/typography
+   --------------------------------------------------------------------------
+   Layer 1  Scale     : SEED t1–t14 (font-size / line-height pairs, rem @16px)
+   Layer 2  Weight    : SEED regular 400 / medium 500 / bold 700
+   Layer 3  Semantic  : Display · Title · Subtitle · Body · Caption
+                        → each maps to one SEED scale step.
+
+   Notes
+   - SEED defines no letter-spacing for web, so SEED-based styles use 0.
+   - SEED stops at t14 (48px). Display1/Display2 are a PROJECT EXTENSION for
+     "signpost" headings (course-type covers). They use a different typeface
+     (Instrument Serif) and negative tracking, which large sizes need.
+   - This page only uses regular(400) and bold(700). Hierarchy comes from
+     size contrast, not from many weights. medium stays defined for parity.
+   ========================================================================== */
+
+:root {
+  /* ---------- Font family ---------- */
+  --font-family-sans: 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont,
+    system-ui, 'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', sans-serif;
+  /* Signpost face is Latin-only; Hangul falls through to Pretendard */
+  --font-family-signpost: 'Instrument Serif', 'Pretendard Variable', Pretendard, serif;
+
+  /* ---------- Weight (SEED) ---------- */
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-bold: 700;
+
+  /* ---------- Scale (SEED t1–t14) ---------- */
+  --font-size-t1: 0.6875rem;  --line-height-t1: 0.9375rem;  /* 11 / 15 */
+  --font-size-t2: 0.75rem;    --line-height-t2: 1rem;       /* 12 / 16 */
+  --font-size-t3: 0.8125rem;  --line-height-t3: 1.125rem;   /* 13 / 18 */
+  --font-size-t4: 0.875rem;   --line-height-t4: 1.1875rem;  /* 14 / 19 */
+  --font-size-t5: 1rem;       --line-height-t5: 1.375rem;   /* 16 / 22 */
+  --font-size-t6: 1.125rem;   --line-height-t6: 1.5rem;     /* 18 / 24 */
+  --font-size-t7: 1.25rem;    --line-height-t7: 1.6875rem;  /* 20 / 27 */
+  --font-size-t8: 1.375rem;   --line-height-t8: 1.875rem;   /* 22 / 30 */
+  --font-size-t9: 1.5rem;     --line-height-t9: 2rem;       /* 24 / 32 */
+  --font-size-t10: 1.625rem;  --line-height-t10: 2.1875rem; /* 26 / 35 */
+  --font-size-t11: 1.75rem;   --line-height-t11: 2.375rem;  /* 28 / 38 */
+  --font-size-t12: 2rem;      --line-height-t12: 2.625rem;  /* 32 / 42 */
+  --font-size-t13: 2.5rem;    --line-height-t13: 3.25rem;   /* 40 / 52 */
+  --font-size-t14: 3rem;      --line-height-t14: 3.75rem;   /* 48 / 60 */
+
+  /* ---------- Semantic styles ---------- */
+  /* Display (project extension, signpost typeface) */
+  --typo-display1-family: var(--font-family-signpost);
+  --typo-display1-size: clamp(4rem, 12vw, 10rem);     /* 64 → 160 */
+  --typo-display1-line-height: 0.9;
+  --typo-display1-weight: var(--font-weight-regular);
+  --typo-display1-letter-spacing: -0.03em;
+
+  --typo-display2-family: var(--font-family-signpost);
+  --typo-display2-size: clamp(3rem, 7vw, 5.5rem);     /* 48 → 88 */
+  --typo-display2-line-height: 0.95;
+  --typo-display2-weight: var(--font-weight-regular);
+  --typo-display2-letter-spacing: -0.02em;
+
+  /* Title */
+  --typo-title1-size: var(--font-size-t14);
+  --typo-title1-line-height: var(--line-height-t14);
+  --typo-title1-weight: var(--font-weight-bold);
+
+  --typo-title2-size: var(--font-size-t12);
+  --typo-title2-line-height: var(--line-height-t12);
+  --typo-title2-weight: var(--font-weight-bold);
+
+  --typo-title3-size: var(--font-size-t10);           /* = SEED screenTitle */
+  --typo-title3-line-height: var(--line-height-t10);
+  --typo-title3-weight: var(--font-weight-bold);
+
+  /* Subtitle */
+  --typo-subtitle1-size: var(--font-size-t7);
+  --typo-subtitle1-line-height: var(--line-height-t7);
+  --typo-subtitle1-weight: var(--font-weight-bold);
+
+  --typo-subtitle2-size: var(--font-size-t5);
+  --typo-subtitle2-line-height: var(--line-height-t5);
+  --typo-subtitle2-weight: var(--font-weight-bold);
+
+  /* Body */
+  --typo-body1-size: var(--font-size-t5);             /* = SEED articleBody (t5 size + t6 line-height) */
+  --typo-body1-line-height: var(--line-height-t6);
+  --typo-body1-weight: var(--font-weight-regular);
+
+  --typo-body2-size: var(--font-size-t4);
+  --typo-body2-line-height: 1.375rem;                 /* 14 / 22 — loosened for Korean paragraphs */
+  --typo-body2-weight: var(--font-weight-regular);
+
+  /* Caption */
+  --typo-caption1-size: var(--font-size-t3);
+  --typo-caption1-line-height: var(--line-height-t3);
+  --typo-caption1-weight: var(--font-weight-regular);
+
+  --typo-caption2-size: var(--font-size-t2);
+  --typo-caption2-line-height: var(--line-height-t2);
+  --typo-caption2-weight: var(--font-weight-bold);
+}
+
+/* Title1 / Title2 step down on narrow screens (SEED: t11+ recommended at sm and above) */
+@media (max-width: 640px) {
+  :root {
+    --typo-title1-size: var(--font-size-t11);
+    --typo-title1-line-height: var(--line-height-t11);
+    --typo-title2-size: var(--font-size-t9);
+    --typo-title2-line-height: var(--line-height-t9);
+  }
+}
+
+/* ---------- Utility classes (consumed by <Text />) ---------- */
+.typo-display1, .typo-display2 { font-feature-settings: 'liga' 1, 'kern' 1; }
+.typo-display1 { font-family: var(--typo-display1-family); font-size: var(--typo-display1-size); line-height: var(--typo-display1-line-height); font-weight: var(--typo-display1-weight); letter-spacing: var(--typo-display1-letter-spacing); }
+.typo-display2 { font-family: var(--typo-display2-family); font-size: var(--typo-display2-size); line-height: var(--typo-display2-line-height); font-weight: var(--typo-display2-weight); letter-spacing: var(--typo-display2-letter-spacing); }
+.typo-title1 { font-size: var(--typo-title1-size); line-height: var(--typo-title1-line-height); font-weight: var(--typo-title1-weight); letter-spacing: 0; }
+.typo-title2 { font-size: var(--typo-title2-size); line-height: var(--typo-title2-line-height); font-weight: var(--typo-title2-weight); letter-spacing: 0; }
+.typo-title3 { font-size: var(--typo-title3-size); line-height: var(--typo-title3-line-height); font-weight: var(--typo-title3-weight); letter-spacing: 0; }
+.typo-subtitle1 { font-size: var(--typo-subtitle1-size); line-height: var(--typo-subtitle1-line-height); font-weight: var(--typo-subtitle1-weight); letter-spacing: 0; }
+.typo-subtitle2 { font-size: var(--typo-subtitle2-size); line-height: var(--typo-subtitle2-line-height); font-weight: var(--typo-subtitle2-weight); letter-spacing: 0; }
+.typo-body1 { font-size: var(--typo-body1-size); line-height: var(--typo-body1-line-height); font-weight: var(--typo-body1-weight); letter-spacing: 0; }
+.typo-body2 { font-size: var(--typo-body2-size); line-height: var(--typo-body2-line-height); font-weight: var(--typo-body2-weight); letter-spacing: 0; }
+.typo-caption1 { font-size: var(--typo-caption1-size); line-height: var(--typo-caption1-line-height); font-weight: var(--typo-caption1-weight); letter-spacing: 0; }
+.typo-caption2 { font-size: var(--typo-caption2-size); line-height: var(--typo-caption2-line-height); font-weight: var(--typo-caption2-weight); letter-spacing: 0; }
+
+.color-primary { color: var(--color-text-primary); }
+.color-secondary { color: var(--color-text-secondary); }
+.color-tertiary { color: var(--color-text-tertiary); }
+.color-disabled { color: var(--color-text-disabled); }
+.color-inverse { color: var(--color-text-inverse); }
+.color-inverseSecondary { color: var(--color-text-inverse-secondary); }
+.color-inverseTertiary { color: var(--color-text-inverse-tertiary); }
+.color-inherit { color: inherit; }
