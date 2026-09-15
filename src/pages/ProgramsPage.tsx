@@ -95,7 +95,7 @@ export function ProgramsPage() {
   const visibleTypes = filter === 'all' ? courseTypes : courseTypes.filter((t) => t.id === filter);
   const openType = openCourse ? courseTypes.find((t) => t.courses.includes(openCourse)) : undefined;
 
-  useScrollReveal(revealTargets, [filter]);
+  useScrollReveal(revealTargets, filter);
 
   return (
     <>

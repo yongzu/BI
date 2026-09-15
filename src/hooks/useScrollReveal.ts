@@ -6,8 +6,9 @@ import { useEffect } from 'react';
  * Siblings revealed together are staggered via --reveal-delay.
  *
  * State lives in data-reveal ("pending" → "in"), which React never overwrites.
+ * Pass `rescanKey` to pick up elements mounted later (e.g. after a filter change).
  */
-export function useScrollReveal(selector: string, deps: unknown[] = []) {
+export function useScrollReveal(selector: string, rescanKey?: unknown) {
   useEffect(() => {
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
@@ -33,5 +34,5 @@ export function useScrollReveal(selector: string, deps: unknown[] = []) {
     });
 
     return () => observer.disconnect();
-  }, [selector, ...deps]);
+  }, [selector, rescanKey]);
 }
