@@ -59,7 +59,7 @@
   transition: opacity 180ms var(--pv-ease), filter 180ms var(--pv-ease), transform 220ms var(--pv-ease), clip-path 200ms var(--pv-ease);
 }
 .course-card__goals { display: flex; flex-direction: column; gap: 8px; margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--color-border); }
-.course-card__goal { padding-left: 14px; position: relative; }
+.course-card__goal { padding-left: 26px; position: relative; } /* dash sits in a 26px gutter, text starts clear of it */
 .course-card__goal::before { content: '—'; position: absolute; left: 0; color: var(--color-text-tertiary); }
 .course-card__more { margin-top: 10px; }
 
