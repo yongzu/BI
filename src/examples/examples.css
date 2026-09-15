@@ -1,34 +1,27 @@
 .article-card {
   display: flex;
   flex-direction: column;
-  gap: var(--space-2);
-  padding: var(--space-6);
-  border-radius: var(--radius-lg);
-  background: var(--color-bg-subtle);
-  box-shadow: inset 0 0 0 1px var(--color-border-subtle);
-  transition: background var(--duration-fast) var(--ease-standard);
+  gap: var(--space-1);
+  margin-inline: calc(-1 * var(--pad-x));
+  padding: var(--space-3) var(--pad-x);
+  border-radius: var(--radius);
+  corner-shape: squircle;
+  transition: background var(--duration-fast), transform var(--duration-slide) var(--ease-out);
 }
-.article-card:hover { background: var(--color-bg-hover); }
-.article-card__meta { margin-top: var(--space-4); }
+.article-card:hover { background: var(--color-bg-hover); transform: translateX(var(--nudge)); }
+.article-card__meta { margin-top: var(--space-2); }
 
 .dialog {
   margin: auto;
-  width: min(26rem, calc(100vw - 2rem));
+  width: min(360px, calc(100vw - 32px));
   padding: var(--space-6);
   border: 0;
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius);
+  corner-shape: squircle;
   background: var(--color-bg-default);
   color: var(--color-text-primary);
+  box-shadow: var(--shadow-float);
 }
-.dialog::backdrop { background: color-mix(in srgb, var(--palette-black) 48%, transparent); }
+.dialog::backdrop { background: rgba(0, 0, 0, 0.07); backdrop-filter: blur(8px); }
 .dialog > * + * { margin-top: var(--space-2); }
-.dialog__actions { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-2); margin-top: var(--space-6) !important; }
-.dialog__button {
-  height: 3rem;
-  border-radius: var(--radius-md);
-  background: var(--color-bg-muted);
-  color: var(--color-text-primary);
-}
-.dialog__button:hover { background: var(--color-bg-pressed); }
-.dialog__button--primary { background: var(--color-bg-inverse); color: var(--color-text-inverse); }
-.dialog__button--primary:hover { background: var(--color-bg-inverse-hover); }
+.dialog__actions { display: flex; justify-content: flex-end; gap: var(--space-1); margin-top: var(--space-6) !important; }

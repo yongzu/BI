@@ -2,11 +2,9 @@ import { Text } from '../components/Text/Text';
 import './examples.css';
 
 /**
- * Example: typography + monotone color on a simple article card.
- * - Caption2 / tertiary : category (quiet, but readable — gray-500 passes AA)
- * - Title3  / primary   : the one thing to read first
- * - Body2   / secondary : supporting copy
- * - Caption1/ tertiary  : meta
+ * Example: article card.
+ * No size jumps — Label(700, ink) carries the title, Copy(400, gray) the summary,
+ * Body(400, gray) the meta. The card only lifts (fill) on hover.
  */
 type ArticleCardProps = {
   category: string;
@@ -19,10 +17,10 @@ type ArticleCardProps = {
 export function ArticleCard({ category, title, summary, meta, href = '#' }: ArticleCardProps) {
   return (
     <a className="article-card" href={href}>
-      <Text typography="Caption2" color="tertiary">{category}</Text>
-      <Text as="h3" typography="Title3" color="primary">{title}</Text>
-      <Text typography="Body2" color="secondary">{summary}</Text>
-      <Text typography="Caption1" color="tertiary" className="article-card__meta">{meta}</Text>
+      <Text as="span" typography="Body" color="secondary">{category}</Text>
+      <Text as="h3" typography="Label">{title}</Text>
+      <Text typography="Copy" color="secondary">{summary}</Text>
+      <Text as="span" typography="Body" color="secondary" className="article-card__meta">{meta} →</Text>
     </a>
   );
 }

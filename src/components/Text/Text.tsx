@@ -6,22 +6,16 @@ import type { Typography, TextColor } from './typography';
  * Every piece of text goes through one semantic typography + one semantic color,
  * so the page can never drift into ad-hoc sizes, weights or grays.
  *
- * <Text typography="Title1" color="primary">Programs</Text>
+ * <Text typography="Title" color="primary">Programs</Text>
  */
 
 /** Sensible default element per style, overridable with `as`. */
 const defaultElement: Record<Typography, ElementType> = {
-  Display1: 'h2',
-  Display2: 'h2',
-  Title1: 'h1',
-  Title2: 'h2',
-  Title3: 'h3',
-  Subtitle1: 'h4',
-  Subtitle2: 'p',
-  Body1: 'p',
-  Body2: 'p',
-  Caption1: 'span',
-  Caption2: 'span',
+  Title: 'h2',
+  Heading: 'p',
+  Label: 'h3',
+  Body: 'p',
+  Copy: 'p',
 };
 
 type TextProps<E extends ElementType> = {

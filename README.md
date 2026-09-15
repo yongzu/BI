@@ -10,55 +10,35 @@ npm run build
 
 `#system` 해시로 이동하면 토큰·컴포넌트 명세 페이지가 열립니다.
 
+## 스타일 기준
+
+[yongzu.github.io](https://yongzu.github.io/)와 [Phi Brain](https://yongzu.github.io/Phi_Brain/prototypes/home.html)의 스타일 소스를 기준으로 한 미니멀 버전입니다.
+
+- 서체: Pretendard 1종
+- 크기: 12pt(제목) · 10pt(나머지) 2단계 — SEED t5 · t3에 해당
+- 굵기: 400 · 700
+- 컬러: white + fill  · line  · gray  · ink - 위계는 크기가 아니라 **굵기와 톤**으로 만듭니다.
+
 ## 해결한 문제 (1 Pager)
 
 | # | 문제 | 해결 방향 | 레퍼런스 |
 |---|---|---|---|
-| 0 | 굵기 5단계, 크기는 16·14·13px에 몰려 위계가 평평함 | 굵기는 400·700 두 개, 위계는 크기 대비로. 이정표(Display)는 Helvetica | 현대카드 |
-| 1 | 코스 타입 경계가 안 보임 | Fundamental / Domain / Ritual / Study를 표지형 Display 타이포로 | 카카오 |
-| 2 | 12개 수업 목록을 훑어 읽기 어려움 | "굵고 큰 이름 + 가볍고 작은 정보" 한 줄 리듬, 설명은 아코디언 | 토스 채용 |
-| 3 | 핵심 질문이 문단에 묻힘 | 펼치면 질문을 제목(Title2)으로 끌어올림 | 당근 채용 |
+| 0 | 굵기 5단계, 크기는 16·14·13px에 몰려 위계가 평평함 | 크기 2단계·굵기 2단계로 줄이고, 위계는 굵기(700/400)와 톤(ink/gray)으로 | 현대카드 |
+| 1 | 코스 타입 경계가 안 보임 | 좌측 내비게이션에 코스 타입을 하위 탭으로 노출, 본문은 굵은 그룹 라벨 + 기간 메타 | 카카오 |
+| 2 | 12개 수업 목록을 훑어 읽기 어려움 | 수업 한 줄 = 영문명(ink) + 국문명(gray), 설명은 Reveal로 접기 | 토스 채용 |
+| 3 | 핵심 질문이 문단에 묻힘 | 펼치면 첫 문장을 ink로 분리해 설명(gray)보다 먼저 읽히게 | 당근 채용 |
 
-Form 규칙: **정보는 각지게, 누를 수 있는 것만 둥글게** (pill, 아코디언 행, 버튼).
+Form 규칙: 누를 수 있는 요소만 반응합니다. 호버·선택 시 10px 밀리고, 점이 화살표로 바뀌며, 20px 스퀘어클 fill 또는 떠 있는 칩이 나타납니다.
 
 ## 구조
 
-```
-src/
-├─ index.css                    글로벌: 폰트 로딩, 리셋, 렌더링 최적화
-├─ styles/tokens/
-│  ├─ typography.css            SEED t1–t14 스케일 → 시맨틱 스타일
-│  ├─ color.css                 모노톤 팔레트 → 시맨틱 컬러
-│  └─ foundation.css            radius, spacing, motion
-├─ components/
-│  ├─ Text/Text.tsx             <Text typography="Title1" color="primary" />
-│  ├─ Pill/                     칩 / 필터
-│  └─ Disclosure/               아코디언 행
-├─ examples/                    ArticleCard, Dialog 사용 예시
-├─ data/programs.ts             원본 페이지 콘텐츠
-└─ pages/                       ProgramsPage, SystemPage
-```
+\
+## 타이포그래피
 
-## 타이포그래피 (SEED 기반)
-
-| 시맨틱 | 매핑 | size / line-height / weight |
-|---|---|---|
-| Display1 | 프로젝트 확장 | Helvetica 64→160 / 0.9 / 700, -0.045em |
-| Display2 | 프로젝트 확장 | Helvetica 48→88 / 0.95 / 700, -0.035em |
-| Title1 | t14 | 48 / 60 / 700 |
-| Title2 | t12 | 32 / 42 / 700 |
-| Title3 | t10 (screenTitle) | 26 / 35 / 700 |
-| Subtitle1 | t7 | 20 / 27 / 700 |
-| Subtitle2 | t5 | 16 / 22 / 700 |
-| Body1 | t5 + t6 lh (articleBody) | 16 / 24 / 400 |
-| Body2 | t4 | 14 / 22 / 400 |
-| Caption1 | t3 | 13 / 18 / 400 |
-| Caption2 | t2 | 12 / 16 / 700 |
-
-SEED 문서에는 웹 letter-spacing 값이 없어 SEED 기반 스타일은 0입니다. Display는 SEED 최대치(48px)를 넘는 표지용 확장입니다. Helvetica는 무료 웹폰트가 아니라 번들하지 않으며, 설치된 환경(macOS/iOS)에서만 쓰이고 그 외에는 Pretendard로 대체됩니다.
-
-## 컬러 (모노톤)
-
-순수 흑·백과 R=G=B 그레이만 사용합니다. 텍스트 대비 기준(흰 배경):
-gray-500 `#737373` 4.7:1 (AA 최소) · gray-600 `#525252` 7.8:1 · gray-400 이하는 장식/비활성 전용.
-컴포넌트는 팔레트가 아닌 시맨틱 토큰(`--color-text-secondary` 등)만 참조합니다.
+| 시맨틱 | size / weight / line-height |
+|---|---|
+| Title | 12pt / 700 / 1.45 |
+| Heading | 12pt / 400 / 1.45 |
+| Label | 10pt / 700 / 1.45 |
+| Body | 10pt / 400 / 1.45 |
+| Copy | 10pt / 400 / 1.75 |

@@ -1,65 +1,39 @@
 /* ==========================================================================
-   Color tokens — Monotone only
+   Color tokens — Monotone, minimal
    --------------------------------------------------------------------------
-   1) Palette  : Pure black, pure white, and a neutral grayscale (R = G = B).
-                 No hue, no tint — every step is a true gray.
-   2) Semantic : UI roles (bg / text / border / state) composed ONLY from the
-                 palette. Components must use semantic tokens, never palette.
+   Taken from the Phi Brain style kit (yongzu.github.io/Phi_Brain):
+   white + 4 tones. Hierarchy comes from ink vs gray, not from many grays.
+   Add a tone only when an existing one truly can't do the job.
 
-   Why this grayscale?
-   - Steps are dense at the light end (50–300): surfaces, dividers and hover
-     fills need subtle, distinguishable differences on a white page.
-   - Steps are wider in the middle (400–600): this is where text contrast
-     crosses WCAG thresholds on white.
-       gray-400 #a3a3a3 → 2.5:1  (decoration / disabled only)
-       gray-500 #737373 → 4.7:1  (smallest step that passes AA for text)
-       gray-600 #525252 → 7.8:1  (secondary text, passes AAA)
-   - Dark end (700–950) mirrors the light end for inverse (black) sections.
+     white  #ffffff  page
+     fill   #f5f5f5  hover / selected / quiet surfaces
+     line   #ededed  dividers, borders
+     gray   #999999  secondary text, idle controls
+     ink    #333333  primary text, active controls
    ========================================================================== */
 
 :root {
   /* ---------- Palette ---------- */
   --palette-white: #ffffff;
-  --palette-gray-50: #fafafa;
-  --palette-gray-100: #f2f2f2;
-  --palette-gray-200: #e5e5e5;
-  --palette-gray-300: #d4d4d4;
-  --palette-gray-400: #a3a3a3;
-  --palette-gray-500: #737373;
-  --palette-gray-600: #525252;
-  --palette-gray-700: #404040;
-  --palette-gray-800: #262626;
-  --palette-gray-900: #171717;
-  --palette-gray-950: #0a0a0a;
-  --palette-black: #000000;
+  --palette-fill: #f5f5f5;
+  --palette-line: #ededed;
+  --palette-gray: #999999;
+  --palette-ink: #333333;
 
   /* ---------- Semantic: Background ---------- */
-  --color-bg-default: var(--palette-white);   /* page */
-  --color-bg-subtle: var(--palette-gray-50);  /* resting interactive surface (cards, rows) */
-  --color-bg-muted: var(--palette-gray-100);  /* filled blocks, timetable cells */
-  --color-bg-inverse: var(--palette-black);   /* emphasis sections, selected pill */
-  --color-bg-inverse-subtle: var(--palette-gray-900); /* resting surface inside inverse sections */
-
-  /* ---------- Semantic: State ---------- */
-  --color-bg-hover: var(--palette-gray-100);
-  --color-bg-pressed: var(--palette-gray-200);
-  --color-bg-inverse-hover: var(--palette-gray-800);
-  --color-bg-disabled: var(--palette-gray-100);
+  --color-bg-default: var(--palette-white);
+  --color-bg-fill: var(--palette-fill);      /* footer, timetable cells */
+  --color-bg-hover: var(--palette-fill);     /* hover / pressed / selected */
 
   /* ---------- Semantic: Text ---------- */
-  --color-text-primary: var(--palette-black);     /* titles, key content */
-  --color-text-secondary: var(--palette-gray-600); /* body copy, descriptions */
-  --color-text-tertiary: var(--palette-gray-500);  /* meta, captions (AA minimum) */
-  --color-text-disabled: var(--palette-gray-300);
-  --color-text-inverse: var(--palette-white);
-  --color-text-inverse-secondary: var(--palette-gray-400);
-  --color-text-inverse-tertiary: var(--palette-gray-500);
+  --color-text-primary: var(--palette-ink);  /* titles, open/active items */
+  --color-text-secondary: var(--palette-gray); /* labels, meta, idle items */
+  --color-text-disabled: var(--palette-line);
 
   /* ---------- Semantic: Border ---------- */
-  --color-border-subtle: var(--palette-gray-100);
-  --color-border-default: var(--palette-gray-200);
-  --color-border-strong: var(--palette-black);
-  --color-border-inverse: var(--palette-gray-800);
-  --color-border-disabled: var(--palette-gray-200);
-  --color-focus-ring: var(--palette-black);
+  --color-border: var(--palette-line);
+  --color-focus-ring: var(--palette-gray);
+
+  /* ---------- Elevation (floating labels, tooltips) ---------- */
+  --shadow-float: 0 10px 30px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.06);
 }
