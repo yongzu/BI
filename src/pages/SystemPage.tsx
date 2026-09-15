@@ -6,7 +6,7 @@ import './system.css';
 const typeSpec: Record<Typography, string> = {
   Display: '100 · Bold · 1.19 · -3%',
   Heading: '64 · Bold · 1.2 · -3%',
-  Lead: '32 · Regular · 1.4 · -3%',
+  Lead: '20 · Regular · 1.4 · -3%',
   Intro: '20 · Regular · 1.4 · -3%',
   Title: '24 · Bold · 1.2 · -3%',
   Label: '16 · Medium · 1.2 · -3%',
