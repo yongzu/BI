@@ -19,8 +19,12 @@ npm run deploy   # dist → gh-pages 브랜치 (GitHub Pages)
 | 콘텐츠 | 모든 문구·섹션 순서 | 섹션마다 짧은 마침표 헤드라인 (Phi 문장에서 발췌) |
 | 컬러 | 흑백 모노톤, 강조색 없음 | `#f5f5f7` 교차 배경, 쿨 뉴트럴 그레이 (파란색은 제외) |
 | 타이포 | 한 가지 목소리 | 80 · 48 · 28 · 24 · 21 · 17 · 14 · 12 스케일, 굵기 400/600 |
-| Form | — | 28px 카드, 980px pill 버튼, 원형 아이콘 버튼, sticky 로컬 내비 |
+| Form | — | 28px 카드, 980px pill 버튼, 원형 아이콘 버튼 |
 | 컴포넌트 | — | 패들 갤러리, + 버튼 모달, 세그먼트 컨트롤, 뷰어 컨트롤 pill, FAQ 아코디언 |
+
+## 내비게이션
+
+상단 바 대신 1차 리디자인의 우측 계층 목차(ON THIS PAGE)를 씁니다. 3단계 들여쓰기, 현재 위치는 3px 막대로 표시하고, 1200px 미만에서는 숨깁니다.
 
 ## 섹션 매핑
 
@@ -45,7 +49,8 @@ src/
 │  ├─ Gallery/                  scroll-snap 갤러리 + 패들
 │  ├─ Accordion/                FAQ 아코디언
 │  ├─ Segmented/                세그먼트 컨트롤
-│  └─ Modal/                    카드 상세 모달
+│  ├─ Modal/                    카드 상세 모달
+│  └─ Toc/                      우측 계층 목차
 ├─ data/programs.ts             원본 페이지 콘텐츠
 └─ pages/                       ProgramsPage, SystemPage
 ```

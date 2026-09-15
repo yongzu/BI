@@ -21,7 +21,7 @@ html {
   text-size-adjust: 100%;
   -webkit-text-size-adjust: 100%;
   scroll-behavior: smooth;
-  scroll-padding-top: calc(var(--nav-height) + 52px);
+  scroll-padding-top: 40px;
 }
 
 body {

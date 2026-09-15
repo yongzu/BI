@@ -26,7 +26,8 @@
   --width-text: 980px;
   --width-wide: 1260px;
   --gutter: max(22px, 4vw);
-  --nav-height: 44px;
+  --toc-width: 236px;
+  --toc-space: calc(var(--toc-width) + 64px); /* width + right offset + breathing room */
 
   --ease: cubic-bezier(0.25, 0.1, 0.25, 1);
   --duration: 300ms;

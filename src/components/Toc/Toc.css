@@ -1,0 +1,56 @@
+/* Sizes follow the 1st redesign's TOC (13 / 12 / 11px); colors map to this system's tokens. */
+.toc {
+  position: fixed;
+  top: 120px;
+  right: 32px;
+  z-index: 40;
+  width: var(--toc-width);
+  max-height: calc(100vh - 180px);
+  overflow-y: auto;
+  padding-left: 14px;
+  border-left: 1px solid var(--palette-gray-200);
+  font-size: 13px;
+  line-height: 1.5;
+  letter-spacing: 0;
+  scrollbar-width: none;
+}
+.toc::-webkit-scrollbar { display: none; }
+
+.toc__title {
+  margin-bottom: 12px;
+  font-size: 11px;
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: 0.02em;
+  color: var(--color-text-tertiary);
+}
+
+.toc a {
+  position: relative;
+  display: block;
+  margin-left: -15px;
+  padding: 5px 0 5px 10px;
+  color: var(--color-text-secondary);
+  transition: color 150ms;
+}
+.toc a:hover { color: var(--color-text-primary); }
+.toc a.is-active { color: var(--color-text-primary); font-weight: var(--font-weight-semibold); }
+.toc a.is-active::before {
+  content: '';
+  position: absolute;
+  left: -1px;
+  top: 4px;
+  bottom: 4px;
+  width: 3px;
+  border-radius: 2px;
+  background: var(--color-text-primary);
+}
+
+.toc__lv1 { margin-top: 14px; }
+.toc__lv1:first-child { margin-top: 0; }
+.toc__lv1 > a { font-weight: var(--font-weight-semibold); color: var(--color-text-primary); }
+.toc__lv2 > a { padding-left: 24px; }
+.toc__lv3 > a { padding-left: 38px; font-size: 12px; }
+
+@media (max-width: 1199px) {
+  .toc { display: none; }
+}

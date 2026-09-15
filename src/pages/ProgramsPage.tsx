@@ -1,10 +1,11 @@
-import { useEffect, useState, type ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import { Text } from '../components/Text/Text';
 import { Button, IconButton } from '../components/Button/Button';
 import { Gallery, GalleryItem } from '../components/Gallery/Gallery';
 import { Accordion } from '../components/Accordion/Accordion';
 import { Segmented } from '../components/Segmented/Segmented';
 import { Modal } from '../components/Modal/Modal';
+import { Toc, type TocItem } from '../components/Toc/Toc';
 import {
   attitudes,
   camps,
@@ -22,29 +23,31 @@ import {
 } from '../data/programs';
 import './programs.css';
 
-const localNav = [
-  { id: 'overview', label: '개요' },
-  { id: 'pillars', label: '역량과 태도' },
-  { id: 'curriculum', label: '커리큘럼' },
-  { id: 'courses', label: '주요 수업' },
-  { id: 'devices', label: '수업 장치' },
-  { id: 'week', label: '시간표' },
-  { id: 'camp', label: '방학 + 캠프' },
-  { id: 'graduation', label: '수료 & 졸업' },
+const toc: TocItem[] = [
+  {
+    id: 'pillars',
+    label: '역량과 태도',
+    children: [
+      { id: 'pillars-competency', label: '역량 Competency' },
+      { id: 'pillars-attitude', label: '태도 Phi OS' },
+    ],
+  },
+  {
+    id: 'curriculum',
+    label: '커리큘럼',
+    children: [
+      { id: 'curriculum-annual', label: '연간 구조' },
+      { id: 'courses', label: '주요 수업들', children: courseTypes.map((t) => ({ id: `type-${t.id}`, label: t.name })) },
+      { id: 'devices', label: '수업을 관통하는 접근' },
+      { id: 'week', label: '주간 시간표' },
+      { id: 'camp', label: '방학 + 캠프' },
+      { id: 'graduation', label: '수료 & 졸업' },
+    ],
+  },
+  { id: 'career', label: '채용 연계' },
 ];
 
 const go = (id: string) => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-
-function useScrolled(threshold = 8) {
-  const [scrolled, setScrolled] = useState(false);
-  useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > threshold);
-    onScroll();
-    window.addEventListener('scroll', onScroll, { passive: true });
-    return () => window.removeEventListener('scroll', onScroll);
-  }, [threshold]);
-  return scrolled;
-}
 
 /** Section header: optional eyebrow + headline + optional intro, in the 980px column. */
 function SectionHeader({ eyebrow, headline, intro }: { eyebrow?: string; headline: string; intro?: ReactNode }) {
@@ -72,7 +75,6 @@ function CourseCard({ course, onOpen }: { course: Course; onOpen: () => void }) 
 }
 
 export function ProgramsPage() {
-  const scrolled = useScrolled();
   const [stage, setStage] = useState(0);
   const [filter, setFilter] = useState<CourseType['id'] | 'all'>('all');
   const [openCourse, setOpenCourse] = useState<Course | null>(null);
@@ -82,34 +84,8 @@ export function ProgramsPage() {
 
   return (
     <>
-      {/* ---------- Global nav ---------- */}
-      <header className="global-nav">
-        <div className="global-nav__inner">
-          <a href="#" className="global-nav__logo typo-label" onClick={(e) => { e.preventDefault(); window.scrollTo({ top: 0 }); }}>Phi</a>
-          <nav aria-label="주요 메뉴">
-            <ul className="global-nav__list">
-              {['About', 'Programs', 'Experts', 'Admissions'].map((item) => (
-                <li key={item}>
-                  <a href="#" className="typo-footnote" aria-current={item === 'Programs' ? 'page' : undefined}>{item}</a>
-                </li>
-              ))}
-            </ul>
-          </nav>
-        </div>
-      </header>
-
-      {/* ---------- Local (product) nav ---------- */}
-      <div className={`local-nav${scrolled ? ' local-nav--scrolled' : ''}`}>
-        <div className="local-nav__inner">
-          <Text as="span" typography="Title" className="local-nav__title">Programs</Text>
-          <nav className="local-nav__menu" aria-label="이 페이지의 섹션">
-            {localNav.slice(1, 5).map((s) => (
-              <a key={s.id} href={`#${s.id}`} className="typo-footnote" onClick={(e) => { e.preventDefault(); go(s.id); }}>{s.label}</a>
-            ))}
-          </nav>
-          <Button variant="primary" className="local-nav__cta" onClick={() => go('graduation')}>오픈 알림 신청</Button>
-        </div>
-      </div>
+      {/* ---------- Right-side table of contents ---------- */}
+      <Toc items={toc} onNavigate={(id) => { if (id.startsWith('type-')) setFilter('all'); }} />
 
       <main>
         {/* ---------- Hero ---------- */}
@@ -148,10 +124,10 @@ export function ProgramsPage() {
             intro="어떤 환경에서도 스스로 답을 찾을 수 있는 사고방식을 만들기 위해, Phi는 아래 역량과 태도를 중요시합니다."
           />
           {[
-            { title: '역량', en: 'Competency', items: competencies },
-            { title: '태도', en: 'Phi OS', items: attitudes },
+            { id: 'pillars-competency', title: '역량', en: 'Competency', items: competencies },
+            { id: 'pillars-attitude', title: '태도', en: 'Phi OS', items: attitudes },
           ].map((group) => (
-            <div key={group.en} className="pillar-group">
+            <div key={group.en} id={group.id} className="pillar-group">
               <Text typography="Title" className="text-column pillar-group__title">{group.title} <span className="color-secondary">{group.en}</span></Text>
               <Gallery label={`${group.title} ${group.en}`}>
                 {group.items.map((item, i) => (
@@ -171,7 +147,7 @@ export function ProgramsPage() {
         {/* ---------- 커리큘럼 ---------- */}
         <section id="curriculum" className="section section--alt">
           <SectionHeader eyebrow="커리큘럼" headline="2026년 8월 24일 개강." intro="1년 동안 두 학기와 방학 캠프, 그리고 졸업 프로젝트로 이어집니다." />
-          <div className="viewer wide-column">
+          <div id="curriculum-annual" className="viewer wide-column">
             <div className="viewer__stage">
               <div className="timeline" aria-hidden="true">
                 <div className="timeline__months">
@@ -222,7 +198,7 @@ export function ProgramsPage() {
             />
           </div>
           {visibleTypes.map((type) => (
-            <div key={type.id} className="course-type">
+            <div key={type.id} id={`type-${type.id}`} className="course-type">
               <div className="text-column course-type__head">
                 <Text as="h3" typography="Title">{type.name}</Text>
                 <Text typography="Body" color="secondary">{type.cadence} · {type.courses.length}개 수업</Text>
@@ -319,7 +295,7 @@ export function ProgramsPage() {
               <Text as="h3" typography="Eyebrow">졸업</Text>
               <Text typography="Body" color="secondary">수료 조건 달성 후, 2027년 7–8월에 본인의 목표에 따른 프로젝트를 완성합니다. 해당 프로젝트는 외부에 실제로 발표 또는 출시되어야 합니다.</Text>
             </article>
-            <article className="duo__card duo__card--dark">
+            <article id="career" className="duo__card duo__card--dark">
               <Text typography="Caption" color="inverse">채용 연계</Text>
               <Text as="h3" typography="Eyebrow" color="inverse">토스 별도 채용 전형</Text>
               <Text typography="Body" color="inverse">2027년 8월, Phi 1년제 1기 졸업자를 위한 토스의 별도 채용 전형이 마련됩니다.</Text>

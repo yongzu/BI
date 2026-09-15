@@ -8,59 +8,6 @@
 .text-link { color: var(--color-text-primary); text-decoration: underline; text-underline-offset: 3px; text-decoration-thickness: 1px; }
 .text-link:hover { text-decoration-thickness: 2px; }
 
-/* ---------- Global nav ---------- */
-.global-nav {
-  position: relative;
-  z-index: 30;
-  height: var(--nav-height);
-  background: var(--color-nav);
-  backdrop-filter: saturate(180%) blur(20px);
-}
-.global-nav__inner {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  height: 100%;
-  max-width: calc(var(--width-text) + 2 * var(--gutter));
-  margin: 0 auto;
-  padding-inline: var(--gutter);
-}
-.global-nav__list { display: flex; gap: var(--space-8); }
-.global-nav__list a { color: var(--color-text-tertiary); transition: color var(--duration) var(--ease); }
-.global-nav__list a:hover, .global-nav__list a[aria-current='page'] { color: var(--color-text-primary); }
-
-/* ---------- Local nav (sticky) ---------- */
-.local-nav {
-  position: sticky;
-  top: 0;
-  z-index: 20;
-  height: 52px;
-  background: var(--color-nav);
-  backdrop-filter: saturate(180%) blur(20px);
-  transition: box-shadow var(--duration) var(--ease);
-}
-.local-nav--scrolled { box-shadow: 0 1px 0 var(--color-border); }
-.local-nav__inner {
-  display: flex;
-  align-items: center;
-  gap: var(--space-6);
-  height: 100%;
-  max-width: calc(var(--width-text) + 2 * var(--gutter));
-  margin: 0 auto;
-  padding-inline: var(--gutter);
-}
-.local-nav__title { font-size: var(--typo-eyebrow-size); }
-.local-nav__menu { display: flex; gap: var(--space-6); margin-left: auto; }
-.local-nav__menu a { color: var(--color-text-tertiary); }
-.local-nav__menu a:hover { color: var(--color-text-primary); }
-.local-nav__cta { min-height: 28px; padding: 4px 12px; font-size: var(--typo-footnote-size); }
-@media (max-width: 734px) {
-  .global-nav__list { gap: var(--space-4); }
-  .local-nav__title { font-size: var(--typo-title-size); }
-  .local-nav__menu { display: none; }
-  .local-nav__cta { margin-left: auto; }
-}
-
 /* ---------- Hero ---------- */
 .hero {
   display: flex;
@@ -231,3 +178,10 @@
 /* ---------- Footer ---------- */
 .footer { padding-block: var(--space-6) var(--space-10); background: var(--color-bg-footer); border-top: 1px solid var(--color-border); }
 .footer__legal { margin-top: var(--space-3); }
+
+/* ---------- Room for the fixed right-side TOC ----------
+   Band backgrounds stay full-bleed; only the content inside each band is
+   pushed left so nothing runs under the TOC. */
+@media (min-width: 1200px) {
+  .hero, .section, .footer { padding-right: var(--toc-space); }
+}
