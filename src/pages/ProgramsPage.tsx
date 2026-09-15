@@ -5,6 +5,7 @@ import { AnnualTimeline } from '../components/AnnualTimeline/AnnualTimeline';
 import { Dropdown } from '../components/Dropdown/Dropdown';
 import { CourseCard } from '../components/CourseCard/CourseCard';
 import { WeekGrid } from '../components/WeekGrid/WeekGrid';
+import { SiteHeader } from '../components/SiteHeader/SiteHeader';
 import { CoursePanel, type PanelEntry } from '../components/CoursePanel/CoursePanel';
 import { courseProfiles } from '../data/courseProfiles';
 import { useScrollReveal } from '../hooks/useScrollReveal';
@@ -103,6 +104,7 @@ export function ProgramsPage() {
 
   return (
     <>
+      <SiteHeader />
       <Toc items={toc} />
 
       <main className="page">
