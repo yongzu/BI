@@ -1,104 +1,103 @@
 import { useState } from 'react';
 import { Text } from '../components/Text/Text';
 import { typographies, type Typography } from '../components/Text/typography';
-import { Pill } from '../components/Pill/Pill';
-import { Reveal, RevealList } from '../components/Reveal/Reveal';
-import { ArticleCard } from '../examples/ArticleCard';
-import { Dialog } from '../examples/Dialog';
+import { Button, IconButton } from '../components/Button/Button';
+import { Segmented } from '../components/Segmented/Segmented';
+import { Accordion } from '../components/Accordion/Accordion';
+import { Modal } from '../components/Modal/Modal';
 import './programs.css';
 import './system.css';
 
 const typeSpec: Record<Typography, string> = {
-  Title: '12pt · 700 · 1.45',
-  Heading: '12pt · 400 · 1.45',
-  Label: '10pt · 700 · 1.45',
-  Body: '10pt · 400 · 1.45',
-  Copy: '10pt · 400 · 1.75',
+  Hero: '48→80 · 600 · 1.1',
+  Headline: '32→48 · 600 · 1.17',
+  Stat: '40 · 600 · 1.1',
+  Eyebrow: '28 · 600 · 1.25',
+  Title: '24 · 600 · 1.25',
+  Intro: '21 · 400 · 1.52',
+  Body: '17 · 400 · 1.47',
+  Label: '17 · 600 · 1.47',
+  Caption: '14 · 400 · 1.43',
+  Footnote: '12 · 400 · 1.33',
 };
 
 const palette = [
-  ['white', '#ffffff', 'page'],
-  ['fill', '#f5f5f5', 'hover · selected · surface'],
-  ['line', '#ededed', 'divider · border'],
-  ['gray', '#999999', 'secondary text · idle'],
-  ['ink', '#333333', 'primary text · active'],
+  ['white', '#ffffff'],
+  ['gray-50', '#fafafc'],
+  ['gray-100', '#f5f5f7'],
+  ['gray-200', '#e8e8ed'],
+  ['gray-300', '#d2d2d7'],
+  ['gray-500', '#6e6e73'],
+  ['gray-800', '#333336'],
+  ['gray-900', '#1d1d1f'],
 ];
 
 export function SystemPage() {
+  const [tab, setTab] = useState<'a' | 'b' | 'c'>('a');
   const [open, setOpen] = useState(false);
-  const [selected, setSelected] = useState('전체');
 
   return (
-    <main className="shell system">
-      <a href="#" className="link">← Programs</a>
-
+    <main className="system">
       <section className="section">
-        <Text as="h1" typography="Title">Design System</Text>
-        <Text typography="Copy" color="secondary" className="section__lead">
-          Pretendard 한 가지, 크기 두 가지(12pt·10pt), 굵기 두 가지(400·700), 흰색과 네 가지 톤.
-          위계는 크기가 아니라 굵기와 톤으로 만듭니다.
-        </Text>
-      </section>
-
-      <section className="section">
-        <Text typography="Title">Typography</Text>
-        <dl className="facts section__body">
-          {typographies.map((t) => (
-            <div key={t} className="facts__row">
-              <Text as="dt" typography="Body" color="secondary">{t}<span className="block">{typeSpec[t]}</span></Text>
-              <Text as="dd" typography={t}>우리는 정말 읽고 있을까?</Text>
-            </div>
-          ))}
-        </dl>
-      </section>
-
-      <section className="section">
-        <Text typography="Title">Color</Text>
-        <dl className="facts section__body">
-          {palette.map(([name, hex, role]) => (
-            <div key={name} className="facts__row">
-              <dt className="swatch-row">
-                <span className="swatch" style={{ background: `var(--palette-${name})` }} />
-                <Text as="span" typography="Body">{name}</Text>
-              </dt>
-              <Text as="dd" typography="Body" color="secondary">{hex} · {role}</Text>
-            </div>
-          ))}
-        </dl>
-      </section>
-
-      <section className="section">
-        <Text typography="Title">Components</Text>
-        <div className="section__body">
-          <div className="filter">
-            {['전체', 'Fundamental', 'Domain'].map((p, i) => (
-              <Pill key={p} className={i === 0 ? 'pill--start' : undefined} selected={selected === p} onClick={() => setSelected(p)}>{p}</Pill>
-            ))}
-          </div>
-          <RevealList>
-            <Reveal label="Reveal" meta="hover · open">
-              <Text typography="Copy" color="secondary">점이 화살표로 바뀌고 행이 10px 밀리며, 라벨 뒤에 떠 있는 칩이 나타납니다.</Text>
-            </Reveal>
-            <Reveal label="Art of Reading" meta="읽기의 기술">
-              <Text typography="Copy">우리는 정말 읽고 있을까?</Text>
-            </Reveal>
-          </RevealList>
-          <div>
-            <ArticleCard category="Domain" title="완성도 120%의 인터페이스란 어떤 것일까?" summary="다양한 인터페이스 요소들을 끝까지 파고들었을 때 어떤 결과물을 만들어낼 수 있는지 실험해본다." meta="Beautiful Interface" />
-            <ArticleCard category="Ritual" title="읽기 쉽고 읽고 싶은 글" summary="내 글을 읽을 독자가 누구인지 설정하고, 그 독자에게 유용한 메시지를 설계한다." meta="Readable Writing" />
-          </div>
-          <div>
-            <Pill className="pill--start" onClick={() => setOpen(true)}>Dialog 열기 →</Pill>
-          </div>
+        <div className="text-column">
+          <a href="#" className="text-link typo-body">‹ Programs</a>
+          <Text as="h1" typography="Hero" className="system__title">Design System.</Text>
+          <Text typography="Intro" color="secondary">
+            Phi의 흑백 모노톤과 Apple 제품 페이지의 타입 스케일, 여백, 둥근 카드를 합친 토큰입니다. 굵기는 400·600 두 가지만 씁니다.
+          </Text>
         </div>
-        <Dialog
-          open={open}
-          title="오픈 알림을 신청할까요?"
-          description="2기 모집이 시작되면 입력한 이메일로 가장 먼저 알려드려요."
-          confirmLabel="신청하기"
-          onConfirm={() => setOpen(false)}
-          onClose={() => setOpen(false)}
-        />
+      </section>
+
+      <section className="section section--alt">
+        <div className="text-column">
+          <Text typography="Headline" className="system__heading">Typography.</Text>
+          <ul className="system__list">
+            {typographies.map((t) => (
+              <li key={t}>
+                <Text typography="Caption" color="secondary">{t} — {typeSpec[t]}</Text>
+                <Text typography={t}>도구보다 사고방식.</Text>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
+
+      <section className="section">
+        <div className="text-column">
+          <Text typography="Headline" className="system__heading">Color.</Text>
+          <ul className="system__swatches">
+            {palette.map(([name, hex]) => (
+              <li key={name}>
+                <span className="system__swatch" style={{ background: `var(--palette-${name})` }} />
+                <Text typography="Label">{name}</Text>
+                <Text typography="Caption" color="secondary">{hex}</Text>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
+
+      <section className="section section--alt">
+        <div className="text-column system__components">
+          <Text typography="Headline" className="system__heading">Components.</Text>
+          <div className="system__row">
+            <Button size="lg">Primary</Button>
+            <Button size="lg" variant="secondary">Secondary</Button>
+            <IconButton icon="plus" label="더하기" tone="action" />
+            <IconButton icon="prev" label="이전" />
+            <IconButton icon="next" label="다음" />
+          </div>
+          <Segmented label="예시" value={tab} onChange={setTab} options={[{ value: 'a', label: '전체' }, { value: 'b', label: 'Fundamental' }, { value: 'c', label: 'Domain' }]} />
+          <Accordion items={[
+            { id: '1', title: '라이브데모', content: <Text typography="Body">전문가가 학습자의 과제를 실시간으로 푸는 과정을 시연합니다.</Text> },
+            { id: '2', title: '피어크리틱', content: <Text typography="Body">루브릭 기반으로 구체적인 피드백을 주고받습니다.</Text> },
+          ]} />
+          <div><Button size="lg" onClick={() => setOpen(true)}>Modal 열기</Button></div>
+          <Modal open={open} onClose={() => setOpen(false)} labelledBy="system-modal-title">
+            <Text id="system-modal-title" typography="Headline">Art of Reading</Text>
+            <Text typography="Intro" color="secondary">우리는 정말 읽고 있을까?</Text>
+          </Modal>
+        </div>
       </section>
     </main>
   );

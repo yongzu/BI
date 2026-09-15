@@ -20,17 +20,19 @@ html {
   color-scheme: light;
   text-size-adjust: 100%;
   -webkit-text-size-adjust: 100%;
-  scrollbar-gutter: stable;
+  scroll-behavior: smooth;
+  scroll-padding-top: calc(var(--nav-height) + 52px);
 }
 
 body {
   min-height: 100vh;
   background: var(--color-bg-default);
-  color: var(--color-text-secondary);
+  color: var(--color-text-primary);
   font-family: var(--font-family-sans);
-  font-size: var(--font-size-sm);
-  line-height: var(--line-height-base);
+  font-size: var(--typo-body-size);
+  line-height: var(--typo-body-line-height);
   font-weight: var(--font-weight-regular);
+  letter-spacing: -0.01em;
 
   /* Rendering optimization */
   -webkit-font-smoothing: antialiased;
@@ -38,7 +40,6 @@ body {
   text-rendering: optimizeLegibility;
   font-synthesis: none;
   font-kerning: normal;
-  font-variant-numeric: tabular-nums;
 
   /* Korean: break between words, not inside them */
   word-break: keep-all;
@@ -46,22 +47,19 @@ body {
 }
 
 img, svg { display: block; max-width: 100%; }
-button, input, summary { font: inherit; color: inherit; }
-button { background: none; border: 0; cursor: pointer; }
+button { font: inherit; color: inherit; letter-spacing: inherit; background: none; border: 0; cursor: pointer; }
 a { color: inherit; text-decoration: none; }
 ul, ol { list-style: none; }
-button, a, summary { -webkit-tap-highlight-color: transparent; }
+h1, h2, h3, h4 { font: inherit; }
 
 :focus-visible {
-  outline: 1px solid var(--color-focus-ring);
-  outline-offset: 5px;
+  outline: 2px solid var(--color-focus-ring);
+  outline-offset: 3px;
 }
 
-::selection {
-  background: var(--palette-line);
-  color: var(--color-text-primary);
-}
+::selection { background: var(--palette-gray-300); color: var(--color-text-primary); }
 
 @media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
   *, *::before, *::after { transition: none !important; animation: none !important; }
 }

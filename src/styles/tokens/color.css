@@ -1,39 +1,55 @@
 /* ==========================================================================
-   Color tokens — Monotone, minimal
+   Color tokens — Phi monotone × Apple neutrals
    --------------------------------------------------------------------------
-   Taken from the Phi Brain style kit (yongzu.github.io/Phi_Brain):
-   white + 4 tones. Hierarchy comes from ink vs gray, not from many grays.
-   Add a tone only when an existing one truly can't do the job.
+   Phi's page is strictly black & white; Apple's page gets its calm from a few
+   cool-neutral grays and an alternating #f5f5f7 band. We take Apple's neutrals
+   and drop its blue: every action is ink, so the palette stays monotone.
 
-     white  #ffffff  page
-     fill   #f5f5f5  hover / selected / quiet surfaces
-     line   #ededed  dividers, borders
-     gray   #999999  secondary text, idle controls
-     ink    #333333  primary text, active controls
+     white     #ffffff  page, cards on the alt band
+     gray-50   #fafafc  footer
+     gray-100  #f5f5f7  alternating section band, cards on white
+     gray-200  #e8e8ed  controls (segmented track, round buttons)
+     gray-300  #d2d2d7  borders, control hover
+     gray-500  #6e6e73  secondary text (5.1:1 on white — AA)
+     gray-900  #1d1d1f  primary text, primary buttons
    ========================================================================== */
 
 :root {
   /* ---------- Palette ---------- */
   --palette-white: #ffffff;
-  --palette-fill: #f5f5f5;
-  --palette-line: #ededed;
-  --palette-gray: #999999;
-  --palette-ink: #333333;
+  --palette-gray-50: #fafafc;
+  --palette-gray-100: #f5f5f7;
+  --palette-gray-200: #e8e8ed;
+  --palette-gray-300: #d2d2d7;
+  --palette-gray-500: #6e6e73;
+  --palette-gray-800: #333336;
+  --palette-gray-900: #1d1d1f;
 
   /* ---------- Semantic: Background ---------- */
   --color-bg-default: var(--palette-white);
-  --color-bg-fill: var(--palette-fill);      /* footer, timetable cells */
-  --color-bg-hover: var(--palette-fill);     /* hover / pressed / selected */
+  --color-bg-alt: var(--palette-gray-100);       /* alternating band */
+  --color-bg-footer: var(--palette-gray-50);
+  --color-surface: var(--palette-white);         /* card on alt band */
+  --color-surface-on-default: var(--palette-gray-100); /* card on white band */
+  --color-nav: rgba(250, 250, 252, 0.8);
+
+  /* ---------- Semantic: Controls ---------- */
+  --color-control: var(--palette-gray-200);
+  --color-control-hover: var(--palette-gray-300);
+  --color-action: var(--palette-gray-900);
+  --color-action-hover: var(--palette-gray-800);
+  --color-disabled: var(--palette-gray-300);
 
   /* ---------- Semantic: Text ---------- */
-  --color-text-primary: var(--palette-ink);  /* titles, open/active items */
-  --color-text-secondary: var(--palette-gray); /* labels, meta, idle items */
-  --color-text-disabled: var(--palette-line);
+  --color-text-primary: var(--palette-gray-900);
+  --color-text-secondary: var(--palette-gray-500);
+  --color-text-tertiary: rgba(0, 0, 0, 0.56);    /* footnotes */
+  --color-text-inverse: var(--palette-white);
 
   /* ---------- Semantic: Border ---------- */
-  --color-border: var(--palette-line);
-  --color-focus-ring: var(--palette-gray);
+  --color-border: var(--palette-gray-300);
+  --color-focus-ring: var(--palette-gray-900);
 
-  /* ---------- Elevation (floating labels, tooltips) ---------- */
-  --shadow-float: 0 10px 30px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.06);
+  --shadow-card: 0 4px 24px rgba(0, 0, 0, 0.06);
+  --shadow-modal: 0 20px 60px rgba(0, 0, 0, 0.18);
 }

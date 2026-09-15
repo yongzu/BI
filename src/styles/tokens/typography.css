@@ -1,37 +1,76 @@
 /* ==========================================================================
-   Typography tokens — minimal
+   Typography tokens — Apple product page scale, Phi restraint
    --------------------------------------------------------------------------
-   One family (Pretendard), two sizes, two weights.
-   Sizes follow the Phi Brain style kit (12pt / 10pt) and sit on the SEED
-   scale: 16px = SEED t5, 13.33px ≈ SEED t3.
-   Hierarchy is made with weight (700/400) and color (ink/gray),
-   never with large type.
+   Measured on apple.com/kr/iphone-duo (1440px):
+     80/600 hero · 48/600 section headline · 28/600 tile/eyebrow ·
+     24/600 accordion · 21/400 intro (gray) · 17/400 body · 14 · 12 footnote
+   Two weights only (400 / 600), like Phi's single-voice page.
+
+   Font: SF Pro KR is Apple's and can't be bundled. The stack uses the system
+   face on Apple devices and falls back to Pretendard everywhere else.
    ========================================================================== */
 
 :root {
-  --font-family-sans: 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont,
-    'Segoe UI', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
-
-  --font-size-base: 12pt;   /* 16px    — titles */
-  --font-size-sm: 10pt;     /* 13.33px — everything else */
+  --font-family-sans: -apple-system, BlinkMacSystemFont, 'SF Pro KR', 'SF Pro Display', 'SF Pro Text',
+    'Apple SD Gothic Neo', 'Pretendard Variable', Pretendard, 'Malgun Gothic', sans-serif;
 
   --font-weight-regular: 400;
-  --font-weight-bold: 700;
+  --font-weight-semibold: 600;
 
-  --line-height-base: 1.45; /* UI text */
-  --line-height-copy: 1.75; /* paragraphs */
+  /* size / line-height / letter-spacing per role */
+  --typo-hero-size: clamp(3rem, 5.6vw, 5rem);        /* 48 → 80 */
+  --typo-hero-line-height: 1.1;
+  --typo-hero-letter-spacing: -0.015em;
 
-  --letter-spacing-bold: -0.01em; /* bold Pretendard reads slightly loose */
+  --typo-headline-size: clamp(2rem, 3.4vw, 3rem);     /* 32 → 48 */
+  --typo-headline-line-height: 1.17;
+  --typo-headline-letter-spacing: -0.005em;
+
+  --typo-stat-size: 2.5rem;                           /* 40 */
+  --typo-stat-line-height: 1.1;
+
+  --typo-eyebrow-size: 1.75rem;                       /* 28 */
+  --typo-eyebrow-line-height: 1.25;
+
+  --typo-title-size: 1.5rem;                          /* 24 */
+  --typo-title-line-height: 1.25;
+
+  --typo-intro-size: 1.3125rem;                       /* 21 */
+  --typo-intro-line-height: 1.52;
+
+  --typo-body-size: 1.0625rem;                        /* 17 */
+  --typo-body-line-height: 1.47;
+
+  --typo-caption-size: 0.875rem;                      /* 14 */
+  --typo-caption-line-height: 1.43;
+
+  --typo-footnote-size: 0.75rem;                      /* 12 */
+  --typo-footnote-line-height: 1.33;
+}
+
+@media (max-width: 734px) {
+  :root {
+    --typo-eyebrow-size: 1.3125rem;   /* 21 */
+    --typo-title-size: 1.25rem;       /* 20 */
+    --typo-intro-size: 1.1875rem;     /* 19 */
+    --typo-stat-size: 2rem;           /* 32 */
+  }
 }
 
 /* ---------- Semantic styles (consumed by <Text />) ---------- */
-.typo-title   { font-size: var(--font-size-base); line-height: var(--line-height-base); font-weight: var(--font-weight-bold); letter-spacing: var(--letter-spacing-bold); }
-.typo-heading { font-size: var(--font-size-base); line-height: var(--line-height-base); font-weight: var(--font-weight-regular); }
-.typo-label   { font-size: var(--font-size-sm); line-height: var(--line-height-base); font-weight: var(--font-weight-bold); letter-spacing: var(--letter-spacing-bold); }
-.typo-body    { font-size: var(--font-size-sm); line-height: var(--line-height-base); font-weight: var(--font-weight-regular); }
-.typo-copy    { font-size: var(--font-size-sm); line-height: var(--line-height-copy); font-weight: var(--font-weight-regular); }
+.typo-hero     { font-size: var(--typo-hero-size); line-height: var(--typo-hero-line-height); font-weight: var(--font-weight-semibold); letter-spacing: var(--typo-hero-letter-spacing); }
+.typo-headline { font-size: var(--typo-headline-size); line-height: var(--typo-headline-line-height); font-weight: var(--font-weight-semibold); letter-spacing: var(--typo-headline-letter-spacing); }
+.typo-stat     { font-size: var(--typo-stat-size); line-height: var(--typo-stat-line-height); font-weight: var(--font-weight-semibold); letter-spacing: -0.005em; }
+.typo-eyebrow  { font-size: var(--typo-eyebrow-size); line-height: var(--typo-eyebrow-line-height); font-weight: var(--font-weight-semibold); }
+.typo-title    { font-size: var(--typo-title-size); line-height: var(--typo-title-line-height); font-weight: var(--font-weight-semibold); }
+.typo-intro    { font-size: var(--typo-intro-size); line-height: var(--typo-intro-line-height); font-weight: var(--font-weight-regular); letter-spacing: 0.011em; }
+.typo-body     { font-size: var(--typo-body-size); line-height: var(--typo-body-line-height); font-weight: var(--font-weight-regular); }
+.typo-label    { font-size: var(--typo-body-size); line-height: var(--typo-body-line-height); font-weight: var(--font-weight-semibold); }
+.typo-caption  { font-size: var(--typo-caption-size); line-height: var(--typo-caption-line-height); font-weight: var(--font-weight-regular); }
+.typo-footnote { font-size: var(--typo-footnote-size); line-height: var(--typo-footnote-line-height); font-weight: var(--font-weight-regular); }
 
 .color-primary   { color: var(--color-text-primary); }
 .color-secondary { color: var(--color-text-secondary); }
-.color-disabled  { color: var(--color-text-disabled); }
+.color-tertiary  { color: var(--color-text-tertiary); }
+.color-inverse   { color: var(--color-text-inverse); }
 .color-inherit   { color: inherit; }
