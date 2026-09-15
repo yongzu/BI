@@ -55,9 +55,8 @@
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, var(--lead-width));
   gap: 24px;
-  align-items: start;
+  align-items: center; /* lead is vertically centred on the title */
 }
-.section-header > :last-child { padding-top: 2px; }
 
 .group { margin-top: var(--space-group); scroll-margin-top: 48px; }
 .section-header + .group { margin-top: clamp(80px, 5.8vw, 110px); }

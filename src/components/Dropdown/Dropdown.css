@@ -41,13 +41,16 @@
   overflow: hidden;
   padding: 0 var(--dd-pad-x);
   opacity: 0;
+  filter: blur(10px);
   transform: translateY(-8px);
-  transition: opacity 240ms var(--dd-ease), transform 400ms var(--dd-ease);
+  transition: opacity 240ms var(--dd-ease), filter 240ms var(--dd-ease), transform 400ms var(--dd-ease);
 }
 .dropdown[data-open='true'] .dropdown__inner {
   opacity: 1;
+  filter: blur(0);
   transform: none;
-  transition: opacity 360ms var(--dd-ease) 160ms, transform 520ms var(--dd-ease) 120ms;
+  /* content surfaces from a blur as the panel opens */
+  transition: opacity 360ms var(--dd-ease) 120ms, filter 560ms var(--dd-ease) 120ms, transform 520ms var(--dd-ease) 120ms;
 }
 
 @media (max-width: 480px) {

@@ -101,12 +101,15 @@
   display: grid;
   grid-template-rows: 0fr;
   opacity: 0;
-  transition: grid-template-rows var(--tl-duration) var(--tl-ease), opacity 320ms var(--tl-ease);
+  filter: blur(12px);
+  transition: grid-template-rows var(--tl-duration) var(--tl-ease), opacity 320ms var(--tl-ease), filter 320ms var(--tl-ease);
 }
+/* Details surface from a blur once the card has started to grow */
 .annual__bar[data-state='selected'] .annual__detail {
   grid-template-rows: 1fr;
   opacity: 1;
-  transition: grid-template-rows var(--tl-duration) var(--tl-ease), opacity 400ms var(--tl-ease) 240ms;
+  filter: blur(0);
+  transition: grid-template-rows var(--tl-duration) var(--tl-ease), opacity 420ms var(--tl-ease) 220ms, filter 640ms var(--tl-ease) 220ms;
 }
 .annual__detail-inner { display: flex; flex-direction: column; gap: 12px; min-height: 0; overflow: hidden; padding: 0 28px; }
 .annual__bar[data-state='selected'] .annual__detail-inner { padding-block: 10px 26px; }

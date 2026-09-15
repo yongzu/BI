@@ -50,7 +50,7 @@ const revealTargets = ['.hero > *', '.section-header > *', '.group-label', '.gro
 /* ------------------------------------------------------------------ */
 
 /** Section title (64) + lead (28, 70%) in two columns */
-function SectionHeader({ title, lead }: { title: string; lead?: string }) {
+function SectionHeader({ title, lead }: { title: ReactNode; lead?: string }) {
   return (
     <header className="section-header">
       <Text typography="Heading">{title}</Text>
@@ -180,7 +180,7 @@ export function ProgramsPage() {
         {/* ---------- 수업을 관통하는 접근 ---------- */}
         <section id="devices" className="section container">
           <SectionHeader
-            title="수업을 관통하는 접근"
+            title={<>수업을<br />관통하는 접근</>}
             lead="Phi의 교육은 인지적 도제(Cognitive Apprenticeship)를 토대로 설계되었습니다. 전문가의 사고 과정을 학습자가 능동적으로 관찰할 수 있도록 다양한 장치가 준비되어있습니다."
           />
           <div className="group">
