@@ -1,16 +1,19 @@
 import Lenis from 'lenis';
 
 /**
- * Smooth wheel scrolling — the same settings as the Phi Brain IPS page.
- * - lerp 0.07: one wheel notch eases out over about a second instead of jumping
- * - wheelMultiplier 0.9: each notch travels 10% less
+ * Smooth wheel scrolling — started from the Phi Brain IPS page settings, then quickened
+ * a little (사용자 지시 2026-09-22 — "너무 느리다"):
+ * - lerp 0.07 → 0.09: a notch settles in about 0.7s instead of ~1s
+ * - wheelMultiplier 0.9 → 1: each notch travels the browser's normal distance again
  * - touch stays native; nothing is created when the user asks for reduced motion
- * While Lenis is gliding, html gets `lenis-scrolling`, which index.css uses to
- * pause hover effects (cards passing under a still mouse would repaint and stutter).
  */
 export const lenis: Lenis | null = window.matchMedia('(prefers-reduced-motion: reduce)').matches
   ? null
-  : new Lenis({ lerp: 0.07, wheelMultiplier: 0.9, autoRaf: true });
+  : new Lenis({ lerp: 0.09, wheelMultiplier: 1, autoRaf: true });
+
+// No hover pause while scrolling: turning pointer events off during the glide (as the IPS page
+// does) swallowed any click made mid-scroll — the press lands on <html> before anything can turn
+// them back on (사용자 제보 2026-09-22). Clicks always work now.
 
 /**
  * Where the browser's own scrollIntoView({block:'start'}) would put an element: its layout top
