@@ -109,8 +109,11 @@ function DeviceAccordion({ items }: { items: { name: string; body: string }[] })
           <div key={d.name} className="device-accordion__item" data-open={isOpen}>
             <button type="button" className="device-accordion__summary" aria-expanded={isOpen} aria-controls={panelId} onClick={() => toggle(i)}>
               <Text as="span" typography="Label" color="tertiary">{String(i + 1).padStart(2, '0')}</Text>
-              <Text as="span" typography="Title">{deviceOutcomes[d.name] ?? d.name}</Text>
-              <Text as="span" typography="Label" className="device-accordion__name">{d.name}</Text>
+              {/* 장치 이름을 제목으로 왼쪽에, 결과 한 줄은 그 아래에(사용자 지시 2026-09-22) */}
+              <span className="device-accordion__titles">
+                <Text as="span" typography="Title">{d.name}</Text>
+                {deviceOutcomes[d.name] && <Text as="span" typography="Body" color="secondary" className="device-accordion__outcome">{deviceOutcomes[d.name]}</Text>}
+              </span>
               <span className="device-accordion__icon" aria-hidden="true">＋</span>
             </button>
             <div id={panelId} className="device-accordion__panel" role="region" aria-label={d.name} inert={!isOpen}>
