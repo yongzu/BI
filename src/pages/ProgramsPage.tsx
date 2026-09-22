@@ -1,9 +1,10 @@
-import { useCallback, useMemo, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { Text } from '../components/Text/Text';
 import { Toc, type TocItem } from '../components/Toc/Toc';
 import { AnnualTimeline } from '../components/AnnualTimeline/AnnualTimeline';
 import { Dropdown } from '../components/Dropdown/Dropdown';
 import { CourseCard } from '../components/CourseCard/CourseCard';
+import { PillarBox } from '../components/PillarBox/PillarBox';
 import { WeekGrid } from '../components/WeekGrid/WeekGrid';
 import { BackToTop, SiteHeader } from '../components/SiteHeader/SiteHeader';
 import { CoursePanel, type PanelEntry } from '../components/CoursePanel/CoursePanel';
@@ -50,7 +51,7 @@ const toc: TocItem[] = [
 ];
 
 /** Blocks that rise in on scroll */
-const revealTargets = ['.hero > *', '.section-header > *', '.group-label', '.group__lead', '.course-type__head', '.course-card', '.item', '.annual', '.week-scroll', '.device-accordion__item'].join(', ');
+const revealTargets = ['.hero > *', '.section-header > *', '.group-label', '.group__lead', '.course-type__head', '.course-card', '.item', '.annual', '.week-scroll', '.device-accordion__item', '.pillar-box'].join(', ');
 
 /* ------------------------------------------------------------------ */
 
@@ -151,6 +152,17 @@ export function ProgramsPage() {
     [],
   );
   const [openIndex, setOpenIndex] = useState<number | null>(null);
+  // 역량·태도 박스 중 클릭으로 고정한 하나. 바깥을 누르거나 Esc면 풀린다
+  const [pinnedPillar, setPinnedPillar] = useState<string | null>(null);
+  const pillarsRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (pinnedPillar === null) return;
+    const onDown = (e: PointerEvent) => { if (!pillarsRef.current?.contains(e.target as Node)) setPinnedPillar(null); };
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setPinnedPillar(null); };
+    document.addEventListener('pointerdown', onDown);
+    document.addEventListener('keydown', onKey);
+    return () => { document.removeEventListener('pointerdown', onDown); document.removeEventListener('keydown', onKey); };
+  }, [pinnedPillar]);
   const closePanel = useCallback(() => setOpenIndex(null), []);
   const stepPanel = useCallback((dir: -1 | 1) => setOpenIndex((i) => (i === null ? i : (i + dir + entries.length) % entries.length)), [entries.length]);
 
@@ -195,21 +207,28 @@ export function ProgramsPage() {
         {/* ---------- 역량과 태도 ---------- */}
         <section id="pillars" className="section container">
           <SectionHeader title="역량과 태도" lead="어떤 환경에서도 스스로 답을 찾을 수 있는 사고방식을 만들기 위해, Phi는 아래 역량과 태도를 중요시합니다." />
-          {[
-            { id: 'pillars-competency', label: '역량 · Competency', items: competencies },
-            { id: 'pillars-attitude', label: '태도 · Phi OS', items: attitudes },
-          ].map((group) => (
-            <div key={group.id} id={group.id} className="group">
-              <GroupLabel>{group.label}</GroupLabel>
-              <div className="grid-5">
-                {group.items.map((p) => (
-                  <Item key={p.en} title={p.ko} label={p.en}>
-                    <Text typography="Body" color="secondary">{p.body}</Text>
-                  </Item>
-                ))}
+          {/* 역량 · 태도를 한 줄에 나란히(사용자 지시 2026-09-22). 항목은 박스, 설명은 호버로 보고 클릭으로 고정 */}
+          <div className="pillars-row" ref={pillarsRef}>
+            {[
+              { id: 'pillars-competency', label: '역량 · Competency', items: competencies },
+              { id: 'pillars-attitude', label: '태도 · Phi OS', items: attitudes },
+            ].map((group) => (
+              <div key={group.id} id={group.id} className="group pillars-group">
+                <GroupLabel>{group.label}</GroupLabel>
+                <div className="pillar-list">
+                  {group.items.map((p, i) => (
+                    <PillarBox
+                      key={p.en}
+                      index={i}
+                      pillar={p}
+                      pinned={pinnedPillar === p.en}
+                      onToggle={() => setPinnedPillar((cur) => (cur === p.en ? null : p.en))}
+                    />
+                  ))}
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </section>
 
         {/* ---------- 커리큘럼 ---------- */}

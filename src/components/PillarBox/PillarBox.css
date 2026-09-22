@@ -1,0 +1,91 @@
+/* Competency / attitude box — same resting fill and hover preview language as .course-card. */
+.pillar-box { position: relative; }
+.pillar-box:has(.pillar-box__hit:hover) { z-index: 7; } /* the preview being hovered sits above a pinned one */
+.pillar-box[data-pinned='true'] { z-index: 6; }
+
+.pillar-box__hit {
+  position: relative;
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  border-radius: 20px;
+  cursor: pointer;
+}
+
+/* ---------- Resting box: name only ---------- */
+.pillar-box__face {
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr);
+  grid-template-rows: auto auto;
+  column-gap: 12px;
+  row-gap: 4px;
+  align-items: baseline;
+  padding: 20px 24px;
+  border-radius: 20px;
+  background: rgba(51, 51, 51, 0.04);
+  transition: background var(--duration) var(--ease), opacity 300ms var(--ease);
+}
+.pillar-box__face > :first-child { grid-row: 1 / span 2; }
+.pillar-box__hit:hover .pillar-box__face,
+.pillar-box__hit:focus-visible .pillar-box__face { background: rgba(51, 51, 51, 0.07); }
+
+/* ---------- Preview: a bigger box grows over the resting one ---------- */
+.pillar-box__preview {
+  --pv-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  position: absolute;
+  z-index: 5;
+  top: -12px;
+  left: -12px;
+  right: -12px;
+  border-radius: 26px;
+  background: var(--color-bg-default);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.12), 0 2px 10px rgba(0, 0, 0, 0.06);
+  opacity: 0;
+  transform: scale(0.96);
+  transform-origin: 50% 20%;
+  pointer-events: none;
+  transition: opacity 240ms var(--pv-ease), transform 380ms var(--pv-ease);
+}
+.pillar-box__preview-inner { display: flex; flex-direction: column; gap: 10px; padding: 30px 32px 30px; }
+.pillar-box__preview-inner > :last-child { margin-top: 8px; }
+/* each line wipes in from the left through a light blur, one after another — like the course cards */
+.pillar-box__preview-inner > * {
+  opacity: 0;
+  filter: blur(5px);
+  transform: translateX(-14px);
+  clip-path: inset(0 100% 0 0);
+  transition: opacity 160ms var(--pv-ease), filter 160ms var(--pv-ease), transform 200ms var(--pv-ease), clip-path 180ms var(--pv-ease);
+}
+.pillar-box__preview-inner > :nth-child(1) { --line-delay: 90ms; }
+.pillar-box__preview-inner > :nth-child(2) { --line-delay: 140ms; }
+.pillar-box__preview-inner > :nth-child(3) { --line-delay: 190ms; }
+
+/* open = pinned, or hovered with a mouse */
+.pillar-box[data-pinned='true'] .pillar-box__preview { opacity: 1; transform: none; pointer-events: auto; }
+.pillar-box[data-pinned='true'] .pillar-box__preview-inner > * { opacity: 1; filter: blur(0); transform: none; clip-path: inset(0 0 0 0); }
+.pillar-box[data-pinned='true'] .pillar-box__face { opacity: 0; }
+.pillar-box[data-pinned='true'] .pillar-box__preview { box-shadow: 0 24px 60px rgba(0, 0, 0, 0.14), 0 0 0 1.5px var(--color-text-primary); }
+@media (hover: hover) {
+  .pillar-box__hit:hover .pillar-box__preview {
+    opacity: 1;
+    transform: none;
+    transition: opacity 260ms var(--pv-ease), transform 460ms var(--pv-ease);
+  }
+  .pillar-box__hit:hover .pillar-box__preview-inner > * {
+    opacity: 1;
+    filter: blur(0);
+    transform: none;
+    clip-path: inset(0 0 0 0);
+    transition:
+      opacity 320ms var(--pv-ease) var(--line-delay),
+      filter 460ms var(--pv-ease) var(--line-delay),
+      transform 540ms var(--pv-ease) var(--line-delay),
+      clip-path 540ms var(--pv-ease) var(--line-delay);
+  }
+  .pillar-box__hit:hover .pillar-box__face { opacity: 0; }
+}
