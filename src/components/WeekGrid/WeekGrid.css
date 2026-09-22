@@ -35,7 +35,11 @@
   border-top: 1px dashed var(--color-border);
   pointer-events: none;
 }
+/* 맨 윗 줄은 표가 시작하는 자리 — 요일 머리글 밑줄처럼 보이던 점선을 긋지 않는다 */
+.week-grid__hour--first { border-top: 0; }
+
 .week-grid__hour > span {
+
   position: absolute;
   top: 0;
   left: 0;

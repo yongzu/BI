@@ -64,7 +64,6 @@
 
 /* ---------- Sections ---------- */
 .section { padding-top: var(--space-section); }
-#pillars { padding-top: 200px; } /* first section sits closer to the hero */
 .section--last { padding-bottom: var(--space-section); }
 
 .section-header {
@@ -156,7 +155,6 @@
   color: var(--color-text-secondary);
   transition: background var(--duration) var(--ease), color var(--duration) var(--ease), border-color var(--duration) var(--ease);
 }
-.course-filter__count { opacity: 0.55; font-variant-numeric: tabular-nums; }
 .course-filter__tab:hover { border-color: var(--color-text-tertiary); color: var(--color-text-primary); }
 .course-filter__tab[aria-selected='true'] {
   border-color: var(--color-text-primary);
@@ -198,7 +196,45 @@
   .stack .item { grid-template-columns: 1fr; }
   .stack .item__body { grid-column: 1; grid-row: auto; margin-top: 20px; }
 }
-/* ---------- Teaching devices (GPT 개편안 /BI/gpt/ 에서 옮김 + 부드러운 열림) ---------- */
+/* ---------- 역량 · 태도 (줄에는 이름만, 설명은 호버로) ---------- */
+.pillar-list { margin-top: 45px; border-top: 1px solid var(--color-border); }
+.pillar-row { border-bottom: 1px solid var(--color-border); }
+.pillar-row__hit {
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr) 28px;
+  gap: 20px;
+  align-items: center;
+  width: 100%;
+  min-height: 72px;
+  padding-block: 18px;
+  text-align: left;
+  cursor: pointer;
+}
+.pillar-row__titles { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.pillar-row__hit:focus-visible { outline: 2px solid var(--color-text-primary); outline-offset: 4px; }
+.pillar-row__icon { font-size: 20px; color: var(--color-text-tertiary); transition: transform 480ms var(--ease-reveal), color var(--duration) var(--ease); }
+/* 수업 장치와 같은 0fr → 1fr 펼침. 글자는 살짝 늦게 떠오른다 */
+.pillar-row__panel { display: grid; grid-template-rows: 0fr; transition: grid-template-rows 480ms var(--ease-reveal); }
+.pillar-row__clip { min-height: 0; overflow: hidden; }
+.pillar-row__body {
+  max-width: var(--lead-width);
+  padding: 0 48px 26px 68px;
+  opacity: 0;
+  transform: translateY(-6px);
+  transition: opacity 240ms var(--ease), transform 480ms var(--ease-reveal);
+}
+.pillar-row:hover .pillar-row__panel,
+.pillar-row:focus-within .pillar-row__panel,
+.pillar-row[data-pinned='true'] .pillar-row__panel { grid-template-rows: 1fr; }
+.pillar-row:hover .pillar-row__body,
+.pillar-row:focus-within .pillar-row__body,
+.pillar-row[data-pinned='true'] .pillar-row__body { opacity: 1; transform: none; transition-delay: 80ms; }
+.pillar-row:hover .pillar-row__icon,
+.pillar-row:focus-within .pillar-row__icon,
+.pillar-row[data-pinned='true'] .pillar-row__icon { transform: rotate(45deg); color: var(--color-text-secondary); }
+
+/* ---------- Teaching devices
+ (GPT 개편안 /BI/gpt/ 에서 옮김 + 부드러운 열림) ---------- */
 .device-accordion { margin-top: 45px; border-top: 1px solid var(--color-border); }
 .device-accordion__item { border-bottom: 1px solid var(--color-border); }
 .device-accordion__summary {
@@ -220,15 +256,25 @@
 .device-accordion__titles { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
 .device-accordion__summary:focus-visible { outline: 2px solid var(--color-text-primary); outline-offset: 4px; }
 .device-accordion__icon { font-size: 20px; transition: transform 480ms var(--ease-reveal); }
-.device-accordion__item[data-open='true'] .device-accordion__icon { transform: rotate(45deg); }
 /* 펼침: 행 높이를 0fr → 1fr로 옮기면 내용 높이를 몰라도 부드럽게 열리고 닫힌다. 글자는 살짝 늦게 떠오른다 */
 .device-accordion__panel { display: grid; grid-template-rows: 0fr; transition: grid-template-rows 480ms var(--ease-reveal); }
-.device-accordion__item[data-open='true'] .device-accordion__panel { grid-template-rows: 1fr; }
 .device-accordion__clip { min-height: 0; overflow: hidden; }
 .device-accordion__body { max-width: 720px; padding: 0 48px 30px 68px; opacity: 0; transform: translateY(-6px); transition: opacity 240ms var(--ease), transform 480ms var(--ease-reveal); }
-.device-accordion__item[data-open='true'] .device-accordion__body { opacity: 1; transform: none; transition-delay: 80ms; }
+/* 모두 접힌 채로 시작해 호버(또는 클릭 고정)에 열린다 — 역량과 태도 목록과 같은 조작 */
+.device-accordion__item:hover .device-accordion__panel,
+.device-accordion__item:focus-within .device-accordion__panel,
+.device-accordion__item[data-pinned='true'] .device-accordion__panel { grid-template-rows: 1fr; }
+.device-accordion__item:hover .device-accordion__body,
+.device-accordion__item:focus-within .device-accordion__body,
+.device-accordion__item[data-pinned='true'] .device-accordion__body { opacity: 1; transform: none; transition-delay: 80ms; }
+.device-accordion__item:hover .device-accordion__icon,
+.device-accordion__item:focus-within .device-accordion__icon,
+.device-accordion__item[data-pinned='true'] .device-accordion__icon { transform: rotate(45deg); }
+
 
 @media (max-width: 720px) {
+  .pillar-row__hit { grid-template-columns: 36px minmax(0, 1fr) 24px; gap: 12px; }
+  .pillar-row__body { padding: 0 36px 22px 48px; }
   .device-accordion__summary { grid-template-columns: 36px minmax(0, 1fr) 24px; gap: 12px; }
   .device-accordion__body { padding: 0 36px 24px 48px; }
   .grid-3 { grid-template-columns: repeat(2, minmax(0, 1fr)); }

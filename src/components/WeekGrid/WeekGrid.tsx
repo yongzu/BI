@@ -38,7 +38,7 @@ export function WeekGrid({ weekdays, days, startHour = 10, endHour = 18 }: Props
       <div className="week-grid__body">
         {/* Hour labels + dashed hour lines */}
         {hours.map((h) => (
-          <span key={h} className="week-grid__hour" style={{ gridRow: rowOf(h) }} aria-hidden="true">
+          <span key={h} className={`week-grid__hour${h === startHour ? ' week-grid__hour--first' : ''}`} style={{ gridRow: rowOf(h) }} aria-hidden="true">
             <span>{h}</span>
           </span>
         ))}

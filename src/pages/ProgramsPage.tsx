@@ -10,6 +10,7 @@ import { CoursePanel, type PanelEntry } from '../components/CoursePanel/CoursePa
 import { courseProfiles } from '../data/courseProfiles';
 import { useScrollReveal } from '../hooks/useScrollReveal';
 import labelRule from '../assets/label-rule.svg';
+import type { Pillar } from '../data/programs';
 import {
   attitudes,
   camps,
@@ -49,7 +50,7 @@ const toc: TocItem[] = [
 ];
 
 /** Blocks that rise in on scroll */
-const revealTargets = ['.hero > *', '.section-header > *', '.group-label', '.group__lead', '.course-card', '.item', '.annual', '.week-scroll', '.device-accordion__item'].join(', ');
+const revealTargets = ['.hero > *', '.section-header > *', '.group-label', '.group__lead', '.course-card', '.item', '.pillar-row', '.annual', '.week-scroll', '.device-accordion__item'].join(', ');
 
 /* ------------------------------------------------------------------ */
 
@@ -88,13 +89,59 @@ const deviceOutcomes: Record<string, string> = {
 };
 
 /**
- * 수업을 관통하는 접근 — GPT 개편안의 결과 중심 아코디언을 그대로 옮기고, 열고 닫힘을 부드럽게.
- * 줄을 누르면 설명이 아래로 스르르 펼쳐진다(높이 0fr → 1fr 전환 + 글자 페이드). 여러 줄을 함께 열 수 있고,
- * 첫 줄은 열린 채로 시작한다(GPT 판과 같다). <details>는 열림이 즉시라 버튼 + 영역으로 바꿨다.
+ * 역량 · 태도 — 줄에는 이름만 두고, 설명은 마우스를 올리면 펼친다(사용자 지시 2026-09-23).
+ * 펼침은 수업 장치 아코디언과 같은 0fr → 1fr 방식이라 내용 높이를 몰라도 부드럽다.
+ * 줄을 누르면 열린 채로 고정되고, 다른 줄을 열어도 그대로 남는다(여러 줄 동시 고정).
+ */
+function PillarList({ items }: { items: Pillar[] }) {
+  const [pinned, setPinned] = useState<Set<string>>(() => new Set());
+  const togglePin = (en: string) => setPinned((prev) => {
+    const next = new Set(prev);
+    if (next.has(en)) next.delete(en); else next.add(en);
+    return next;
+  });
+  return (
+    <div className="pillar-list">
+      {items.map((p, i) => {
+        const isPinned = pinned.has(p.en);
+        const panelId = `pillar-${p.en.replace(/\s+/g, '-').toLowerCase()}`;
+        return (
+          <article key={p.en} className="pillar-row" data-pinned={isPinned}>
+            <button
+              type="button"
+              className="pillar-row__hit"
+              aria-expanded={isPinned}
+              aria-controls={panelId}
+              onClick={() => togglePin(p.en)}
+            >
+              <Text as="span" typography="Label" color="tertiary">{String(i + 1).padStart(2, '0')}</Text>
+              <span className="pillar-row__titles">
+                <Text as="span" typography="Title">{p.ko}</Text>
+                <Text as="span" typography="Label" color="tertiary">{p.en}</Text>
+              </span>
+              <span className="pillar-row__icon" aria-hidden="true">＋</span>
+            </button>
+            <div id={panelId} className="pillar-row__panel" role="region" aria-label={p.ko}>
+              <div className="pillar-row__clip">
+                <Text typography="Body" color="secondary" className="pillar-row__body">{p.body}</Text>
+              </div>
+            </div>
+          </article>
+        );
+      })}
+    </div>
+  );
+}
+
+/**
+ * 수업을 관통하는 접근 — GPT 개편안의 결과 중심 아코디언을 옮겨온 목록.
+ * 모두 접힌 채로 시작해 마우스를 올리면 설명이 펼쳐지고(높이 0fr → 1fr 전환 + 글자 페이드),
+ * 줄을 누르면 열린 채로 고정된다(여러 줄 동시 고정) — 역량과 태도 목록과 같은 조작이다.
+ * <details>는 열림이 즉시라 버튼 + 영역으로 바꿨다.
  */
 function DeviceAccordion({ items }: { items: { name: string; body: string }[] }) {
-  const [open, setOpen] = useState<Set<number>>(() => new Set([0]));
-  const toggle = (i: number) => setOpen((prev) => {
+  const [pinned, setPinned] = useState<Set<number>>(() => new Set());
+  const togglePin = (i: number) => setPinned((prev) => {
     const next = new Set(prev);
     if (next.has(i)) next.delete(i); else next.add(i);
     return next;
@@ -102,11 +149,11 @@ function DeviceAccordion({ items }: { items: { name: string; body: string }[] })
   return (
     <div className="device-accordion">
       {items.map((d, i) => {
-        const isOpen = open.has(i);
+        const isPinned = pinned.has(i);
         const panelId = `device-panel-${i}`;
         return (
-          <div key={d.name} className="device-accordion__item" data-open={isOpen}>
-            <button type="button" className="device-accordion__summary" aria-expanded={isOpen} aria-controls={panelId} onClick={() => toggle(i)}>
+          <div key={d.name} className="device-accordion__item" data-pinned={isPinned}>
+            <button type="button" className="device-accordion__summary" aria-expanded={isPinned} aria-controls={panelId} onClick={() => togglePin(i)}>
               <Text as="span" typography="Label" color="tertiary">{String(i + 1).padStart(2, '0')}</Text>
               {/* 장치 이름을 제목으로 왼쪽에, 결과 한 줄은 그 아래에(사용자 지시 2026-09-22) */}
               <span className="device-accordion__titles">
@@ -115,7 +162,7 @@ function DeviceAccordion({ items }: { items: { name: string; body: string }[] })
               </span>
               <span className="device-accordion__icon" aria-hidden="true">＋</span>
             </button>
-            <div id={panelId} className="device-accordion__panel" role="region" aria-label={d.name} inert={!isOpen}>
+            <div id={panelId} className="device-accordion__panel" role="region" aria-label={d.name}>
               <div className="device-accordion__clip">
                 <div className="device-accordion__body">
                   <Text typography="Body" color="secondary">{d.body}</Text>
@@ -206,20 +253,14 @@ export function ProgramsPage() {
         {/* ---------- 역량과 태도 ---------- */}
         <section id="pillars" className="section container">
           <SectionHeader title="역량과 태도" lead="어떤 환경에서도 스스로 답을 찾을 수 있는 사고방식을 만들기 위해, Phi는 아래 역량과 태도를 중요시합니다." />
-          {/* 역량 · 태도를 두 줄로 나누고, 항목은 본문 폭 전체를 쓰는 스택으로 */}
+          {/* 역량 · 태도를 두 줄로 나누고, 설명은 호버로 펼친다 */}
           {[
             { id: 'pillars-competency', label: '역량 · Competency', items: competencies },
             { id: 'pillars-attitude', label: '태도 · Phi OS', items: attitudes },
           ].map((group) => (
             <div key={group.id} id={group.id} className="group">
               <GroupLabel>{group.label}</GroupLabel>
-              <div className="stack">
-                {group.items.map((p) => (
-                  <Item key={p.en} title={p.ko} label={p.en}>
-                    <Text typography="Body" color="secondary">{p.body}</Text>
-                  </Item>
-                ))}
-              </div>
+              <PillarList items={group.items} />
             </div>
           ))}
         </section>
@@ -230,7 +271,7 @@ export function ProgramsPage() {
 
           <div id="courses" className="group">
             <div className="course-filter" role="tablist" aria-label="수업 유형">
-              {[{ id: 'all', name: '전체', count: entries.length }, ...courseTypes.map((t) => ({ id: t.id, name: t.name, count: t.courses.length }))].map((t) => (
+              {[{ id: 'all', name: '전체' }, ...courseTypes].map((t) => (
                 <button
                   key={t.id}
                   id={`tab-${t.id}`}
@@ -240,8 +281,7 @@ export function ProgramsPage() {
                   className="course-filter__tab"
                   onClick={() => setCourseFilter(t.id)}
                 >
-                  <span>{t.name}</span>
-                  <span className="course-filter__count">{t.count}</span>
+                  {t.name}
                 </button>
               ))}
             </div>

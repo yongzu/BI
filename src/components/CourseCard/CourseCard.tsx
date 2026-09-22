@@ -44,7 +44,7 @@ export function CourseCard({ index, course, typeName, profile, onOpen }: Props) 
             <Text as="span" typography="Title">{course.en}</Text>
             <Text as="span" typography="Body">{course.lead}</Text>
             <span className="course-card__goals">
-              <Text as="span" typography="Label" color="tertiary">Learning Outcome</Text>
+              <Text as="span" typography="Label" color="tertiary" className="course-card__goals-title">Learning Outcome</Text>
               {profile.after.slice(0, 2).map((goal) => (
                 <Text key={goal} as="span" typography="Body" color="secondary" className="course-card__goal">{goal}</Text>
               ))}
