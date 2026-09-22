@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Text } from '../Text/Text';
 import type { Course, CourseType } from '../../data/programs';
 import type { CourseProfile } from '../../data/courseProfiles';
+import { lenis } from '../../smoothScroll';
 import './CoursePanel.css';
 
 /**
@@ -38,10 +39,12 @@ export function CoursePanel({ entry, total, onClose, onStep }: Props) {
     document.addEventListener('keydown', onKey);
     const prevOverflow = document.documentElement.style.overflow;
     document.documentElement.style.overflow = 'hidden';
+    lenis?.stop(); // 패널이 열려 있는 동안 뒤 페이지의 부드러운 스크롤도 멈춘다
     closeBtn.current?.focus({ preventScroll: true });
     return () => {
       document.removeEventListener('keydown', onKey);
       document.documentElement.style.overflow = prevOverflow;
+      lenis?.start();
     };
   }, [open, onClose, onStep]);
 
@@ -57,7 +60,7 @@ export function CoursePanel({ entry, total, onClose, onStep }: Props) {
       <div className="course-panel__backdrop" onClick={onClose} />
       <section className="course-panel__sheet" role="dialog" aria-modal="true" aria-labelledby="course-panel-title">
         {shown && (
-          <div ref={scroller} className="course-panel__scroll">
+          <div ref={scroller} className="course-panel__scroll" data-lenis-prevent>
             <div className="course-panel__bar">
               <Text as="span" typography="Label" color="tertiary">Course Profile · {number} / {String(total).padStart(2, '0')}</Text>
               <div className="course-panel__actions">

@@ -218,7 +218,7 @@ export function ProgramsPage() {
           />
           <div className="group">
             <GroupLabel>1학기 기준</GroupLabel>
-            <div className="week-scroll">
+            <div className="week-scroll" data-lenis-prevent-horizontal>
               <WeekGrid weekdays={weekdays} days={timetable} />
             </div>
             <a className="link typo-label" href="https://www.phi.design/lab-pdf/timetable-monthly" target="_blank" rel="noreferrer">1학기 일정 자세히보기 →</a>

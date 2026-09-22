@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { scrollToTarget } from '../../smoothScroll';
 import './Toc.css';
 
 /**
@@ -56,7 +57,10 @@ export function Toc({ items, onNavigate }: TocProps) {
 
   const go = (id: string) => {
     onNavigate?.(id);
-    requestAnimationFrame(() => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' }));
+    requestAnimationFrame(() => {
+      const el = document.getElementById(id);
+      if (el) scrollToTarget(el);
+    });
   };
 
   const renderList = (list: TocItem[], level: number) => (

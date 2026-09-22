@@ -24,6 +24,15 @@ html {
   scroll-padding-top: 40px;
 }
 
+/* Lenis smooth scroll (smoothScroll.ts) — it moves the page itself, so native smooth must be off or every frame animates twice */
+html.lenis, html.lenis body { height: auto; }
+html.lenis { scroll-behavior: auto; }
+.lenis.lenis-stopped { overflow: clip; }
+.lenis [data-lenis-prevent] { overscroll-behavior: contain; }
+/* While the page glides, cards passing under a still mouse must not fire their hover transitions — that repaint is what stutters */
+html.lenis-scrolling body { pointer-events: none; }
+html.lenis-scrolling .site-header, html.lenis-scrolling .toc { pointer-events: auto; }
+
 body {
   min-height: 100vh;
   background: var(--color-bg-default);
