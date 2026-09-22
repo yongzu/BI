@@ -150,7 +150,38 @@
   .grid-5 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .section-header { grid-template-columns: 1fr; gap: 16px; }
 }
+/* ---------- Teaching devices (GPT 개편안 /BI/gpt/ 에서 옮김 + 부드러운 열림) ---------- */
+.device-accordion { margin-top: 45px; border-top: 1px solid var(--color-border); }
+.device-accordion__item { border-bottom: 1px solid var(--color-border); }
+.device-accordion__summary {
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr) minmax(100px, .3fr) 28px;
+  gap: 20px;
+  align-items: center;
+  width: 100%;
+  min-height: 86px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.device-accordion__summary:focus-visible { outline: 2px solid var(--color-text-primary); outline-offset: 4px; }
+.device-accordion__icon { font-size: 20px; transition: transform 480ms var(--ease-reveal); }
+.device-accordion__item[data-open='true'] .device-accordion__icon { transform: rotate(45deg); }
+/* 펼침: 행 높이를 0fr → 1fr로 옮기면 내용 높이를 몰라도 부드럽게 열리고 닫힌다. 글자는 살짝 늦게 떠오른다 */
+.device-accordion__panel { display: grid; grid-template-rows: 0fr; transition: grid-template-rows 480ms var(--ease-reveal); }
+.device-accordion__item[data-open='true'] .device-accordion__panel { grid-template-rows: 1fr; }
+.device-accordion__clip { min-height: 0; overflow: hidden; }
+.device-accordion__body { max-width: 720px; padding: 0 48px 30px 68px; opacity: 0; transform: translateY(-6px); transition: opacity 240ms var(--ease), transform 480ms var(--ease-reveal); }
+.device-accordion__item[data-open='true'] .device-accordion__body { opacity: 1; transform: none; transition-delay: 80ms; }
+
 @media (max-width: 720px) {
+  .device-accordion__summary { grid-template-columns: 36px minmax(0, 1fr) 24px; gap: 12px; }
+  .device-accordion__name { display: none; }
+  .device-accordion__body { padding: 0 36px 24px 48px; }
   .grid-5, .grid-3 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .item__body { margin-top: 20px; }
   .group-label__rule { left: -12px; }

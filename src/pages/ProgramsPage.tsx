@@ -50,7 +50,7 @@ const toc: TocItem[] = [
 ];
 
 /** Blocks that rise in on scroll */
-const revealTargets = ['.hero > *', '.section-header > *', '.group-label', '.group__lead', '.course-type__head', '.course-card', '.item', '.annual', '.week-scroll'].join(', ');
+const revealTargets = ['.hero > *', '.section-header > *', '.group-label', '.group__lead', '.course-type__head', '.course-card', '.item', '.annual', '.week-scroll', '.device-accordion__item'].join(', ');
 
 /* ------------------------------------------------------------------ */
 
@@ -78,6 +78,55 @@ function GroupLabel({ children, meta }: { children: ReactNode; meta?: string }) 
 }
 
 /** Title (24) · English/meta label (16, 20%) · body (16, 70%) */
+/** 수업 장치마다 학습자가 얻는 결과 한 줄 — GPT 개편안(/BI/gpt/)의 문구 그대로 */
+const deviceOutcomes: Record<string, string> = {
+  라이브데모: '전문가의 사고 과정을 직접 본다',
+  피어크리틱: '동료와 평가 기준을 공유한다',
+  셀프피드백: '스스로 성장 정도를 판단한다',
+  워크숍: '필요한 기술을 제때 보완한다',
+  공유회: '설명하며 다시 배운다',
+  저널링: '배움을 기록하고 다음 행동으로 잇는다',
+};
+
+/**
+ * 수업을 관통하는 접근 — GPT 개편안의 결과 중심 아코디언을 그대로 옮기고, 열고 닫힘을 부드럽게.
+ * 줄을 누르면 설명이 아래로 스르르 펼쳐진다(높이 0fr → 1fr 전환 + 글자 페이드). 여러 줄을 함께 열 수 있고,
+ * 첫 줄은 열린 채로 시작한다(GPT 판과 같다). <details>는 열림이 즉시라 버튼 + 영역으로 바꿨다.
+ */
+function DeviceAccordion({ items }: { items: { name: string; body: string }[] }) {
+  const [open, setOpen] = useState<Set<number>>(() => new Set([0]));
+  const toggle = (i: number) => setOpen((prev) => {
+    const next = new Set(prev);
+    if (next.has(i)) next.delete(i); else next.add(i);
+    return next;
+  });
+  return (
+    <div className="device-accordion">
+      {items.map((d, i) => {
+        const isOpen = open.has(i);
+        const panelId = `device-panel-${i}`;
+        return (
+          <div key={d.name} className="device-accordion__item" data-open={isOpen}>
+            <button type="button" className="device-accordion__summary" aria-expanded={isOpen} aria-controls={panelId} onClick={() => toggle(i)}>
+              <Text as="span" typography="Label" color="tertiary">{String(i + 1).padStart(2, '0')}</Text>
+              <Text as="span" typography="Title">{deviceOutcomes[d.name] ?? d.name}</Text>
+              <Text as="span" typography="Label" className="device-accordion__name">{d.name}</Text>
+              <span className="device-accordion__icon" aria-hidden="true">＋</span>
+            </button>
+            <div id={panelId} className="device-accordion__panel" role="region" aria-label={d.name} inert={!isOpen}>
+              <div className="device-accordion__clip">
+                <div className="device-accordion__body">
+                  <Text typography="Body" color="secondary">{d.body}</Text>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 function Item({ title, label, children }: { title: ReactNode; label?: ReactNode; children?: ReactNode }) {
   return (
     <article className="item">
@@ -200,13 +249,7 @@ export function ProgramsPage() {
           />
           <div className="group">
             <GroupLabel>핵심 수업 장치</GroupLabel>
-            <div className="grid-3">
-              {devices.map((d, i) => (
-                <Item key={d.name} title={d.name} label={String(i + 1).padStart(2, '0')}>
-                  <Text typography="Body" color="secondary">{d.body}</Text>
-                </Item>
-              ))}
-            </div>
+            <DeviceAccordion items={devices} />
           </div>
         </section>
 
