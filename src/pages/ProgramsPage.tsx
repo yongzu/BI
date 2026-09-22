@@ -267,7 +267,7 @@ export function ProgramsPage() {
 
         {/* ---------- 커리큘럼 ---------- */}
         <section id="curriculum" className="section container">
-          <SectionHeader title="커리큘럼" lead="2026년 8월 개강부터 2027년 8월 졸업까지, 두 학기와 방학 캠프, 졸업 프로젝트로 이어지는 1년입니다." />
+          <SectionHeader title="커리큘럼" lead="상기된 역량과 태도를 중심으로 설계된 1학기 수업들입니다. 2학기는 1학기의 성취에 따라 학습 효과를 보완, 증폭할 수 있는 방향으로 준비됩니다." />
 
           <div id="courses" className="group">
             <div className="course-filter" role="tablist" aria-label="수업 유형">
@@ -324,11 +324,15 @@ export function ProgramsPage() {
             <DeviceAccordion items={devices} />
           </div>
 
-          <div id="curriculum-annual" className="group">
-            <GroupLabel>연간 구조</GroupLabel>
-            <AnnualTimeline stages={stages} months={months} />
-          </div>
+        </section>
 
+        {/* ---------- 연간 구조 ---------- */}
+        <section id="curriculum-annual" className="section container">
+          <SectionHeader
+            title="연간 구조"
+            lead="2026년 8월 개강부터 2027년 8월 졸업까지, 두 학기와 방학 캠프, 졸업 프로젝트로 이어지는 1년입니다."
+          />
+          <AnnualTimeline stages={stages} months={months} />
         </section>
 
         {/* ---------- 주간 시간표 ---------- */}

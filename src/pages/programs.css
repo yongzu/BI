@@ -127,6 +127,8 @@
 .item__body .link { margin-top: 4px; }
 
 .annual { margin-top: 45px; }
+/* 연간 구조는 자기 섹션의 머리글 아래 — 다른 섹션의 첫 그룹과 같은 간격으로 */
+.section-header + .annual { margin-top: clamp(80px, 5.8vw, 110px); }
 
 /* ---------- Courses ---------- */
 /* 코스 타입 필터 — 알약 탭, 잉크로 채운 것이 지금 보고 있는 타입.
