@@ -7,8 +7,9 @@ import './AnnualTimeline.css';
  * - Overview: every stage is a bar on its own row, placed on a month axis.
  * - Hover a stage (bar or chip): preview — the axis zooms to that stage's months and
  *   the bar grows into a detail card. Leaving the timeline ends the preview.
- * - Click: pins the stage so it stays open. Click it again, choose "전체", or click
- *   anywhere outside the timeline to return to the overview.
+ * - Click: pins the stage so it stays open — while pinned, hovering other stages changes
+ *   nothing (사용자 지시 2026-09-22). Click it again, click another stage, choose "전체", or
+ *   click anywhere outside the timeline to return to the overview.
  * Everything is positioned in % of the current view window, so a single state
  * change animates bars, month labels and grid lines together via CSS transitions.
  */
@@ -17,7 +18,7 @@ export type Stage = { name: string; period: string; marker?: string; start: numb
 type Props = { stages: Stage[]; months: number[] };
 
 const PAD = 1.15; // months of context shown on each side of a selected stage
-const SETTLE_MS = 700; // ignore hover while bars are still sliding, so a bar moving under the pointer can't steal focus
+const SETTLE_MS = 400; // ignore hover while bars are still sliding, so a bar moving under the pointer can't steal focus
 
 export function AnnualTimeline({ stages, months }: Props) {
   const [pinned, setPinned] = useState<number | null>(null);
@@ -41,7 +42,7 @@ export function AnnualTimeline({ stages, months }: Props) {
   const markMoving = (at: number) => { settleUntil.current = at + SETTLE_MS; };
 
   const hover = (i: number, e: PointerEvent) => {
-    if (e.pointerType !== 'mouse' || suppressHover.current) return;
+    if (e.pointerType !== 'mouse' || suppressHover.current || pinned !== null) return;
     if (e.timeStamp < settleUntil.current) return;
     if (i !== selected) markMoving(e.timeStamp);
     setPreview(i);

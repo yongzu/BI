@@ -1,7 +1,7 @@
 /* Rounded, monotone take on the zooming annual timeline. Tokens only. */
 .annual {
   --tl-ease: cubic-bezier(0.65, 0, 0.35, 1);
-  --tl-duration: 640ms;
+  --tl-duration: 360ms; /* 640 → 360ms: 전환이 느리다는 피드백(2026-09-22) */
   --tl-bar-height: 36px;
 }
 
@@ -109,14 +109,14 @@
   grid-template-rows: 0fr;
   opacity: 0;
   filter: blur(12px);
-  transition: grid-template-rows var(--tl-duration) var(--tl-ease), opacity 320ms var(--tl-ease), filter 320ms var(--tl-ease);
+  transition: grid-template-rows var(--tl-duration) var(--tl-ease), opacity 200ms var(--tl-ease), filter 200ms var(--tl-ease);
 }
 /* Details surface from a blur once the card has started to grow */
 .annual__bar[data-state='selected'] .annual__detail {
   grid-template-rows: 1fr;
   opacity: 1;
   filter: blur(0);
-  transition: grid-template-rows var(--tl-duration) var(--tl-ease), opacity 420ms var(--tl-ease) 220ms, filter 640ms var(--tl-ease) 220ms;
+  transition: grid-template-rows var(--tl-duration) var(--tl-ease), opacity 260ms var(--tl-ease) 100ms, filter 360ms var(--tl-ease) 100ms;
 }
 .annual__detail-inner {
   display: flex;

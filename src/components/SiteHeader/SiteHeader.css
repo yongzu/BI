@@ -6,7 +6,9 @@
   --sh-radius: 20px;
   --sh-fill: #f5f5f5;
   --sh-gray: #999999;
-  position: relative;
+  /* 스크롤해도 Phi 로고가 늘 위에 보이게 상단바 전체를 위에 붙인다(사용자 지시 2026-09-22) — 흰 바탕이라 아래 글이 비치지 않는다 */
+  position: sticky;
+  top: 0;
   z-index: 50;
   display: flex;
   align-items: center;
@@ -61,7 +63,35 @@
 }
 .site-header__cta:hover { background: #000; transform: translateY(-1px); }
 
+/* ---------- Back to top ---------- */
+.back-to-top {
+  position: fixed;
+  right: 32px;
+  bottom: 32px;
+  z-index: 60;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--color-text-primary);
+  color: var(--color-bg-default);
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+  opacity: 0;
+  transform: translateY(12px);
+  pointer-events: none;
+  transition: opacity 240ms var(--ease), transform 240ms var(--ease), background 160ms;
+}
+.back-to-top[data-shown='true'] { opacity: 1; transform: none; pointer-events: auto; }
+.back-to-top:hover { background: #000; }
+.back-to-top:focus-visible { outline: 2px solid var(--color-text-primary); outline-offset: 3px; }
+
 @media (max-width: 720px) {
+  .back-to-top { right: 20px; bottom: 20px; }
   .site-header { padding: 14px 20px; gap: 12px; }
   .site-header__nav { display: none; }
   .site-header__cta { right: 20px; top: 11px; }
