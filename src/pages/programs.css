@@ -100,20 +100,27 @@
 }
 
 /* ---------- 역량 · 태도: 두 그룹을 한 줄에 나란히, 항목은 박스를 세로로 (2026-09-22) ---------- */
-.pillars-row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 40px; margin-top: var(--space-group); }
-.pillars-row > .pillars-group { margin-top: 0; }
-.pillar-list { display: flex; flex-direction: column; gap: 12px; margin-top: 32px; }
-@media (max-width: 720px) { .pillars-row { grid-template-columns: 1fr; gap: var(--space-group); } }
 
 /* ---------- Item grids ---------- */
-.grid-5,
 .grid-3 {
   display: grid;
   gap: 56px var(--grid-gap);
   margin-top: 45px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
 }
-.grid-5 { grid-template-columns: repeat(5, minmax(0, 1fr)); }
-.grid-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+
+/* 본문 폭 전체를 쓰는 아이템 스택 (역량과 태도 · 코스 타입 설명) */
+.stack { display: grid; margin-top: 45px; border-bottom: 1px solid var(--color-border); }
+.stack .item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, var(--lead-width));
+  column-gap: var(--grid-gap);
+  align-items: start;
+  padding: 24px 0 32px;
+  border-top: 1px solid var(--color-border);
+}
+.stack .item__label { grid-column: 1; }
+.stack .item__body { grid-column: 2; grid-row: 1 / span 2; margin-top: 0; }
 
 .item { display: flex; flex-direction: column; }
 .item__label { margin-top: 9px; }
@@ -123,10 +130,44 @@
 .annual { margin-top: 45px; }
 
 /* ---------- Courses ---------- */
-.course-type { margin-top: clamp(64px, 5vw, 96px); scroll-margin-top: 48px; }
-.course-type__head { display: flex; flex-direction: column; gap: 9px; padding-top: 20px; border-top: 1px solid var(--color-border); }
-.course-type__body { max-width: var(--lead-width); margin-top: 8px; }
-.grid-courses { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 20px; margin-top: 32px; }
+/* 코스 타입 필터 — 알약 탭, 잉크로 채운 것이 지금 보고 있는 타입.
+   좁은 화면에서는 줄바꿈 대신 가로로 스크롤한다. */
+.course-filter {
+  display: flex;
+  gap: 8px;
+  margin-top: 32px;
+  padding-bottom: 6px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.course-filter::-webkit-scrollbar { display: none; }
+.course-filter__tab {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 0 15px;
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: var(--font-weight-bold);
+  letter-spacing: var(--tracking-body);
+  color: var(--color-text-secondary);
+  transition: background var(--duration) var(--ease), color var(--duration) var(--ease), border-color var(--duration) var(--ease);
+}
+.course-filter__count { opacity: 0.55; font-variant-numeric: tabular-nums; }
+.course-filter__tab:hover { border-color: var(--color-text-tertiary); color: var(--color-text-primary); }
+.course-filter__tab[aria-selected='true'] {
+  border-color: var(--color-text-primary);
+  background: var(--color-text-primary);
+  color: var(--color-bg-default);
+}
+
+/* 고른 타입 설명 — 역량과 태도와 같은 전폭 스택, 필터 바로 아래 */
+.course-note { margin-top: 24px; }
+
+.grid-courses { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; margin-top: 32px; }
 @media (max-width: 1100px) { .grid-courses { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 560px) { .grid-courses { grid-template-columns: 1fr; } }
 
@@ -153,8 +194,9 @@
 
 /* ---------- Responsive ---------- */
 @media (max-width: 1100px) {
-  .grid-5 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .section-header { grid-template-columns: 1fr; gap: 16px; }
+  .stack .item { grid-template-columns: 1fr; }
+  .stack .item__body { grid-column: 1; grid-row: auto; margin-top: 20px; }
 }
 /* ---------- Teaching devices (GPT 개편안 /BI/gpt/ 에서 옮김 + 부드러운 열림) ---------- */
 .device-accordion { margin-top: 45px; border-top: 1px solid var(--color-border); }
@@ -189,11 +231,11 @@
 @media (max-width: 720px) {
   .device-accordion__summary { grid-template-columns: 36px minmax(0, 1fr) 24px; gap: 12px; }
   .device-accordion__body { padding: 0 36px 24px 48px; }
-  .grid-5, .grid-3 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .grid-3 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .item__body { margin-top: 20px; }
   .group-label__rule { left: -12px; }
 }
 @media (max-width: 480px) {
-  .grid-5, .grid-3 { grid-template-columns: 1fr; }
+  .grid-3 { grid-template-columns: 1fr; }
   .overview__row { grid-template-columns: 1fr; gap: 2px; }
 }

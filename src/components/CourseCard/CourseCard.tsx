@@ -14,18 +14,24 @@ import './CourseCard.css';
 type Props = {
   index: number;
   course: Course;
+  /** 코스 타입(Fundamental · Domain · Ritual · Study) — 상단 왼쪽 배지 */
+  typeName: string;
   profile: CourseProfile;
   onOpen: () => void;
 };
 
-export function CourseCard({ index, course, profile, onOpen }: Props) {
+export function CourseCard({ index, course, typeName, profile, onOpen }: Props) {
   const number = String(index + 1).padStart(2, '0');
+  const experts = profile.experts.map((e) => e.name).join(', ');
 
   return (
     <article className="course-card">
       <button type="button" className="course-card__hit" onClick={onOpen} aria-haspopup="dialog" aria-label={`${course.en} 코스 프로필 열기`}>
         <span className="course-card__face">
-          <Text as="span" typography="Label" color="tertiary">{number}</Text>
+          <span className="course-card__topline">
+            <Text as="span" typography="Label" color="inherit" className="course-card__badge">{typeName}</Text>
+            <Text as="span" typography="Label" color="inherit" className="course-card__expert" title={experts}>{experts}</Text>
+          </span>
           <Text as="h4" typography="Title" className="course-card__name">{course.en}</Text>
           <Text as="span" typography="Label" color="tertiary">{course.ko}</Text>
           <Text as="span" typography="Body" color="secondary" className="course-card__lead">{course.lead}</Text>
@@ -34,11 +40,11 @@ export function CourseCard({ index, course, profile, onOpen }: Props) {
 
         <span className="course-card__preview" aria-hidden="true">
           <span className="course-card__preview-inner">
-            <Text as="span" typography="Label" color="tertiary">{number} · {profile.experts.map((e) => e.name).join(', ')}</Text>
+            <Text as="span" typography="Label" color="tertiary">{number} · {experts}</Text>
             <Text as="span" typography="Title">{course.en}</Text>
             <Text as="span" typography="Body">{course.lead}</Text>
             <span className="course-card__goals">
-              <Text as="span" typography="Label" color="tertiary">이 수업을 마치면</Text>
+              <Text as="span" typography="Label" color="tertiary">Learning Outcome</Text>
               {profile.after.slice(0, 2).map((goal) => (
                 <Text key={goal} as="span" typography="Body" color="secondary" className="course-card__goal">{goal}</Text>
               ))}

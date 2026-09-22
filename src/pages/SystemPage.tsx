@@ -17,7 +17,7 @@ const typeSpec: Record<Typography, string> = {
 const colors = [
   ['text-primary', 'var(--color-text-primary)', '#333 · 100%'],
   ['text-secondary', 'var(--color-text-secondary)', '#333 · 70%'],
-  ['text-tertiary', 'var(--color-text-tertiary)', '#333 · 20%'],
+  ['text-tertiary', 'var(--color-text-tertiary)', '#333 · 40%'],
   ['border', 'var(--color-border)', '#e3e3e3'],
   ['nav-strong', 'var(--color-nav-strong)', '#141414'],
   ['nav', 'var(--color-nav)', '#666666'],
@@ -29,7 +29,7 @@ export function SystemPage() {
     <main className="container system">
       <a href="#" className="link typo-label">← Programs</a>
       <Text as="h1" typography="Heading" className="system__title">Design System</Text>
-      <Text typography="Lead" color="secondary">Pretendard 한 가지, #333 잉크 한 가지. 위계는 크기·굵기와 잉크의 투명도(100 · 70 · 20%)로 만듭니다.</Text>
+      <Text typography="Lead" color="secondary">Pretendard 한 가지, #333 잉크 한 가지. 위계는 크기·굵기와 잉크의 투명도(100 · 70 · 40%)로 만듭니다.</Text>
 
       <section className="system__section">
         <Text typography="Title">Typography</Text>

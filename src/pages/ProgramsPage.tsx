@@ -1,10 +1,9 @@
-import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { useCallback, useMemo, useState, type ReactNode } from 'react';
 import { Text } from '../components/Text/Text';
 import { Toc, type TocItem } from '../components/Toc/Toc';
 import { AnnualTimeline } from '../components/AnnualTimeline/AnnualTimeline';
 import { Dropdown } from '../components/Dropdown/Dropdown';
 import { CourseCard } from '../components/CourseCard/CourseCard';
-import { PillarBox } from '../components/PillarBox/PillarBox';
 import { WeekGrid } from '../components/WeekGrid/WeekGrid';
 import { BackToTop, SiteHeader } from '../components/SiteHeader/SiteHeader';
 import { CoursePanel, type PanelEntry } from '../components/CoursePanel/CoursePanel';
@@ -39,9 +38,8 @@ const toc: TocItem[] = [
     id: 'curriculum',
     label: '커리큘럼',
     children: [
-      { id: 'curriculum-annual', label: '연간 구조' },
-      { id: 'courses', label: '주요 수업들', children: courseTypes.map((t) => ({ id: `type-${t.id}`, label: t.name })) },
       { id: 'devices', label: '수업을 관통하는 접근' },
+      { id: 'curriculum-annual', label: '연간 구조' },
       { id: 'week', label: '주간 시간표' },
       { id: 'camp', label: '방학 + 캠프' },
       { id: 'graduation', label: '수료 & 졸업' },
@@ -51,7 +49,7 @@ const toc: TocItem[] = [
 ];
 
 /** Blocks that rise in on scroll */
-const revealTargets = ['.hero > *', '.section-header > *', '.group-label', '.group__lead', '.course-type__head', '.course-card', '.item', '.annual', '.week-scroll', '.device-accordion__item', '.pillar-box'].join(', ');
+const revealTargets = ['.hero > *', '.section-header > *', '.group-label', '.group__lead', '.course-card', '.item', '.annual', '.week-scroll', '.device-accordion__item'].join(', ');
 
 /* ------------------------------------------------------------------ */
 
@@ -144,7 +142,10 @@ function Item({ title, label, children }: { title: ReactNode; label?: ReactNode;
 /* ------------------------------------------------------------------ */
 
 export function ProgramsPage() {
-  useScrollReveal(revealTargets);
+  // 주요 수업들 필터: 'all' 또는 코스 타입 id
+  const [courseFilter, setCourseFilter] = useState('all');
+  useScrollReveal(revealTargets, courseFilter);
+
 
   // All 12 courses in page order, for numbering and prev/next inside the panel
   const entries = useMemo<PanelEntry[]>(
@@ -152,19 +153,17 @@ export function ProgramsPage() {
     [],
   );
   const [openIndex, setOpenIndex] = useState<number | null>(null);
-  // 역량·태도 박스 중 클릭으로 고정한 하나. 바깥을 누르거나 Esc면 풀린다
-  const [pinnedPillar, setPinnedPillar] = useState<string | null>(null);
-  const pillarsRef = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    if (pinnedPillar === null) return;
-    const onDown = (e: PointerEvent) => { if (!pillarsRef.current?.contains(e.target as Node)) setPinnedPillar(null); };
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setPinnedPillar(null); };
-    document.addEventListener('pointerdown', onDown);
-    document.addEventListener('keydown', onKey);
-    return () => { document.removeEventListener('pointerdown', onDown); document.removeEventListener('keydown', onKey); };
-  }, [pinnedPillar]);
   const closePanel = useCallback(() => setOpenIndex(null), []);
   const stepPanel = useCallback((dir: -1 | 1) => setOpenIndex((i) => (i === null ? i : (i + dir + entries.length) % entries.length)), [entries.length]);
+
+  // 목차에서 커리큘럼으로 오면 필터를 전체로 되돌린다
+  const onTocNavigate = useCallback((id: string) => {
+    if (id === 'curriculum') setCourseFilter('all');
+  }, []);
+
+  const visibleCourses = entries.filter((e) => courseFilter === 'all' || courseFilter === e.type.id);
+  const activeType = courseTypes.find((t) => t.id === courseFilter);
+
 
   return (
     <>
@@ -174,7 +173,7 @@ export function ProgramsPage() {
           sticks while reading, and lets go before the footer. */}
       <div className="page-shell">
         <div className="toc-rail">
-          <Toc items={toc} />
+          <Toc items={toc} onNavigate={onTocNavigate} />
         </div>
 
       <main className="page">
@@ -207,60 +206,70 @@ export function ProgramsPage() {
         {/* ---------- 역량과 태도 ---------- */}
         <section id="pillars" className="section container">
           <SectionHeader title="역량과 태도" lead="어떤 환경에서도 스스로 답을 찾을 수 있는 사고방식을 만들기 위해, Phi는 아래 역량과 태도를 중요시합니다." />
-          {/* 역량 · 태도를 한 줄에 나란히(사용자 지시 2026-09-22). 항목은 박스, 설명은 호버로 보고 클릭으로 고정 */}
-          <div className="pillars-row" ref={pillarsRef}>
-            {[
-              { id: 'pillars-competency', label: '역량 · Competency', items: competencies },
-              { id: 'pillars-attitude', label: '태도 · Phi OS', items: attitudes },
-            ].map((group) => (
-              <div key={group.id} id={group.id} className="group pillars-group">
-                <GroupLabel>{group.label}</GroupLabel>
-                <div className="pillar-list">
-                  {group.items.map((p, i) => (
-                    <PillarBox
-                      key={p.en}
-                      index={i}
-                      pillar={p}
-                      pinned={pinnedPillar === p.en}
-                      onToggle={() => setPinnedPillar((cur) => (cur === p.en ? null : p.en))}
-                    />
-                  ))}
-                </div>
+          {/* 역량 · 태도를 두 줄로 나누고, 항목은 본문 폭 전체를 쓰는 스택으로 */}
+          {[
+            { id: 'pillars-competency', label: '역량 · Competency', items: competencies },
+            { id: 'pillars-attitude', label: '태도 · Phi OS', items: attitudes },
+          ].map((group) => (
+            <div key={group.id} id={group.id} className="group">
+              <GroupLabel>{group.label}</GroupLabel>
+              <div className="stack">
+                {group.items.map((p) => (
+                  <Item key={p.en} title={p.ko} label={p.en}>
+                    <Text typography="Body" color="secondary">{p.body}</Text>
+                  </Item>
+                ))}
               </div>
-            ))}
-          </div>
+            </div>
+          ))}
         </section>
 
         {/* ---------- 커리큘럼 ---------- */}
         <section id="curriculum" className="section container">
           <SectionHeader title="커리큘럼" lead="2026년 8월 개강부터 2027년 8월 졸업까지, 두 학기와 방학 캠프, 졸업 프로젝트로 이어지는 1년입니다." />
 
-          <div id="curriculum-annual" className="group">
-            <GroupLabel>연간 구조</GroupLabel>
-            <AnnualTimeline stages={stages} months={months} />
-          </div>
-
           <div id="courses" className="group">
-            <GroupLabel>주요 수업들</GroupLabel>
-            <Text typography="Body" color="secondary" className="group__lead">
-              상기된 역량과 태도를 중심으로 설계된 1학기 수업들입니다. 2학기는 1학기의 성취에 따라 학습 효과를 보완, 증폭할 수 있는 방향으로 준비됩니다.
-            </Text>
+            <div className="course-filter" role="tablist" aria-label="수업 유형">
+              {[{ id: 'all', name: '전체', count: entries.length }, ...courseTypes.map((t) => ({ id: t.id, name: t.name, count: t.courses.length }))].map((t) => (
+                <button
+                  key={t.id}
+                  id={`tab-${t.id}`}
+                  type="button"
+                  role="tab"
+                  aria-selected={courseFilter === t.id}
+                  className="course-filter__tab"
+                  onClick={() => setCourseFilter(t.id)}
+                >
+                  <span>{t.name}</span>
+                  <span className="course-filter__count">{t.count}</span>
+                </button>
+              ))}
+            </div>
 
-            {courseTypes.map((type) => (
-              <div key={type.id} id={`type-${type.id}`} className="course-type">
-                <div className="course-type__head">
-                  <Text as="h4" typography="Title">{type.name}</Text>
-                  <Text typography="Label" color="tertiary">{type.cadence} · {type.courses.length}개 수업</Text>
-                  <Text typography="Body" color="secondary" className="course-type__body">{type.body}</Text>
-                </div>
-                <div className="grid-courses">
-                  {type.courses.map((c) => {
-                    const entry = entries.find((e) => e.course.slug === c.slug)!;
-                    return <CourseCard key={c.slug} index={entry.index} course={c} profile={entry.profile} onOpen={() => setOpenIndex(entry.index)} />;
-                  })}
-                </div>
+            <div role="tabpanel" aria-labelledby={`tab-${courseFilter}`}>
+              {/* 고른 타입 설명 — 역량과 태도와 같은 전폭 스택 */}
+              <div className="stack course-note">
+                {(activeType ? [activeType] : courseTypes).map((t) => (
+                  <Item key={t.id} title={t.name} label={`${t.cadence} · ${t.courses.length}개 수업`}>
+                    <Text typography="Body" color="secondary">{t.body}</Text>
+                  </Item>
+                ))}
               </div>
-            ))}
+
+              {/* 필터에 걸린 수업들이 하나의 카탈로그로 이어진다 */}
+              <div className="grid-courses">
+                {visibleCourses.map((entry) => (
+                  <CourseCard
+                    key={entry.course.slug}
+                    index={entry.index}
+                    course={entry.course}
+                    typeName={entry.type.name}
+                    profile={entry.profile}
+                    onOpen={() => setOpenIndex(entry.index)}
+                  />
+                ))}
+              </div>
+            </div>
           </div>
         </section>
 
@@ -274,6 +283,12 @@ export function ProgramsPage() {
             <GroupLabel>핵심 수업 장치</GroupLabel>
             <DeviceAccordion items={devices} />
           </div>
+
+          <div id="curriculum-annual" className="group">
+            <GroupLabel>연간 구조</GroupLabel>
+            <AnnualTimeline stages={stages} months={months} />
+          </div>
+
         </section>
 
         {/* ---------- 주간 시간표 ---------- */}

@@ -211,7 +211,7 @@ export const courseProfiles: Record<string, CourseProfile> = {
   "peer-coaching": {
     "experts": [
       {
-        "name": "Learning Design(LD) Team",
+        "name": "Learning Designer",
         "bio": "Phi의 학습 설계 팀은 주체적으로 학습하는 태도와 역량을 만드는 데에 집중한다. Phi의 모든 교육 과정은 이 전제를 기반으로 설계되었으며, 강의보다 시연을, 평가보다 회고를, 효율보다 마찰을 지향한다. 목표는 학습자가 학습자라는 정체성을 넘어 스스로 학습하고, 어떤 조건과 환경에서도 탁월한 성과를 낼 수 있는 자신만의 성공 방정식을 구축하도록 돕는 것이다. 이를 위해 전문가의 판단 과정, 학습자 자신도 모르는 무지 같은 보이지 않는 사고를 관찰 가능하게 번역하고, 그것을 가장 잘 습득할 수 있는 학습 전략을 설계한다."
       }
     ],
@@ -255,7 +255,7 @@ export const courseProfiles: Record<string, CourseProfile> = {
   "aesthetic-literacy": {
     "experts": [
       {
-        "name": "Learning Design(LD) Team",
+        "name": "Learning Designer",
         "bio": "Phi의 학습 설계 팀은 주체적으로 학습하는 태도와 역량을 만드는 데에 집중한다. Phi의 모든 교육 과정은 이 전제를 기반으로 설계되었으며, 강의보다 시연을, 평가보다 회고를, 효율보다 마찰을 지향한다. 목표는 학습자가 학습자라는 정체성을 넘어 스스로 학습하고, 어떤 조건과 환경에서도 탁월한 성과를 낼 수 있는 자신만의 성공 방정식을 구축하도록 돕는 것이다. 이를 위해 전문가의 판단 과정, 학습자 자신도 모르는 무지 같은 보이지 않는 사고를 관찰 가능하게 번역하고, 그것을 가장 잘 습득할 수 있는 학습 전략을 설계한다."
       }
     ],
@@ -278,7 +278,7 @@ export const courseProfiles: Record<string, CourseProfile> = {
   "what-if": {
     "experts": [
       {
-        "name": "Learning Design(LD) Team",
+        "name": "Learning Designer",
         "bio": "Phi의 학습 설계 팀은 주체적으로 학습하는 태도와 역량을 만드는 데에 집중한다. Phi의 모든 교육 과정은 이 전제를 기반으로 설계되었으며, 강의보다 시연을, 평가보다 회고를, 효율보다 마찰을 지향한다. 목표는 학습자가 학습자라는 정체성을 넘어 스스로 학습하고, 어떤 조건과 환경에서도 탁월한 성과를 낼 수 있는 자신만의 성공 방정식을 구축하도록 돕는 것이다. 이를 위해 전문가의 판단 과정, 학습자 자신도 모르는 무지 같은 보이지 않는 사고를 관찰 가능하게 번역하고, 그것을 가장 잘 습득할 수 있는 학습 전략을 설계한다."
       }
     ],

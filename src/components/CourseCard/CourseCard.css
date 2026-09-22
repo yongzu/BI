@@ -20,7 +20,29 @@
   background: rgba(51, 51, 51, 0.04);
   transition: background var(--duration) var(--ease), opacity 300ms var(--ease);
 }
+/* Top line: course type on the left, the experts on the right */
+.course-card__topline { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.course-card__topline > * {
+  font-size: 13px;
+  line-height: 1.3;
+  padding: 5px 10px;
+  border: 1px solid transparent;
+  border-radius: 20px;
+  corner-shape: squircle;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.course-card__topline > .course-card__badge {
+  flex: none;
+  background: var(--color-bg-default);
+  color: var(--color-text-primary);
+  font-weight: var(--font-weight-bold);
+}
+.course-card__expert { min-width: 0; white-space: normal; border-color: var(--color-border); color: var(--color-text-secondary); }
+
 .course-card__name { margin-top: 8px; }
+
 .course-card__lead { margin-top: 16px; flex: 1; }
 .course-card__tags { margin-top: 20px; }
 .course-card__hit:hover .course-card__face,
