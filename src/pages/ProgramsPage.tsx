@@ -50,7 +50,7 @@ const toc: TocItem[] = [
 ];
 
 /** Blocks that rise in on scroll */
-const revealTargets = ['.hero > *', '.section-header > *', '.group-label', '.group__lead', '.course-card', '.item', '.pillar-row', '.annual', '.week-scroll', '.device-accordion__item'].join(', ');
+const revealTargets = ['.hero > *', '.section-header > *', '.group-label', '.group__lead', '.course-card', '.item', '.pillar-row', '.annual', '.week-scroll', '.device-card'].join(', ');
 
 /* ------------------------------------------------------------------ */
 
@@ -134,12 +134,14 @@ function PillarList({ items }: { items: Pillar[] }) {
 }
 
 /**
- * 수업을 관통하는 접근 — GPT 개편안의 결과 중심 아코디언을 옮겨온 목록.
- * 모두 접힌 채로 시작해 마우스를 올리면 설명이 펼쳐지고(높이 0fr → 1fr 전환 + 글자 페이드),
- * 줄을 누르면 열린 채로 고정된다(여러 줄 동시 고정) — 역량과 태도 목록과 같은 조작이다.
- * <details>는 열림이 즉시라 버튼 + 영역으로 바꿨다.
+ * 수업을 관통하는 접근 — 주요 수업들의 코스 박스를 참고한 박스, 한 줄에 2개씩 3줄
+ * (사용자 지시 2026-09-29). 박스에는 번호 · 장치 이름 · 결과 한 줄만 보이고, 설명은
+ * 마우스를 올리면 펼친다(0fr → 1fr). 닫힌 박스는 작게, 펼친 박스는 설명이 가장 긴 박스
+ * 크기로 모두 같다.
+ * 누르면 열린 채로 고정되고(여러 박스 동시 고정),
+ * 열린 설명을 눌러도 닫힌다 — 역량과 태도 목록과 같은 조작이다.
  */
-function DeviceAccordion({ items }: { items: { name: string; body: string }[] }) {
+function DeviceGrid({ items }: { items: { name: string; body: string }[] }) {
   const [pinned, setPinned] = useState<Set<number>>(() => new Set());
   const togglePin = (i: number) => setPinned((prev) => {
     const next = new Set(prev);
@@ -147,29 +149,31 @@ function DeviceAccordion({ items }: { items: { name: string; body: string }[] })
     return next;
   });
   return (
-    <div className="device-accordion">
+    <div className="grid-devices">
       {items.map((d, i) => {
         const isPinned = pinned.has(i);
         const panelId = `device-panel-${i}`;
         return (
-          <div key={d.name} className="device-accordion__item" data-pinned={isPinned}>
-            <button type="button" className="device-accordion__summary" aria-expanded={isPinned} aria-controls={panelId} onClick={() => togglePin(i)}>
-              <Text as="span" typography="Label" color="tertiary">{String(i + 1).padStart(2, '0')}</Text>
-              {/* 장치 이름을 제목으로 왼쪽에, 결과 한 줄은 그 아래에(사용자 지시 2026-09-22) */}
-              <span className="device-accordion__titles">
-                <Text as="span" typography="Title">{d.name}</Text>
-                {deviceOutcomes[d.name] && <Text as="span" typography="Body" color="secondary" className="device-accordion__outcome">{deviceOutcomes[d.name]}</Text>}
+          <article key={d.name} className="device-card" data-pinned={isPinned}>
+            <button type="button" className="device-card__hit" aria-expanded={isPinned} aria-controls={panelId} onClick={() => togglePin(i)}>
+              <span className="device-card__topline">
+                <Text as="span" typography="Label" color="inherit" className="device-card__badge">{String(i + 1).padStart(2, '0')}</Text>
+                <span className="device-card__icon" aria-hidden="true">＋</span>
               </span>
-              <span className="device-accordion__icon" aria-hidden="true">＋</span>
+              <Text as="h4" typography="Title" className="device-card__name">{d.name}</Text>
+              {deviceOutcomes[d.name] && <Text as="span" typography="Label" color="tertiary">{deviceOutcomes[d.name]}</Text>}
             </button>
-            <div id={panelId} className="device-accordion__panel" role="region" aria-label={d.name}>
-              <div className="device-accordion__clip">
-                <div className="device-accordion__body">
-                  <Text typography="Body" color="secondary">{d.body}</Text>
+            <div id={panelId} className="device-card__panel" role="region" aria-label={d.name} onClick={() => togglePin(i)}>
+              <div className="device-card__clip">
+                {/* 여섯 설명을 한 칸에 겹쳐 두고 자기 설명만 보인다 — 펼친 높이가 늘 가장 긴 설명에 맞춰진다 */}
+                <div className="device-card__body">
+                  {items.map((o) => (
+                    <Text key={o.name} typography="Body" color="secondary" className="device-card__text" data-ghost={o !== d} aria-hidden={o !== d}>{o.body}</Text>
+                  ))}
                 </div>
               </div>
             </div>
-          </div>
+          </article>
         );
       })}
     </div>
@@ -321,7 +325,7 @@ export function ProgramsPage() {
           />
           <div className="group">
             <GroupLabel>핵심 수업 장치</GroupLabel>
-            <DeviceAccordion items={devices} />
+            <DeviceGrid items={devices} />
           </div>
 
         </section>
