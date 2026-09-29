@@ -4,12 +4,13 @@ import './AnnualTimeline.css';
 
 /**
  * Annual structure as a zoomable timeline.
- * - Overview: every stage is a bar on its own row, placed on a month axis.
- * - Hover a stage (bar or chip): preview — the axis zooms to that stage's months and
- *   the bar grows into a detail card. Leaving the timeline ends the preview.
+ * - Overview: all stages sit side by side on one row, placed on a month axis
+ *   (상단 필터 칩을 없애고 4줄 → 1줄, 사용자 지시 2026-09-29).
+ * - Hover a stage: preview — the axis zooms to that stage's months and the bar grows
+ *   into a detail card. Leaving the timeline ends the preview.
  * - Click: pins the stage so it stays open — while pinned, hovering other stages changes
- *   nothing (사용자 지시 2026-09-22). Click it again, click another stage, choose "전체", or
- *   click anywhere outside the timeline to return to the overview.
+ *   nothing (사용자 지시 2026-09-22). Click it again, click another stage, or click
+ *   anywhere outside the timeline to return to the overview.
  * Everything is positioned in % of the current view window, so a single state
  * change animates bars, month labels and grid lines together via CSS transitions.
  */
@@ -78,25 +79,6 @@ export function AnnualTimeline({ stages, months }: Props) {
 
   return (
     <div ref={root} className="annual" data-zoomed={selected !== null} onPointerLeave={leave}>
-      <div className="annual__chips" role="group" aria-label="연간 구조 보기">
-        <button type="button" className="annual__chip typo-label" aria-pressed={selected === null} onClick={(e) => pin(null, e.timeStamp)}>
-          전체
-        </button>
-        {stages.map((s, i) => (
-          <button
-            key={s.name}
-            type="button"
-            className="annual__chip typo-label"
-            aria-pressed={selected === i}
-            data-pinned={pinned === i}
-            onPointerEnter={(e) => hover(i, e)}
-            onClick={(e) => pin(i, e.timeStamp)}
-          >
-            {s.name}
-          </button>
-        ))}
-      </div>
-
       <div className="annual__chart">
         {/* Month axis + grid lines share the same scale as the bars */}
         <div className="annual__axis" aria-hidden="true">
@@ -110,7 +92,9 @@ export function AnnualTimeline({ stages, months }: Props) {
         <ol className="annual__rows">
           {stages.map((s, i) => {
             const isSelected = selected === i;
-            const style: CSSProperties = { marginLeft: pct(s.start), width: len(s.end - s.start) };
+            // 캡슐 모양은 그대로, 캡슐 사이 간격만 없앤다(사용자 지시 2026-09-29): 각 막대가 다음 단계 시작점까지 이어진다
+            const end = stages[i + 1]?.start ?? s.end;
+            const style: CSSProperties = { marginLeft: pct(s.start), width: len(end - s.start) };
             return (
               <li key={s.name} className="annual__row">
                 <button
