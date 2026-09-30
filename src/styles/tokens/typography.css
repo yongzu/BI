@@ -4,7 +4,7 @@
    Pretendard only. Values measured on a 1920px frame; large sizes scale down
    fluidly below that width. Tracking is -3% everywhere except body (-2%).
 
-     Display   100 / Bold    / 1.19 / -3%   hero lines
+     Display    80 / Bold    / 1.19 / -3%   hero lines (was 100)
      Heading    48 / Bold    / 1.2  / -3%   section titles
      Subheading 36 / Bold    / 1.2  / -3%   panel titles
      Lead       20 / Regular / 1.4  / -3%   section intro (70%)
@@ -25,7 +25,7 @@
   --tracking-tight: -0.03em;
   --tracking-body: -0.02em;
 
-  --typo-display-size: clamp(3rem, 5.21vw, 6.25rem);    /* 48 → 100 */
+  --typo-display-size: clamp(3rem, calc(5.21vw - 20px), 5rem); /* 48 → 80 (100에서 20px 줄임, 사용자 지시 2026-09-30) */
   --typo-heading-size: clamp(2.25rem, 3.34vw, 3rem);    /* 36 → 48 */
   --typo-subheading-size: clamp(1.75rem, 1.88vw, 2.25rem); /* 28 → 36 */
   --typo-lead-size: 1.25rem;                            /* 20 */

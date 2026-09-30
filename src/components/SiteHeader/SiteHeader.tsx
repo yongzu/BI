@@ -4,8 +4,9 @@ import './SiteHeader.css';
 
 /**
  * Top bar in the Phi Brain toolbar style: wordmark left, quiet pill links right.
- * The 2기 오픈 알림 신청 CTA is the page's most important action, so it is an ink
- * box with white type and stays pinned to the top-right while the page scrolls.
+ * The bar itself is fully transparent and scrolls away with the page, taking the menu
+ * links with it — only the Phi wordmark (top-left) and the 2기 오픈 알림 신청 CTA
+ * (an ink box, the page's most important action, top-right) stay pinned (사용자 지시 2026-09-30).
  */
 const links = ['About', 'Programs', 'Experts', 'Admissions'];
 

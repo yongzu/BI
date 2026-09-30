@@ -25,7 +25,7 @@
 }
 
 .toc ul { display: flex; flex-direction: column; }
-.toc > ul { gap: 14px; }
+.toc > ul { gap: 2px; } /* 14 → 2px: 항목 간격 약 44 → 32px(사용자 지시 2026-09-30) */
 
 .toc a {
   position: relative;
@@ -41,15 +41,23 @@
 }
 .toc a:hover { color: var(--color-nav-strong); }
 .toc a.is-active { color: var(--color-nav-strong); font-weight: var(--font-weight-bold); }
-.toc a.is-active::before {
-  content: '';
+
+/* Active-section bar: one element that glides along the rule to the active link
+   (its place and height come from Toc.tsx), instead of jumping between links */
+.toc__bar {
   position: absolute;
-  left: -1px;
-  top: 4px;
-  bottom: 4px;
+  top: 0;
+  left: -1px; /* sits on the 1px rule */
   width: 3px;
+  height: 0;
   border-radius: 2px;
   background: var(--color-nav-strong);
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    transform 420ms var(--ease-reveal),
+    height 420ms var(--ease-reveal),
+    opacity 200ms var(--ease);
 }
 
 .toc__lv1 > a { font-weight: var(--font-weight-bold); color: var(--color-nav-strong); }

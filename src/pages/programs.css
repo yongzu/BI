@@ -25,11 +25,12 @@
 }
 
 /* ---------- Page shell & TOC rail ----------
-   Rail starts at the hero's first line (100px above it, as before) and ends with the main content. */
+   Rail starts right where the TOC sticks (88px, below the pinned logo) and ends with the main
+   content — the hero's title now moves with the screen height, so the rail no longer follows it. */
 .page-shell { position: relative; }
 .toc-rail {
   position: absolute;
-  top: max(0px, calc(var(--space-hero-top) - 100px));
+  top: 88px;
   bottom: 0;
   left: var(--toc-left);
   width: var(--toc-width);
@@ -37,34 +38,56 @@
 }
 .toc-rail > * { pointer-events: auto; }
 
-/* ---------- Hero ---------- */
+/* ---------- Hero: Full Viewport (사용자 지시 2026-09-30) ----------
+   첫 화면을 꽉 채우고 내용을 세로 가운데 — 크롬 상단바 · 작업 표시줄로 보이는 높이가 달라져도
+   위아래 여백이 늘 같다. 100svh = 주소창이 보이는 상태의 실제 높이(휴대폰에서 잘리지 않음, 데스크톱은 100vh와 같음).
+   min-height라 내용이 한 화면보다 길면(작은 화면) 잘리지 않고 늘어난다.
+   투명한 상단바가 위에 겹치므로 위 64px(상단바 57 + 여유)는 늘 비워 둔다. */
 .hero {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding-top: var(--space-hero-top);
+  justify-content: center;
+  min-height: 100vh;
+  min-height: 100svh;
+  padding-block: 64px 32px;
   text-align: center;
 }
 .hero__title { color: var(--color-text-primary); }
 /* One gap for title → intro and intro → 과정 개요 */
-.hero { --hero-gap: clamp(48px, 5.2vw, 100px); }
+.hero { --hero-gap: var(--space-hero-gap); } /* 폭 · 높이 중 작은 쪽 — tokens/foundation.css */
 .hero__intro { max-width: 783px; margin-top: var(--hero-gap); }
 
-/* 과정 개요 dropdown (behaviour in components/Dropdown) */
-.overview { width: min(100%, 783px); margin-top: var(--hero-gap); }
-/* 아래 여백 = 마지막 줄 12 + 8 = 20px — 위 선에서 '과정 개요'까지(20px)와 같게 맞춘다(2026-09-30) */
-.overview__list { padding: 4px 0 8px; }
+/* 과정 개요 dropdown (behaviour in components/Dropdown)
+   펼쳐도 첫 화면 안에 들어오도록 글자 · 여백을 모두 줄였다(사용자 지시 2026-09-30):
+   글자 16 → 14px, 머리줄 위아래 20 → 14px, 줄 12 → 7px, 좌우 32 → 24px. 펼친 높이 약 333 → 240px */
+.overview { --dd-pad-x: 24px; width: 100%; }
+/* 자리 잡기: 보이지 않는 펼친 사본과 실제 드롭다운을 같은 칸에 겹친다 → 칸 높이 = 펼친 높이.
+   실제 드롭다운은 위에 붙어 펼쳐지고, 접으면 아래가 빈다(A안) */
+.overview-slot { display: grid; width: min(100%, 783px); margin-top: var(--hero-gap); }
+.overview-slot > * { grid-area: 1 / 1; align-self: start; }
+.overview-ghost { visibility: hidden; pointer-events: none; }
+.overview .dropdown__trigger { padding-block: 14px; }
+.overview .typo-label,
+.overview .typo-body { font-size: 14px; }
+/* 아래 여백 = 마지막 줄 7 + 7 = 14px — 위 선에서 '과정 개요'까지(14px)와 같게 */
+.overview__list { padding: 2px 0 7px; }
 .overview__row {
   display: grid;
-  grid-template-columns: 120px minmax(0, 1fr);
+  grid-template-columns: 100px minmax(0, 1fr);
   gap: 16px;
-  padding: 12px 0;
+  padding: 7px 0;
 }
 .overview__row + .overview__row { border-top: 1px solid var(--color-border); }
 .overview__row dt { align-self: center; }
 
 /* ---------- Sections ---------- */
-.section { padding-top: var(--space-section); }
+.section {
+  padding-top: var(--space-section);
+  /* 목차로 이동하면 섹션 윗여백(최대 430px)을 건너뛰고 섹션 제목이 화면 위 88px — 목차가 붙는 높이 — 에
+     오게 한다(사용자 지시 2026-09-30). 이동 위치 = 섹션 위 − scroll-margin − 문서 scroll-padding(40px) */
+  scroll-margin-top: calc(88px - 40px - var(--space-section));
+}
 .section--last { padding-bottom: var(--space-section); }
 
 .section-header {
@@ -105,31 +128,6 @@
 .pillar-column { scroll-margin-top: 48px; }
 @media (max-width: 900px) { .pillar-columns { grid-template-columns: 1fr; } }
 
-/* ---------- Item grids ---------- */
-.grid-3 {
-  display: grid;
-  gap: 56px var(--grid-gap);
-  margin-top: 45px;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-}
-
-/* 본문 폭 전체를 쓰는 아이템 스택 (역량과 태도 · 코스 타입 설명) */
-.stack { display: grid; margin-top: 45px; border-bottom: 1px solid var(--color-border); }
-.stack .item {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, var(--lead-width));
-  column-gap: var(--grid-gap);
-  align-items: start;
-  padding: 24px 0 32px;
-  border-top: 1px solid var(--color-border);
-}
-.stack .item__label { grid-column: 1; }
-.stack .item__body { grid-column: 2; grid-row: 1 / span 2; margin-top: 0; }
-
-.item { display: flex; flex-direction: column; }
-.item__label { margin-top: 9px; }
-.item__body { display: flex; flex-direction: column; gap: 12px; margin-top: 40px; }
-.item__body .link { margin-top: 4px; }
 
 .annual { margin-top: 45px; }
 /* 연간 구조는 자기 섹션의 머리글 아래 — 다른 섹션의 첫 그룹과 같은 간격으로 */
@@ -159,8 +157,6 @@
 /* ---------- Responsive ---------- */
 @media (max-width: 1100px) {
   .section-header { grid-template-columns: 1fr; gap: 16px; }
-  .stack .item { grid-template-columns: 1fr; }
-  .stack .item__body { grid-column: 1; grid-row: auto; margin-top: 20px; }
 }
 /* ---------- 역량 · 태도 (줄에는 이름만, 설명은 호버로) ---------- */
 .pillar-list { margin-top: 45px; border-top: 1px solid var(--color-border); }
@@ -177,6 +173,8 @@
   cursor: pointer;
 }
 .pillar-row__titles { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+/* 설명 안에 문단이 여럿이면(채용 연계의 각주) 사이를 띄운다 */
+.pillar-row__body { display: flex; flex-direction: column; gap: 8px; }
 .pillar-row__hit:focus-visible { outline: 2px solid var(--color-text-primary); outline-offset: 4px; }
 .pillar-row__icon { font-size: 20px; color: var(--color-text-tertiary); transition: transform 480ms var(--ease-reveal), color var(--duration) var(--ease); }
 /* 수업 장치와 같은 0fr → 1fr 펼침. 글자는 살짝 늦게 떠오른다 */
@@ -273,11 +271,8 @@
 @media (max-width: 720px) {
   .pillar-row__hit { grid-template-columns: 36px minmax(0, 1fr) 24px; gap: 12px; }
   .pillar-row__body { padding: 0 36px 22px 48px; }
-  .grid-3 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .item__body { margin-top: 20px; }
   .group-label__rule { left: -12px; }
 }
 @media (max-width: 480px) {
-  .grid-3 { grid-template-columns: 1fr; }
   .overview__row { grid-template-columns: 1fr; gap: 2px; }
 }

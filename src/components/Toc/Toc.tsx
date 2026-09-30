@@ -1,10 +1,12 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { scrollToTarget } from '../../smoothScroll';
 import './Toc.css';
 
 /**
  * Right-side hierarchical table of contents ("ON THIS PAGE").
  * Three levels, hairline rule on the left, a 3px bar marks the section in view.
+ * The bar is one element that glides to the active item (사용자 지시 2026-09-30) instead of
+ * being redrawn on each link, which made it jump from block to block.
  */
 export type TocItem = { id: string; label: string; children?: TocItem[] };
 
@@ -54,6 +56,27 @@ type TocProps = {
 export function Toc({ items, onNavigate }: TocProps) {
   const ids = useMemo(() => flatten(items), [items]);
   const active = useActiveId(ids);
+  const nav = useRef<HTMLElement>(null);
+  const bar = useRef<HTMLSpanElement>(null);
+
+  // Move the single bar to the active link; CSS transitions do the gliding
+  useLayoutEffect(() => {
+    const place = () => {
+      const b = bar.current;
+      const link = nav.current?.querySelector<HTMLElement>('a.is-active');
+      if (!b) return;
+      if (!link) {
+        b.style.opacity = '0';
+        return;
+      }
+      b.style.opacity = '1';
+      b.style.transform = `translateY(${link.offsetTop + 4}px)`;
+      b.style.height = `${link.offsetHeight - 8}px`;
+    };
+    place();
+    window.addEventListener('resize', place);
+    return () => window.removeEventListener('resize', place);
+  }, [active]);
 
   const go = (id: string) => {
     onNavigate?.(id);
@@ -85,7 +108,8 @@ export function Toc({ items, onNavigate }: TocProps) {
   );
 
   return (
-    <nav className="toc" aria-label="페이지 목차">
+    <nav ref={nav} className="toc" aria-label="페이지 목차">
+      <span ref={bar} className="toc__bar" aria-hidden="true" />
       <p className="toc__title">ON THIS PAGE</p>
       {renderList(items, 1)}
     </nav>

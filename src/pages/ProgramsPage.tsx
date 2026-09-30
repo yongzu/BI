@@ -22,26 +22,17 @@ import {
 import './programs.css';
 
 const toc: TocItem[] = [
-  {
-    id: 'pillars',
-    label: '역량과 태도',
-    children: [
-      { id: 'pillars-competency', label: '역량 Competency' },
-      { id: 'pillars-attitude', label: '태도 Phi OS' },
-    ],
-  },
-  // 연간 구조는 역량과 태도 바로 아래 자기 섹션으로(사용자 지시 2026-09-30)
+  // 목차는 섹션 다섯 개를 한 층위로 — 역량과 태도의 하위 항목은 없애고, 수업을 관통하는 접근은
+  // 커리큘럼 아래에서 빼 같은 층위로(사용자 지시 2026-09-30)
+  { id: 'pillars', label: '역량과 태도' },
   { id: 'curriculum-annual', label: '연간 구조' },
-  {
-    id: 'curriculum',
-    label: '커리큘럼',
-    children: [{ id: 'devices', label: '수업을 관통하는 접근' }],
-  },
+  { id: 'curriculum', label: '커리큘럼' },
+  { id: 'devices', label: '수업을 관통하는 접근' },
   { id: 'career', label: '채용 연계' },
 ];
 
 /** Blocks that rise in on scroll */
-const revealTargets = ['.hero > *', '.section-header > *', '.group-label', '.group__lead', '.course-explorer', '.item', '.pillar-row', '.annual', '.device-card'].join(', ');
+const revealTargets = ['.hero > *', '.section-header > *', '.group-label', '.group__lead', '.course-explorer', '.pillar-row', '.annual', '.device-card'].join(', ');
 
 /* ------------------------------------------------------------------ */
 
@@ -80,41 +71,47 @@ const deviceOutcomes: Record<string, string> = {
 };
 
 /**
- * 역량 · 태도 — 줄에는 이름만 두고, 설명은 마우스를 올리면 펼친다(사용자 지시 2026-09-23).
- * 펼침은 수업 장치 아코디언과 같은 0fr → 1fr 방식이라 내용 높이를 몰라도 부드럽다.
- * 줄을 누르면 열린 채로 고정되고, 다른 줄을 열어도 그대로 남는다(여러 줄 동시 고정).
+ * 줄 목록 — 역량과 태도, 채용 연계가 같은 모양으로 쓴다
+ * (사용자 지시 2026-09-30). 줄에는 번호 · 제목 · 보조 문구만 두고, 설명은 마우스를
+ * 올리면 0fr → 1fr로 펼친다(사용자 지시 2026-09-23). 줄을 누르면 열린 채로 고정되고,
+ * 다른 줄을 열어도 그대로 남는다(여러 줄 동시 고정).
+ * `start`는 번호를 이어 매기기 위한 값 — 오른쪽 목록이 왼쪽 목록 다음 번호부터 센다.
  */
-function PillarList({ items }: { items: Pillar[] }) {
+type RowItem = { id: string; title: string; sub?: string; body: ReactNode };
+
+function RowList({ items, start = 0 }: { items: RowItem[]; start?: number }) {
   const [pinned, setPinned] = useState<Set<string>>(() => new Set());
-  const togglePin = (en: string) => setPinned((prev) => {
+  const togglePin = (id: string) => setPinned((prev) => {
     const next = new Set(prev);
-    if (next.has(en)) next.delete(en); else next.add(en);
+    if (next.has(id)) next.delete(id); else next.add(id);
     return next;
   });
   return (
     <div className="pillar-list">
-      {items.map((p, i) => {
-        const isPinned = pinned.has(p.en);
-        const panelId = `pillar-${p.en.replace(/\s+/g, '-').toLowerCase()}`;
+      {items.map((item, i) => {
+        const isPinned = pinned.has(item.id);
+        const panelId = `row-${item.id}`;
         return (
-          <article key={p.en} className="pillar-row" data-pinned={isPinned}>
+          <article key={item.id} className="pillar-row" data-pinned={isPinned}>
             <button
               type="button"
               className="pillar-row__hit"
               aria-expanded={isPinned}
               aria-controls={panelId}
-              onClick={() => togglePin(p.en)}
+              onClick={() => togglePin(item.id)}
             >
-              <Text as="span" typography="Label" color="tertiary">{String(i + 1).padStart(2, '0')}</Text>
+              <Text as="span" typography="Label" color="tertiary">{String(start + i + 1).padStart(2, '0')}</Text>
               <span className="pillar-row__titles">
-                <Text as="span" typography="Title">{p.ko}</Text>
-                <Text as="span" typography="Label" color="tertiary">{p.en}</Text>
+                <Text as="span" typography="Title">{item.title}</Text>
+                {item.sub && <Text as="span" typography="Label" color="tertiary">{item.sub}</Text>}
               </span>
               <span className="pillar-row__icon" aria-hidden="true">＋</span>
             </button>
-            <div id={panelId} className="pillar-row__panel" role="region" aria-label={p.ko}>
+            <div id={panelId} className="pillar-row__panel" role="region" aria-label={item.title}>
               <div className="pillar-row__clip">
-                <Text typography="Body" color="secondary" className="pillar-row__body">{p.body}</Text>
+                <div className="pillar-row__body">
+                  {typeof item.body === 'string' ? <Text typography="Body" color="secondary">{item.body}</Text> : item.body}
+                </div>
               </div>
             </div>
           </article>
@@ -123,6 +120,8 @@ function PillarList({ items }: { items: Pillar[] }) {
     </div>
   );
 }
+
+const pillarRows = (items: Pillar[]): RowItem[] => items.map((p) => ({ id: p.en.replace(/\s+/g, '-').toLowerCase(), title: p.ko, sub: p.en, body: p.body }));
 
 /**
  * 수업을 관통하는 접근 — 주요 수업들의 코스 박스를 참고한 박스, 한 줄에 2개씩 3줄
@@ -175,13 +174,61 @@ function DeviceGrid({ items }: { items: { name: string; tag: string; body: strin
   );
 }
 
-function Item({ title, label, children }: { title: ReactNode; label?: ReactNode; children?: ReactNode }) {
+/** 채용 연계 — 왼쪽 토스 별도 채용 전형, 오른쪽 우수 졸업자 입사 특전 */
+const careerRows: RowItem[] = [
+  { id: 'toss-hiring', title: '토스 별도 채용 전형', sub: '2027년 8월', body: '2027년 8월, Phi 1년제 1기 졸업자를 위한 토스의 별도 채용 전형이 마련됩니다.' },
+  {
+    id: 'toss-benefit',
+    title: '우수 졸업자 입사 특전',
+    sub: 'Benefit',
+    body: (
+      <>
+        <Text typography="Body" color="secondary">우수 졸업자에게는 채용 전형에 더해 별도의 입사 특전*이 제공됩니다.</Text>
+        <Text typography="Label" color="tertiary">*채용 특전의 세부 내용은 현재 검토 중입니다.</Text>
+      </>
+    ),
+  },
+];
+
+/**
+ * 역량과 태도와 같은 두 단: 왼쪽 목록 · 오른쪽 목록, 좁으면 위아래.
+ * 번호는 오른쪽이 왼쪽에 이어 세고(continue), 서로 다른 묶음(역량 · 태도)은 각자 01부터(restart).
+ */
+function RowColumns({ columns, numbering = 'continue' }: { columns: { id?: string; label?: string; items: RowItem[] }[]; numbering?: 'continue' | 'restart' }) {
   return (
-    <article className="item">
-      <Text as="h4" typography="Title">{title}</Text>
-      {label && <Text typography="Label" color="tertiary" className="item__label">{label}</Text>}
-      {children && <div className="item__body">{children}</div>}
-    </article>
+    <div className="pillar-columns">
+      {columns.map((col, c) => {
+        const from = numbering === 'continue' ? columns.slice(0, c).reduce((n, prev) => n + prev.items.length, 0) : 0;
+        return (
+          <div key={col.id ?? c} id={col.id} className="pillar-column">
+            {col.label && <GroupLabel>{col.label}</GroupLabel>}
+            <RowList items={col.items} start={from} />
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+/** 과정 개요 드롭다운 — 실제 것과, 펼친 높이를 잡아 두는 보이지 않는 사본이 같은 모양을 쓴다 */
+function Overview({ autoOpen, staticOpen }: { autoOpen?: boolean; staticOpen?: boolean }) {
+  return (
+    <Dropdown
+      autoOpen={autoOpen}
+      staticOpen={staticOpen}
+      className="overview"
+      label={<Text as="span" typography="Label">과정 개요</Text>}
+      summary={<Text as="span" typography="Body" color="secondary">1년 · 전일제 오프라인 · 2026년 8월 24일 개강</Text>}
+    >
+      <dl className="overview__list">
+        {facts.map((f) => (
+          <div key={f.label} className="overview__row">
+            <Text as="dt" typography="Label" color="tertiary">{f.label}</Text>
+            <Text as="dd" typography="Body">{f.value}</Text>
+          </div>
+        ))}
+      </dl>
+    </Dropdown>
   );
 }
 
@@ -211,37 +258,28 @@ export function ProgramsPage() {
           </Text>
           <Text typography="Intro" color="secondary" className="hero__intro">{intro[0]}</Text>
 
-          <Dropdown
-            autoOpen
-            className="overview"
-            label={<Text as="span" typography="Label">과정 개요</Text>}
-            summary={<Text as="span" typography="Body" color="secondary">1년 · 전일제 오프라인 · 2026년 8월 24일 개강</Text>}
-          >
-            <dl className="overview__list">
-              {facts.map((f) => (
-                <div key={f.label} className="overview__row">
-                  <Text as="dt" typography="Label" color="tertiary">{f.label}</Text>
-                  <Text as="dd" typography="Body">{f.value}</Text>
-                </div>
-              ))}
-            </dl>
-          </Dropdown>
+          {/* 과정 개요 자리: 펼친 높이를 미리 잡아 둔다(보이지 않는 펼친 사본) — 0.5초 뒤 자동으로
+              펼쳐져도 가운데 정렬된 제목 · 소개문이 밀려 올라가지 않는다(Full Viewport A안, 2026-09-30) */}
+          <div className="overview-slot">
+            <div className="overview-ghost" aria-hidden="true" inert>
+              <Overview staticOpen />
+            </div>
+            <Overview autoOpen />
+          </div>
         </section>
 
         {/* ---------- 역량과 태도 ---------- */}
         <section id="pillars" className="section container">
           <SectionHeader title="역량과 태도" lead="어떤 환경에서도 스스로 답을 찾을 수 있는 사고방식을 만들기 위해, Phi는 아래 역량과 태도를 중요시합니다." />
           {/* 역량은 왼쪽, 태도는 오른쪽 — 두 목록을 나란히 세로로(사용자 지시 2026-09-30). 설명은 호버로 펼친다 */}
-          <div className="group pillar-columns">
-            {[
-              { id: 'pillars-competency', label: '역량 · Competency', items: competencies },
-              { id: 'pillars-attitude', label: '태도 · Phi OS', items: attitudes },
-            ].map((group) => (
-              <div key={group.id} id={group.id} className="pillar-column">
-                <GroupLabel>{group.label}</GroupLabel>
-                <PillarList items={group.items} />
-              </div>
-            ))}
+          <div className="group">
+            <RowColumns
+              numbering="restart"
+              columns={[
+                { id: 'pillars-competency', label: '역량 · Competency', items: pillarRows(competencies) },
+                { id: 'pillars-attitude', label: '태도 · Phi OS', items: pillarRows(attitudes) },
+              ]}
+            />
           </div>
         </section>
 
@@ -270,27 +308,20 @@ export function ProgramsPage() {
             title={<>수업을<br />관통하는 접근</>}
             lead="Phi의 교육은 인지적 도제(Cognitive Apprenticeship)를 토대로 설계되었습니다. 전문가의 사고 과정을 학습자가 능동적으로 관찰할 수 있도록 다양한 장치가 준비되어있습니다."
           />
+          {/* 두 단 목록을 시험해 본 뒤 박스로 되돌림(사용자 지시 2026-09-30) */}
           <div className="group">
             <GroupLabel>핵심 수업 장치</GroupLabel>
             <DeviceGrid items={devices} />
           </div>
-
         </section>
 
         {/* ---------- 채용 연계 ---------- */}
         <section id="career" className="section section--last container">
           <SectionHeader title="채용 연계" lead="Phi의 1년제 프로그램 졸업자들은 토스의 별도 채용 전형에 지원할 수 있습니다." />
+          {/* 역량과 태도와 같은 두 단 목록(로컬 시험, 2026-09-30): 왼쪽 채용 전형 · 오른쪽 입사 특전 */}
           <div className="group">
             <GroupLabel>with Toss</GroupLabel>
-            <div className="grid-3">
-              <Item title="토스 별도 채용 전형" label="2027년 8월">
-                <Text typography="Body" color="secondary">2027년 8월, Phi 1년제 1기 졸업자를 위한 토스의 별도 채용 전형이 마련됩니다.</Text>
-              </Item>
-              <Item title="우수 졸업자 입사 특전" label="Benefit">
-                <Text typography="Body" color="secondary">우수 졸업자에게는 채용 전형에 더해 별도의 입사 특전*이 제공됩니다.</Text>
-                <Text typography="Label" color="tertiary">*채용 특전의 세부 내용은 현재 검토 중입니다.</Text>
-              </Item>
-            </div>
+            <RowColumns columns={[{ items: careerRows.slice(0, 1) }, { items: careerRows.slice(1) }]} />
           </div>
         </section>
       </main>
