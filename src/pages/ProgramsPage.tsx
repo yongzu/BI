@@ -1,19 +1,16 @@
-import { useCallback, useMemo, useState, type ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import { Text } from '../components/Text/Text';
 import { Toc, type TocItem } from '../components/Toc/Toc';
 import { AnnualTimeline } from '../components/AnnualTimeline/AnnualTimeline';
 import { Dropdown } from '../components/Dropdown/Dropdown';
-import { CourseCard } from '../components/CourseCard/CourseCard';
-import { WeekGrid } from '../components/WeekGrid/WeekGrid';
+import { CourseExplorer } from '../components/CourseExplorer/CourseExplorer';
 import { BackToTop, SiteHeader } from '../components/SiteHeader/SiteHeader';
-import { CoursePanel, type PanelEntry } from '../components/CoursePanel/CoursePanel';
 import { courseProfiles } from '../data/courseProfiles';
 import { useScrollReveal } from '../hooks/useScrollReveal';
 import labelRule from '../assets/label-rule.svg';
 import type { Pillar } from '../data/programs';
 import {
   attitudes,
-  camps,
   competencies,
   courseTypes,
   devices,
@@ -21,8 +18,6 @@ import {
   intro,
   months,
   stages,
-  timetable,
-  weekdays,
 } from '../data/programs';
 import './programs.css';
 
@@ -35,22 +30,18 @@ const toc: TocItem[] = [
       { id: 'pillars-attitude', label: '태도 Phi OS' },
     ],
   },
+  // 연간 구조는 역량과 태도 바로 아래 자기 섹션으로(사용자 지시 2026-09-30)
+  { id: 'curriculum-annual', label: '연간 구조' },
   {
     id: 'curriculum',
     label: '커리큘럼',
-    children: [
-      { id: 'devices', label: '수업을 관통하는 접근' },
-      { id: 'curriculum-annual', label: '연간 구조' },
-      { id: 'week', label: '주간 시간표' },
-      { id: 'camp', label: '방학 + 캠프' },
-      { id: 'graduation', label: '수료 & 졸업' },
-    ],
+    children: [{ id: 'devices', label: '수업을 관통하는 접근' }],
   },
   { id: 'career', label: '채용 연계' },
 ];
 
 /** Blocks that rise in on scroll */
-const revealTargets = ['.hero > *', '.section-header > *', '.group-label', '.group__lead', '.course-card', '.item', '.pillar-row', '.annual', '.week-scroll', '.device-card'].join(', ');
+const revealTargets = ['.hero > *', '.section-header > *', '.group-label', '.group__lead', '.course-explorer', '.item', '.pillar-row', '.annual', '.device-card'].join(', ');
 
 /* ------------------------------------------------------------------ */
 
@@ -141,7 +132,7 @@ function PillarList({ items }: { items: Pillar[] }) {
  * 누르면 열린 채로 고정되고(여러 박스 동시 고정),
  * 열린 설명을 눌러도 닫힌다 — 역량과 태도 목록과 같은 조작이다.
  */
-function DeviceGrid({ items }: { items: { name: string; body: string }[] }) {
+function DeviceGrid({ items }: { items: { name: string; tag: string; body: string }[] }) {
   const [pinned, setPinned] = useState<Set<number>>(() => new Set());
   const togglePin = (i: number) => setPinned((prev) => {
     const next = new Set(prev);
@@ -157,7 +148,11 @@ function DeviceGrid({ items }: { items: { name: string; body: string }[] }) {
           <article key={d.name} className="device-card" data-pinned={isPinned}>
             <button type="button" className="device-card__hit" aria-expanded={isPinned} aria-controls={panelId} onClick={() => togglePin(i)}>
               <span className="device-card__topline">
-                <Text as="span" typography="Label" color="inherit" className="device-card__badge">{String(i + 1).padStart(2, '0')}</Text>
+                {/* 번호(흰 알약) 옆에 배우는 자리 태그(테두리 알약) */}
+                <span className="device-card__chips">
+                  <Text as="span" typography="Label" color="inherit" className="device-card__badge">{String(i + 1).padStart(2, '0')}</Text>
+                  <span className="device-card__tag">{d.tag}</span>
+                </span>
                 <span className="device-card__icon" aria-hidden="true">＋</span>
               </span>
               <Text as="h4" typography="Title" className="device-card__name">{d.name}</Text>
@@ -193,28 +188,7 @@ function Item({ title, label, children }: { title: ReactNode; label?: ReactNode;
 /* ------------------------------------------------------------------ */
 
 export function ProgramsPage() {
-  // 주요 수업들 필터: 'all' 또는 코스 타입 id
-  const [courseFilter, setCourseFilter] = useState('all');
-  useScrollReveal(revealTargets, courseFilter);
-
-
-  // All 12 courses in page order, for numbering and prev/next inside the panel
-  const entries = useMemo<PanelEntry[]>(
-    () => courseTypes.flatMap((type) => type.courses.map((course) => ({ course, type, profile: courseProfiles[course.slug] }))).map((e, index) => ({ ...e, index })),
-    [],
-  );
-  const [openIndex, setOpenIndex] = useState<number | null>(null);
-  const closePanel = useCallback(() => setOpenIndex(null), []);
-  const stepPanel = useCallback((dir: -1 | 1) => setOpenIndex((i) => (i === null ? i : (i + dir + entries.length) % entries.length)), [entries.length]);
-
-  // 목차에서 커리큘럼으로 오면 필터를 전체로 되돌린다
-  const onTocNavigate = useCallback((id: string) => {
-    if (id === 'curriculum') setCourseFilter('all');
-  }, []);
-
-  const visibleCourses = entries.filter((e) => courseFilter === 'all' || courseFilter === e.type.id);
-  const activeType = courseTypes.find((t) => t.id === courseFilter);
-
+  useScrollReveal(revealTargets);
 
   return (
     <>
@@ -224,7 +198,7 @@ export function ProgramsPage() {
           sticks while reading, and lets go before the footer. */}
       <div className="page-shell">
         <div className="toc-rail">
-          <Toc items={toc} onNavigate={onTocNavigate} />
+          <Toc items={toc} />
         </div>
 
       <main className="page">
@@ -257,63 +231,36 @@ export function ProgramsPage() {
         {/* ---------- 역량과 태도 ---------- */}
         <section id="pillars" className="section container">
           <SectionHeader title="역량과 태도" lead="어떤 환경에서도 스스로 답을 찾을 수 있는 사고방식을 만들기 위해, Phi는 아래 역량과 태도를 중요시합니다." />
-          {/* 역량 · 태도를 두 줄로 나누고, 설명은 호버로 펼친다 */}
-          {[
-            { id: 'pillars-competency', label: '역량 · Competency', items: competencies },
-            { id: 'pillars-attitude', label: '태도 · Phi OS', items: attitudes },
-          ].map((group) => (
-            <div key={group.id} id={group.id} className="group">
-              <GroupLabel>{group.label}</GroupLabel>
-              <PillarList items={group.items} />
-            </div>
-          ))}
+          {/* 역량은 왼쪽, 태도는 오른쪽 — 두 목록을 나란히 세로로(사용자 지시 2026-09-30). 설명은 호버로 펼친다 */}
+          <div className="group pillar-columns">
+            {[
+              { id: 'pillars-competency', label: '역량 · Competency', items: competencies },
+              { id: 'pillars-attitude', label: '태도 · Phi OS', items: attitudes },
+            ].map((group) => (
+              <div key={group.id} id={group.id} className="pillar-column">
+                <GroupLabel>{group.label}</GroupLabel>
+                <PillarList items={group.items} />
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* ---------- 연간 구조 — 역량과 태도 바로 아래 ---------- */}
+        <section id="curriculum-annual" className="section container">
+          <SectionHeader
+            title="연간 구조"
+            lead="2026년 8월 개강부터 2027년 8월 졸업까지, 두 학기와 방학 캠프, 졸업 프로젝트로 이어지는 1년입니다."
+          />
+          <AnnualTimeline stages={stages} months={months} />
         </section>
 
         {/* ---------- 커리큘럼 ---------- */}
         <section id="curriculum" className="section container">
           <SectionHeader title="커리큘럼" lead="상기된 역량과 태도를 중심으로 설계된 1학기 수업들입니다. 2학기는 1학기의 성취에 따라 학습 효과를 보완, 증폭할 수 있는 방향으로 준비됩니다." />
 
+          {/* 필터 · 수업 목록 · 상세를 한 화면에 — 클릭 없이 전체를 파악한다 */}
           <div id="courses" className="group">
-            <div className="course-filter" role="tablist" aria-label="수업 유형">
-              {[{ id: 'all', name: '전체' }, ...courseTypes].map((t) => (
-                <button
-                  key={t.id}
-                  id={`tab-${t.id}`}
-                  type="button"
-                  role="tab"
-                  aria-selected={courseFilter === t.id}
-                  className="course-filter__tab"
-                  onClick={() => setCourseFilter(t.id)}
-                >
-                  {t.name}
-                </button>
-              ))}
-            </div>
-
-            <div role="tabpanel" aria-labelledby={`tab-${courseFilter}`}>
-              {/* 고른 타입 설명 — 역량과 태도와 같은 전폭 스택 */}
-              <div className="stack course-note">
-                {(activeType ? [activeType] : courseTypes).map((t) => (
-                  <Item key={t.id} title={t.name} label={`${t.cadence} · ${t.courses.length}개 수업`}>
-                    <Text typography="Body" color="secondary">{t.body}</Text>
-                  </Item>
-                ))}
-              </div>
-
-              {/* 필터에 걸린 수업들이 하나의 카탈로그로 이어진다 */}
-              <div className="grid-courses">
-                {visibleCourses.map((entry) => (
-                  <CourseCard
-                    key={entry.course.slug}
-                    index={entry.index}
-                    course={entry.course}
-                    typeName={entry.type.name}
-                    profile={entry.profile}
-                    onOpen={() => setOpenIndex(entry.index)}
-                  />
-                ))}
-              </div>
-            </div>
+            <CourseExplorer types={courseTypes} profiles={courseProfiles} />
           </div>
         </section>
 
@@ -328,64 +275,6 @@ export function ProgramsPage() {
             <DeviceGrid items={devices} />
           </div>
 
-        </section>
-
-        {/* ---------- 연간 구조 ---------- */}
-        <section id="curriculum-annual" className="section container">
-          <SectionHeader
-            title="연간 구조"
-            lead="2026년 8월 개강부터 2027년 8월 졸업까지, 두 학기와 방학 캠프, 졸업 프로젝트로 이어지는 1년입니다."
-          />
-          <AnnualTimeline stages={stages} months={months} />
-        </section>
-
-        {/* ---------- 주간 시간표 ---------- */}
-        <section id="week" className="section container">
-          <SectionHeader
-            title="주간 시간표"
-            lead="매주 월-금 수업이 진행됩니다. 화, 수, 목은 오전-오후 풀타임으로 진행되며 월, 금은 학기 수업 스케줄에 따라 유동적으로 진행됩니다."
-          />
-          <div className="group">
-            <GroupLabel>1학기 기준</GroupLabel>
-            <div className="week-scroll" data-lenis-prevent-horizontal>
-              <WeekGrid weekdays={weekdays} days={timetable} />
-            </div>
-            <a className="link typo-label" href="https://www.phi.design/lab-pdf/timetable-monthly" target="_blank" rel="noreferrer">1학기 일정 자세히보기 →</a>
-          </div>
-        </section>
-
-        {/* ---------- 방학 + 캠프 ---------- */}
-        <section id="camp" className="section container">
-          <SectionHeader
-            title="방학 + 캠프"
-            lead="4개월의 학기 루틴에서 벗어나 휴식과 함께 진행되는 워크숍 프로그램. 캠프는 별도 비용 없이 희망자 모두 참석할 수 있습니다."
-          />
-          <div className="group">
-            <GroupLabel>2027년 1월 – 2월</GroupLabel>
-            <div className="grid-3">
-              {camps.map((c) => (
-                <Item key={c.name} title={c.name} label={c.partner}>
-                  <Text typography="Body" color="secondary">{c.body}</Text>
-                </Item>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* ---------- 수료 & 졸업 ---------- */}
-        <section id="graduation" className="section container">
-          <SectionHeader title="수료 & 졸업" lead="졸업 프로젝트는 외부에 실제로 발표 또는 출시되어야 합니다." />
-          <div className="group">
-            <GroupLabel>2027년 6월 – 8월</GroupLabel>
-            <div className="grid-3">
-              <Item title="수료" label="Completion">
-                <Text typography="Body" color="secondary">2026년 8월부터 2027년 6월까지 예정된 모든 수업을 이수한 상태.</Text>
-              </Item>
-              <Item title="졸업" label="Graduation">
-                <Text typography="Body" color="secondary">수료 조건 달성 후, 2027년 7–8월에 본인의 목표에 따른 프로젝트를 완성합니다. 해당 프로젝트는 외부에 실제로 발표 또는 출시되어야 합니다.</Text>
-              </Item>
-            </div>
-          </div>
         </section>
 
         {/* ---------- 채용 연계 ---------- */}
@@ -406,8 +295,6 @@ export function ProgramsPage() {
         </section>
       </main>
       </div>
-
-      <CoursePanel entry={openIndex === null ? null : entries[openIndex]} total={entries.length} onClose={closePanel} onStep={stepPanel} />
 
       <footer className="footer container">
         <Text typography="Title">Phi Institute of Design</Text>

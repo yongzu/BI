@@ -1,0 +1,32 @@
+/* ==========================================================================
+   Segmented filter — 둥근 트랙 안의 세그먼트, 고른 것은 잉크로 채운다.
+   주요 수업들의 타입 필터와 연간 구조의 기간 필터가 함께 쓴다.
+   좁은 화면에서는 줄바꿈 대신 가로로 스크롤한다.
+   ========================================================================== */
+.segmented {
+  display: inline-flex;
+  max-width: 100%;
+  gap: 4px;
+  padding: 6px;
+  border-radius: 999px;
+  background: var(--color-bg-subtle);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.segmented::-webkit-scrollbar { display: none; }
+.segmented__tab {
+  flex: 0 0 auto;
+  min-height: 40px;
+  padding: 0 20px;
+  border-radius: 999px;
+  font-size: 15px;
+  font-weight: var(--font-weight-bold);
+  letter-spacing: var(--tracking-tight);
+  white-space: nowrap;
+  color: var(--color-text-tertiary);
+  transition: background var(--duration) var(--ease), color var(--duration) var(--ease);
+}
+.segmented__tab:hover { color: var(--color-text-primary); }
+.segmented__tab[aria-selected='true'],
+.segmented__tab[aria-pressed='true'] { background: var(--color-text-primary); color: var(--color-bg-default); }
+.segmented__tab:focus-visible { outline: 2px solid var(--color-text-primary); outline-offset: 2px; }

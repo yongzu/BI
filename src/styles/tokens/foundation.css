@@ -1,13 +1,13 @@
 /* ==========================================================================
    Layout & motion tokens — Figma "Phi Design Institute" (node 1650:6417)
    --------------------------------------------------------------------------
-   Content: 1140px column, 5-column item grid with 40px gaps (196px columns).
+   Content: 1200px column (was 1140px in the Figma frame), 40px grid gaps.
    Section header: title column + 710px lead column.
    Page TOC sits at the left, 237px wide.
    ========================================================================== */
 
 :root {
-  --content-width: 1140px;
+  --content-width: 1200px; /* 1140 → 1200 (사용자 지시 2026-09-30) */
   --grid-gap: 40px;
   --lead-width: 710px;
   --gutter: max(24px, 4vw);

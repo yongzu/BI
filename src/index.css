@@ -7,6 +7,7 @@
 @import './styles/tokens/color.css';
 @import './styles/tokens/typography.css';
 @import './styles/tokens/foundation.css';
+@import './styles/segmented.css';
 
 *,
 *::before,

@@ -5,6 +5,9 @@
   --tl-bar-height: 36px;
 }
 
+/* ---------- Filter (모양은 styles/segmented.css) ---------- */
+.annual__filter { margin-bottom: 24px; }
+
 /* ---------- Chart ---------- */
 .annual__chart {
   position: relative;
@@ -52,6 +55,7 @@
   min-height: var(--tl-bar-height);
   border-radius: 18px;
   text-align: left;
+  cursor: pointer;
   background: var(--color-bg-subtle);
   color: var(--color-text-primary);
   white-space: normal;
@@ -76,6 +80,9 @@
 .annual__bar-head {
   display: flex;
   align-items: flex-end;
+  width: 100%;
+  border-radius: inherit;
+  text-align: left;
   min-height: var(--tl-bar-height);
   padding: 9px 16px;
   overflow: hidden;
@@ -130,6 +137,70 @@
 .annual__bar[data-state='selected'] .annual__meta { color: rgba(255, 255, 255, 0.6); }
 .annual__bar[data-state='selected'] .annual__body { color: rgba(255, 255, 255, 0.78); max-width: 520px; }
 .annual__badge { color: var(--color-bg-default); }
+
+/* 캠프 · 수료와 졸업 박스 — 열린 카드(잉크 바탕) 안에서 세로로 쌓인다 */
+.annual__items { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; }
+.annual__item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 16px 18px 18px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.08);
+}
+.annual__item-name { font-size: 16px; line-height: 1.35; font-weight: var(--font-weight-bold); letter-spacing: var(--tracking-tight); color: var(--color-bg-default); }
+.annual__item-label { font-size: 13px; line-height: 1.3; font-weight: var(--font-weight-medium); color: rgba(255, 255, 255, 0.5); }
+.annual__item-body { margin-top: 6px; font-size: 14px; line-height: 1.6; letter-spacing: var(--tracking-body); color: rgba(255, 255, 255, 0.78); }
+
+/* 주간 리듬: 요일 다섯 칸 × 오전 · 점심 · 오후. 세션 칸은 세로로 크게(3시간 = 92px),
+   칸마다 시간과 세션 이름, 점심시간은 한 줄로 가로지른다 */
+.annual__rhythm { margin-top: 8px; }
+.annual__week { container-type: inline-size; display: flex; flex-direction: column; gap: 4px; margin-top: 14px; }
+.annual__week-row { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 4px; }
+.annual__week-day { padding-bottom: 4px; text-align: center; font-size: 13px; font-weight: var(--font-weight-bold); color: rgba(255, 255, 255, 0.78); }
+.annual__week-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-height: 92px;
+  padding: 10px 8px;
+  border-radius: 8px;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+}
+.annual__week-cell[data-on='true'] { background: rgba(255, 255, 255, 0.14); box-shadow: none; }
+.annual__week-time { font-size: 11px; line-height: 1.3; font-weight: var(--font-weight-medium); letter-spacing: -0.02em; color: rgba(255, 255, 255, 0.6); }
+.annual__week-name { font-size: 14px; line-height: 1.3; font-weight: var(--font-weight-bold); letter-spacing: var(--tracking-tight); color: var(--color-bg-default); }
+.annual__week-lunch {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  font-size: 13px;
+  font-weight: var(--font-weight-medium);
+  color: rgba(255, 255, 255, 0.6);
+}
+.annual__week-lunch-time { color: rgba(255, 255, 255, 0.4); }
+.annual__week-caption { display: none; }
+
+/* 칸이 좁을 때(휴대폰): 시간은 줄 머리글로 올리고, 칸에는 세션 이름만 */
+@container (max-width: 400px) {
+  .annual__week-caption { display: block; margin-top: 6px; font-size: 12px; font-weight: var(--font-weight-medium); color: rgba(255, 255, 255, 0.6); }
+  .annual__week-time { display: none; }
+  .annual__week-cell { min-height: 72px; padding: 8px 6px; }
+  .annual__week-name { font-size: 12px; }
+}
+.annual__link {
+  align-self: flex-start;
+  margin-top: 10px;
+  font-size: 14px;
+  font-weight: var(--font-weight-medium);
+  color: var(--color-bg-default);
+}
+.annual__link:hover { text-decoration: underline; text-underline-offset: 4px; }
 
 @media (max-width: 720px) {
   .annual__bar[data-state='selected'] .annual__bar-head { padding: 16px 20px 0; }
