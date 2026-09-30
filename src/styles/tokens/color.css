@@ -11,13 +11,15 @@
   --palette-white: #ffffff;
   --palette-ink: #333333;
   --palette-rule: #e3e3e3;
+  --palette-gray-fill: #f8f9fa; /* 모든 회색 면(박스 · 캡슐 · 호버)을 이 한 색으로(사용자 지시 2026-09-30) */
   --palette-nav-strong: #141414;
   --palette-nav: #666666;
   --palette-nav-faint: #9c9c9c;
 
   /* ---------- Semantic: Background ---------- */
   --color-bg-default: var(--palette-white);
-  --color-bg-hover: rgba(51, 51, 51, 0.04);
+  --color-bg-subtle: var(--palette-gray-fill);
+  --color-bg-hover: var(--palette-gray-fill);
 
   /* ---------- Semantic: Text ---------- */
   --color-text-primary: var(--palette-ink);             /* 100% — titles */

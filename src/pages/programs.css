@@ -241,7 +241,7 @@
 .grid-devices { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; gap: 20px; margin-top: 45px; }
 .device-card {
   border-radius: 20px;
-  background: rgba(51, 51, 51, 0.04);
+  background: var(--color-bg-subtle);
   transition: background var(--duration) var(--ease);
 }
 .device-card__hit {
@@ -264,7 +264,7 @@
 /* 모든 설명이 같은 칸에 겹친다 → 펼친 높이 = 가장 긴 설명. 남의 설명은 자리만 차지한다 */
 .device-card__text { grid-area: 1 / 1; }
 .device-card__text[data-ghost='true'] { visibility: hidden; }
-.device-card[data-pinned='true'] { background: rgba(51, 51, 51, 0.07); }
+.device-card[data-pinned='true'] { background: var(--color-bg-subtle); }
 .device-card:has(.device-card__hit:focus-visible) .device-card__panel,
 .device-card[data-pinned='true'] .device-card__panel { grid-template-rows: 1fr; }
 .device-card:has(.device-card__hit:focus-visible) .device-card__body,
@@ -273,7 +273,7 @@
 .device-card[data-pinned='true'] .device-card__icon { transform: rotate(45deg); color: var(--color-text-secondary); }
 /* 호버로 펼치기는 마우스가 있는 기기에서만 — 터치에서는 누르면 열리고 다시 누르면 닫힌다 */
 @media (hover: hover) {
-  .device-card:hover { background: rgba(51, 51, 51, 0.07); }
+  .device-card:hover { background: var(--color-bg-subtle); }
   .device-card:hover .device-card__panel { grid-template-rows: 1fr; }
   .device-card:hover .device-card__body { opacity: 1; transform: none; transition-delay: 80ms; }
   .device-card:hover .device-card__icon { transform: rotate(45deg); color: var(--color-text-secondary); }
