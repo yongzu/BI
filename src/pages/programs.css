@@ -57,29 +57,12 @@
 /* One gap for title → intro and intro → 과정 개요 */
 .hero { --hero-gap: var(--space-hero-gap); } /* 폭 · 높이 중 작은 쪽 — tokens/foundation.css */
 .hero__intro { max-width: 783px; margin-top: var(--hero-gap); }
+/* 소개: 큰 글씨 두 줄(Subheading) 아래 설명 한 문장 (behaviour in components/BlurReveal) */
+.hero__intro .blur-reveal__body { margin-top: 16px; }
 
-/* 과정 개요 dropdown (behaviour in components/Dropdown)
-   펼쳐도 첫 화면 안에 들어오도록 글자 · 여백을 모두 줄였다(사용자 지시 2026-09-30):
-   글자 16 → 14px, 머리줄 위아래 20 → 14px, 줄 12 → 7px, 좌우 32 → 24px. 펼친 높이 약 333 → 240px */
-.overview { --dd-pad-x: 24px; width: 100%; }
-/* 자리 잡기: 보이지 않는 펼친 사본과 실제 드롭다운을 같은 칸에 겹친다 → 칸 높이 = 펼친 높이.
-   실제 드롭다운은 위에 붙어 펼쳐지고, 접으면 아래가 빈다(A안) */
-.overview-slot { display: grid; width: min(100%, 783px); margin-top: var(--hero-gap); }
-.overview-slot > * { grid-area: 1 / 1; align-self: start; }
-.overview-ghost { visibility: hidden; pointer-events: none; }
-.overview .dropdown__trigger { padding-block: 14px; }
-.overview .typo-label,
-.overview .typo-body { font-size: 14px; }
-/* 아래 여백 = 마지막 줄 7 + 7 = 14px — 위 선에서 '과정 개요'까지(14px)와 같게 */
-.overview__list { padding: 2px 0 7px; }
-.overview__row {
-  display: grid;
-  grid-template-columns: 100px minmax(0, 1fr);
-  gap: 16px;
-  padding: 7px 0;
-}
-.overview__row + .overview__row { border-top: 1px solid var(--color-border); }
-.overview__row dt { align-self: center; }
+/* 지원 기간 + 지원하기 버튼(behaviour in components/ApplyButton) — 과정 개요 자리를 대신한다(2026-10-03) */
+.hero__apply { display: flex; flex-direction: column; align-items: center; gap: 24px; margin-top: var(--hero-gap); }
+.hero__period { color: var(--color-text-primary); }
 
 /* ---------- Sections ---------- */
 .section {
@@ -102,25 +85,8 @@
 .group + .group { margin-top: clamp(56px, 3.6vw, 72px); }
 .group__lead { max-width: var(--lead-width); margin-top: 16px; }
 
-/* Label with the short vertical rule (asset from Figma) */
-.group-label { position: relative; display: flex; flex-wrap: wrap; align-items: baseline; gap: 12px; }
-.group-label__rule {
-  position: absolute;
-  left: -20px;
-  top: 2px;
-  width: 2px;
-  height: 28.46px;
-  overflow: hidden;
-}
-.group-label__rule img {
-  display: block;
-  width: 28.46px;
-  height: 2px;
-  max-width: none;
-  transform-origin: 0 0;
-  transform: translateX(2px) rotate(90deg);
-  opacity: 0.8;
-}
+/* Group label — 왼쪽 세로 막대는 없앴다(사용자 지시 2026-10-03) */
+.group-label { display: flex; flex-wrap: wrap; align-items: baseline; gap: 12px; }
 
 /* ---------- 역량 · 태도: 두 목록을 나란히 — 왼쪽 역량, 오른쪽 태도 (2026-09-30) ----------
    한 줄을 펼쳐도 그 목록만 길어지고 옆 목록은 그대로(align-items: start). 좁으면 위아래로 */
@@ -271,8 +237,4 @@
 @media (max-width: 720px) {
   .pillar-row__hit { grid-template-columns: 36px minmax(0, 1fr) 24px; gap: 12px; }
   .pillar-row__body { padding: 0 36px 22px 48px; }
-  .group-label__rule { left: -12px; }
-}
-@media (max-width: 480px) {
-  .overview__row { grid-template-columns: 1fr; gap: 2px; }
 }

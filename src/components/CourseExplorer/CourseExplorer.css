@@ -1,72 +1,149 @@
-/* 주요 수업들 — 필터 · 목록 · 상세(수업 내용 | 전문가). Tokens only. */
-.course-explorer { --ce-ease: cubic-bezier(0.22, 1, 0.36, 1); margin-top: 32px; }
+/* 주요 수업들 — 필터 · 타입 머리글 · 펼쳐지는 수업 줄. Tokens only. */
+.course-explorer {
+  --ce-ease: cubic-bezier(0.65, 0, 0.35, 1); /* Dropdown과 같은 곡선 */
+  --ce-row-pad-x: 20px;
+}
 
-/* 필터 모양은 공통 세그먼트(styles/segmented.css) */
+/* ---------- 필터: 모양은 연간 구조와 같은 공통 세그먼트(styles/segmented.css), 아래에 구분선 ---------- */
+.course-filter { padding-bottom: 28px; border-bottom: 1px solid var(--color-border); }
 
-/* ---------- 목록 + 상세 ---------- */
-.course-explorer__body {
+/* ---------- 대분류 머리글: 왼쪽 이름 · 메타, 오른쪽 설명(섹션 머리글과 같은 칸) ---------- */
+/* 위계(사용자 지시 2026-10-03): 이름은 Subheading 크기 · 대분류 사이는 넓게(140),
+   머리글과 수업 사이는 좁게(24) — 수업이 제 머리글에 붙어 보인다. 대분류 위 잉크 선은 뺐다 */
+.course-group { margin-top: 56px; }
+.course-group + .course-group { margin-top: 140px; }
+.course-group__head {
   display: grid;
-  grid-template-columns: minmax(0, 240px) minmax(0, 1fr);
-  gap: 16px;
+  grid-template-columns: minmax(0, 1fr) minmax(0, var(--lead-width));
+  gap: 24px;
   align-items: start;
-  margin-top: 24px;
 }
-
-/* ① 목록: 스크롤해도 따라온다. 고른 수업만 진하게, 상세 박스와 같은 면을 깐다 */
-.course-list { position: sticky; top: 96px; display: flex; flex-direction: column; gap: 4px; }
-.course-list__item {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  padding: 14px 18px;
-  border-radius: 16px;
-  text-align: left;
-  opacity: 0.4;
-  transition: opacity var(--duration) var(--ease), background var(--duration) var(--ease);
-}
-/* 타입 경계: 이름 사이 보이는 간격(아래 안쪽 여백 14 + 간격 4 + 위 안쪽 여백 14 = 32px)을 두 배로 */
-.course-list__item[data-group-end] { margin-bottom: 32px; }
-.course-list__item:hover { opacity: 0.75; }
-.course-list__item[aria-selected='true'] { opacity: 1; background: var(--color-bg-subtle); }
-.course-list__item:focus-visible { outline: 2px solid var(--color-text-primary); outline-offset: 2px; }
-.course-list__name {
-  font-size: 17px;
-  line-height: 1.3;
+.course-group__title { display: flex; flex-direction: column; gap: 8px; }
+.course-group__name {
+  font-size: var(--typo-subheading-size);
+  line-height: 1.2;
   font-weight: var(--font-weight-bold);
   letter-spacing: var(--tracking-tight);
   color: var(--color-text-primary);
 }
-.course-list__meta { font-size: 13px; line-height: 1.3; font-weight: var(--font-weight-medium); color: var(--color-text-secondary); }
+.course-group__meta { font-size: 14px; line-height: 1.4; font-weight: var(--font-weight-medium); color: var(--color-text-tertiary); }
+.course-group__body { font-size: 15px; }
 
-/* ②③ 상세: 모든 수업을 한 칸에 겹친다 → 박스 높이 = 가장 긴 수업. 고른 수업만 떠오른다 */
-.course-detail-stack {
+/* ---------- 수업 줄 ---------- */
+/* 회색 면이 글자 바깥으로 깔리도록 줄을 양옆으로 내민다 — 글자는 머리글과 같은 선에 선다 */
+.course-rows { margin: 24px calc(-1 * var(--ce-row-pad-x)) 0; list-style: none; }
+.course-row + .course-row { margin-top: 4px; }
+
+.course-row__hit {
   display: grid;
+  grid-template-columns: minmax(0, 1fr) auto 20px;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  padding: 16px var(--ce-row-pad-x);
+  border-radius: 12px;
+  text-align: left;
+  cursor: pointer;
+  transition: background var(--duration) var(--ease);
+}
+/* 호버하면 회색 면 — 누를 수 있는 줄임을 알린다 */
+.course-row__hit:hover { background: var(--color-bg-hover); }
+.course-row__hit:focus-visible { outline: 2px solid var(--color-text-primary); outline-offset: 2px; }
+
+.course-row__text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  /* 호버하면 글이 오른쪽으로 살짝 들어간다 — 토스 Hover Reveal Card(살짝 튕기는 spring)를 따름 */
+  transition: transform 600ms cubic-bezier(0.34, 1.32, 0.64, 1);
+}
+@media (hover: hover) {
+  .course-row__hit:hover .course-row__text { transform: translateX(12px); }
+}
+/* 영문 이름 오른쪽에 전문가 캡슐(역량 태그와 같은 모양) — 길면 다음 줄로 */
+.course-row__title { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.course-row__title .course-row__name { margin-right: 4px; }
+.course-row__name {
+  font-size: 18px;
+  line-height: 1.4;
+  font-weight: var(--font-weight-bold);
+  letter-spacing: var(--tracking-tight);
+  color: var(--color-text-primary);
+}
+.course-row__meta {
+  font-size: 15px;
+  line-height: 1.5;
+  font-weight: var(--font-weight-medium);
+  letter-spacing: var(--tracking-tight);
+  color: var(--color-text-tertiary);
+}
+
+/* 역량 태그: 작은 회색 캡슐 */
+.course-row__tags { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 6px; }
+.course-row__tag {
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: var(--color-bg-subtle);
+  font-size: 12px;
+  line-height: 1.5;
+  font-weight: var(--font-weight-bold);
+  letter-spacing: var(--tracking-tight);
+  white-space: nowrap;
+  color: var(--color-text-secondary);
+  transition: background var(--duration) var(--ease);
+}
+/* 줄에 회색 면이 깔리면 캡슐은 흰색으로 뒤집어 묻히지 않게 한다 */
+.course-row__hit:hover .course-row__tag { background: var(--color-bg-default); }
+
+.course-row__chevron {
+  justify-self: center;
+  width: 9px;
+  height: 9px;
+  border-right: 1.5px solid var(--color-text-tertiary);
+  border-bottom: 1.5px solid var(--color-text-tertiary);
+  transform: translateY(-3px) rotate(45deg);
+  transition: transform 480ms var(--ce-ease), border-color var(--duration) var(--ease);
+}
+.course-row__hit:hover .course-row__chevron,
+.course-row[data-open='true'] .course-row__chevron { border-color: var(--color-text-primary); }
+.course-row[data-open='true'] .course-row__chevron { transform: translateY(2px) rotate(225deg); }
+
+/* 펼침: 높이 0fr → 1fr, 내용은 블러에서 떠오른다(Dropdown과 같은 움직임) */
+.course-row__panel {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 520ms var(--ce-ease);
+}
+.course-row[data-open='true'] .course-row__panel { grid-template-rows: 1fr; }
+.course-row__inner {
+  container-type: inline-size; /* 상세의 단 나눔은 화면이 아니라 이 폭을 기준으로 */
+  min-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  filter: blur(10px);
+  transform: translateY(-8px);
+  transition: opacity 240ms var(--ce-ease), filter 240ms var(--ce-ease), transform 400ms var(--ce-ease);
+}
+.course-row[data-open='true'] .course-row__inner {
+  opacity: 1;
+  filter: blur(0);
+  transform: none;
+  transition: opacity 360ms var(--ce-ease) 120ms, filter 560ms var(--ce-ease) 120ms, transform 520ms var(--ce-ease) 120ms;
+}
+
+/* ---------- 상세: 수업 내용 700px | 전문가 · 코스 정보는 나머지(사용자 지시 2026-10-03) ---------- */
+.course-detail {
+  display: grid;
+  grid-template-columns: minmax(0, 700px) minmax(0, 1fr);
+  gap: 40px;
+  margin: 8px 0 24px;
+  padding: 40px;
   border-radius: 20px;
   background: var(--color-bg-subtle);
 }
-.course-detail {
-  grid-area: 1 / 1;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 240px);
-  gap: 40px;
-  padding: 40px;
-  opacity: 0;
-  visibility: hidden;
-  filter: blur(8px);
-  transform: translateY(8px);
-  transition: opacity 220ms var(--ce-ease), filter 220ms var(--ce-ease), transform 220ms var(--ce-ease), visibility 0s linear 220ms;
-}
-.course-detail[data-active='true'] {
-  opacity: 1;
-  visibility: visible;
-  filter: none;
-  transform: none;
-  transition: opacity 420ms var(--ce-ease) 60ms, filter 480ms var(--ce-ease) 60ms, transform 520ms var(--ce-ease) 60ms, visibility 0s;
-}
 
-/* ② 수업 내용 */
 .course-detail__main { display: flex; flex-direction: column; gap: 40px; min-width: 0; }
-.course-detail__head { display: flex; flex-direction: column; gap: 8px; }
 .course-detail__section { display: flex; flex-direction: column; gap: 10px; }
 .course-detail__heading {
   font-size: 16px;
@@ -95,7 +172,7 @@
 .course-goals__before { color: var(--color-text-tertiary); }
 .course-goals__after { color: var(--color-text-primary); }
 
-/* ③ 전문가 · 코스 정보 — 수업 내용과 세로선으로 나눈다 */
+/* 전문가 · 코스 정보 — 수업 내용과 세로선으로 나눈다 */
 .course-detail__side {
   display: flex;
   flex-direction: column;
@@ -109,31 +186,31 @@
 .course-detail__facts div { display: flex; flex-direction: column; gap: 4px; }
 .course-detail__facts dt { font-size: 13px; font-weight: var(--font-weight-medium); color: var(--color-text-tertiary); }
 .course-detail__facts dd { font-size: 14px; line-height: 1.5; color: var(--color-text-primary); }
-.course-detail__source { font-size: 14px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .course-row__panel,
+  .course-row__inner,
+  .course-row__chevron,
+  .course-row__text { transition: none !important; }
+}
 
 /* ---------- 좁은 화면 ---------- */
-/* 전문가 칸은 수업 내용 아래로 */
-@media (max-width: 1100px) {
-  .course-detail { grid-template-columns: 1fr; }
+/* 본문 700 옆에 전문가 칸이 240px도 남지 않으면(안쪽 여백 80 + 간격 40 포함 1060px) 수업 내용 아래로 */
+@container (max-width: 1059px) {
+  .course-detail { grid-template-columns: minmax(0, 700px); }
   .course-detail__side { padding: 28px 0 0; border-left: 0; border-top: 1px solid var(--color-border); }
 }
-/* 목록은 위쪽의 가로 스크롤 이름 칩으로, 상세는 그 아래 한 단 */
+/* 머리글은 한 단, 태그는 이름 아래로 */
 @media (max-width: 720px) {
-  .course-explorer__body { grid-template-columns: 1fr; }
-  .course-list {
-    position: static;
-    flex-direction: row;
-    gap: 6px;
-    overflow-x: auto;
-    scrollbar-width: none;
-    margin-inline: calc(-1 * var(--gutter));
-    padding-inline: var(--gutter);
-  }
-  .course-list::-webkit-scrollbar { display: none; }
-  .course-list__item { flex: 0 0 auto; padding: 10px 14px; border-radius: 999px; }
-  .course-list__item[data-group-end] { margin-bottom: 0; margin-right: 6px; } /* 가로 칩에서는 오른쪽 간격을 두 배로 */
-  .course-list__meta { display: none; }
-  .course-list__name { font-size: 15px; white-space: nowrap; }
+  .course-explorer { --ce-row-pad-x: 12px; }
+  .course-filter { margin-inline: calc(-1 * var(--gutter)); padding-inline: var(--gutter); }
+  .course-group { margin-top: 40px; }
+  .course-group + .course-group { margin-top: 96px; }
+  .course-group__head { grid-template-columns: 1fr; gap: 12px; }
+  .course-row__hit { grid-template-columns: minmax(0, 1fr) 20px; row-gap: 10px; }
+  .course-row__tags { grid-row: 2; grid-column: 1; justify-content: flex-start; }
+  .course-row__name { font-size: 17px; }
+  .course-row__meta { font-size: 14px; }
   .course-detail { padding: 28px 22px; gap: 28px; }
   .course-detail__main { gap: 32px; }
   .course-goals__row { grid-template-columns: 1fr; gap: 4px; }

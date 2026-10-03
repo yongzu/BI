@@ -2,20 +2,20 @@ import { useState, type ReactNode } from 'react';
 import { Text } from '../components/Text/Text';
 import { Toc, type TocItem } from '../components/Toc/Toc';
 import { AnnualTimeline } from '../components/AnnualTimeline/AnnualTimeline';
-import { Dropdown } from '../components/Dropdown/Dropdown';
 import { CourseExplorer } from '../components/CourseExplorer/CourseExplorer';
+import { BlurReveal } from '../components/BlurReveal/BlurReveal';
+import { ApplyButton } from '../components/ApplyButton/ApplyButton';
 import { BackToTop, SiteHeader } from '../components/SiteHeader/SiteHeader';
 import { courseProfiles } from '../data/courseProfiles';
 import { useScrollReveal } from '../hooks/useScrollReveal';
-import labelRule from '../assets/label-rule.svg';
 import type { Pillar } from '../data/programs';
 import {
   attitudes,
   competencies,
   courseTypes,
+  applyPeriod,
   devices,
-  facts,
-  intro,
+  heroStatement,
   months,
   stages,
 } from '../data/programs';
@@ -32,7 +32,8 @@ const toc: TocItem[] = [
 ];
 
 /** Blocks that rise in on scroll */
-const revealTargets = ['.hero > *', '.section-header > *', '.group-label', '.group__lead', '.course-explorer', '.pillar-row', '.annual', '.device-card'].join(', ');
+// 히어로 소개(.blur-reveal)는 자체 블러 등장을 쓰므로 위로 떠오르는 등장에서 뺀다
+const revealTargets = ['.hero > :not(.blur-reveal)','.section-header > *', '.group-label', '.group__lead', '.course-explorer', '.pillar-row', '.annual', '.device-card'].join(', ');
 
 /* ------------------------------------------------------------------ */
 
@@ -46,13 +47,10 @@ function SectionHeader({ title, lead }: { title: ReactNode; lead?: string }) {
   );
 }
 
-/** Group label with the short vertical rule from the design */
+/** Group label — 왼쪽 세로 막대는 없앴다(사용자 지시 2026-10-03) */
 function GroupLabel({ children, meta }: { children: ReactNode; meta?: string }) {
   return (
     <div className="group-label">
-      <span className="group-label__rule" aria-hidden="true">
-        <img src={labelRule} alt="" />
-      </span>
       <Text as="h3" typography="Title">{children}</Text>
       {meta && <Text as="span" typography="Label" color="tertiary">{meta}</Text>}
     </div>
@@ -210,28 +208,6 @@ function RowColumns({ columns, numbering = 'continue' }: { columns: { id?: strin
   );
 }
 
-/** 과정 개요 드롭다운 — 실제 것과, 펼친 높이를 잡아 두는 보이지 않는 사본이 같은 모양을 쓴다 */
-function Overview({ autoOpen, staticOpen }: { autoOpen?: boolean; staticOpen?: boolean }) {
-  return (
-    <Dropdown
-      autoOpen={autoOpen}
-      staticOpen={staticOpen}
-      className="overview"
-      label={<Text as="span" typography="Label">과정 개요</Text>}
-      summary={<Text as="span" typography="Body" color="secondary">1년 · 전일제 오프라인 · 2026년 8월 24일 개강</Text>}
-    >
-      <dl className="overview__list">
-        {facts.map((f) => (
-          <div key={f.label} className="overview__row">
-            <Text as="dt" typography="Label" color="tertiary">{f.label}</Text>
-            <Text as="dd" typography="Body">{f.value}</Text>
-          </div>
-        ))}
-      </dl>
-    </Dropdown>
-  );
-}
-
 /* ------------------------------------------------------------------ */
 
 export function ProgramsPage() {
@@ -253,18 +229,16 @@ export function ProgramsPage() {
         <section className="hero container" aria-labelledby="hero-title">
           <Text id="hero-title" typography="Display" className="hero__title">
             Phi Programs
-            <br />
-            도구보다 사고방식
           </Text>
-          <Text typography="Intro" color="secondary" className="hero__intro">{intro[0]}</Text>
+          {/* 소개: 큰 글씨 두 줄 + 설명 한 문장, 단어마다 블러에서 떠오른다(사용자 지시 2026-10-03) */}
+          <BlurReveal lines={heroStatement.lines} typography="Subheading" headingClassName="hero__statement" className="hero__intro" delay={250}>
+            <Text typography="Intro" color="secondary">{heroStatement.body}</Text>
+          </BlurReveal>
 
-          {/* 과정 개요 자리: 펼친 높이를 미리 잡아 둔다(보이지 않는 펼친 사본) — 0.5초 뒤 자동으로
-              펼쳐져도 가운데 정렬된 제목 · 소개문이 밀려 올라가지 않는다(Full Viewport A안, 2026-09-30) */}
-          <div className="overview-slot">
-            <div className="overview-ghost" aria-hidden="true" inert>
-              <Overview staticOpen />
-            </div>
-            <Overview autoOpen />
+          {/* 과정 개요 대신 지원 기간 + 지원하기 — 토스뱅크 디자인 채용 히어로를 따름(사용자 지시 2026-10-03) */}
+          <div className="hero__apply">
+            <Text typography="Label" className="hero__period">{applyPeriod.label}</Text>
+            <ApplyButton href={applyPeriod.href}>지원하기</ApplyButton>
           </div>
         </section>
 

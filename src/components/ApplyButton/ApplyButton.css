@@ -1,0 +1,67 @@
+/* 지원하기 버튼 — 토스 rolling button 값(안쪽 여백 14 · 29, 모서리 22, 그림자 · 반사)을 잉크 색으로 */
+.apply-button {
+  --apply-bg: var(--color-text-primary);
+  --apply-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 14px 29px;
+  border-radius: 22px;
+  background: var(--apply-bg);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 3px 8px -4px rgba(0, 0, 0, 0.1);
+  color: var(--color-bg-default);
+  font-size: 19px;
+  line-height: 1.35;
+  font-weight: var(--font-weight-bold);
+  letter-spacing: var(--tracking-tight);
+  text-decoration: none;
+  transition: background-color 180ms ease;
+}
+.apply-button:hover { --apply-bg: var(--color-nav-strong); }
+/* 위쪽 빛 반사 — 얇은 흰 테두리와 사선 그라데이션을 옅게 */
+.apply-button::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border: 1px solid rgba(255, 255, 255, 0.38);
+  border-radius: inherit;
+  background: linear-gradient(165deg, rgba(255, 255, 255, 0.23) 0%, rgba(255, 255, 255, 0.07) 24%, rgba(255, 255, 255, 0) 52%, rgba(255, 255, 255, 0.035) 100%);
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.65), inset 0 -1px 1px rgba(255, 255, 255, 0.12);
+  opacity: 0.15;
+  pointer-events: none;
+}
+.apply-button:focus-visible { outline: 3px solid var(--color-text-primary); outline-offset: 5px; }
+
+.apply-button__label {
+  position: relative;
+  left: 0;
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+  transition: left 280ms var(--apply-ease);
+}
+.apply-button:hover .apply-button__label { left: 4px; }
+
+/* 화살표: 평소엔 폭 0으로 숨고, 호버 · 포커스에 옆에서 열린다 */
+.apply-button__arrow {
+  display: inline-flex;
+  justify-content: flex-end;
+  width: 0;
+  height: 1em;
+  margin-left: 0;
+  overflow: hidden;
+  opacity: 0;
+  color: rgba(255, 255, 255, 0.6);
+  transition: width 280ms var(--apply-ease), margin-left 280ms var(--apply-ease), opacity 160ms ease;
+}
+.apply-button__arrow svg { width: 1em; height: 1em; flex-shrink: 0; }
+.apply-button__arrow path { stroke: var(--apply-bg); } /* 동그라미 안 화살표는 버튼 색으로 뚫어 보이게 */
+.apply-button:hover .apply-button__arrow,
+.apply-button:focus-visible .apply-button__arrow { width: 1em; margin-left: 8px; opacity: 1; }
+
+@media (prefers-reduced-motion: reduce) {
+  .apply-button,
+  .apply-button__label,
+  .apply-button__arrow { transition: none !important; }
+}

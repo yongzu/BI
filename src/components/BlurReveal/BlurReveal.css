@@ -1,0 +1,32 @@
+/* 블러 등장 — 단어마다 흐림 15px · 투명 · 10px 아래에서 제자리로(토스 Framer 등장 효과 값) */
+.blur-reveal { --blur-ease: cubic-bezier(0.22, 1, 0.36, 1); }
+.blur-reveal__line { display: block; }
+/* 읽기 도구용 문장(화면에는 보이지 않음) */
+.blur-reveal__sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.blur-reveal__word,
+.blur-reveal__body {
+  opacity: 0;
+  filter: blur(15px);
+  transform: translateY(10px);
+  transition:
+    opacity 700ms var(--blur-ease),
+    filter 900ms var(--blur-ease),
+    transform 900ms var(--blur-ease);
+  transition-delay: calc(var(--blur-delay) + var(--i) * var(--blur-step));
+}
+.blur-reveal__word { display: inline-block; }
+
+.blur-reveal[data-shown='true'] .blur-reveal__word,
+.blur-reveal[data-shown='true'] .blur-reveal__body {
+  opacity: 1;
+  filter: blur(0);
+  transform: none;
+}
