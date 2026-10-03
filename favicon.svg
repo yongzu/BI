@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 7 7" shape-rendering="crispEdges">
+  <style>
+    path { fill: #000; }
+    @media (prefers-color-scheme: dark) { path { fill: #fff; } }
+  </style>
+  <!-- Phi pixel mark on a 7×7 grid: centre column, centre bar, and two diagonal steps on each side -->
+  <path d="M3 0h1v7H3zM2 3h3v1H2zM0 1h1v1H0zM1 2h1v1H1zM6 1h1v1H6zM5 2h1v1H5zM1 4h1v1H1zM0 5h1v1H0zM5 4h1v1H5zM6 5h1v1H6z" />
+</svg>
