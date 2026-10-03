@@ -1,0 +1,19 @@
+/* 히어로 일렁임 캔버스 — 히어로 줄 전체 폭(화면 폭)을 덮고, 파동이 도는 동안만 보인다 (behaviour in HeroRipple.tsx) */
+.hero:has(> .hero-ripple) { position: relative; isolation: isolate; }
+
+.hero-ripple {
+  position: absolute;
+  top: 0;
+  left: 0; /* JS가 히어로 왼쪽만큼 당겨 화면 왼쪽에 맞춘다 */
+  z-index: 0;
+  display: block;
+  pointer-events: none;
+  visibility: hidden;
+}
+.hero[data-rippling] > .hero-ripple { visibility: visible; }
+
+/* 파동 중엔 캔버스가 같은 자리에 같은 글자를 그리므로 HTML 글자는 잠시 감춘다(자리 · 읽기 순서는 그대로) */
+.hero[data-rippling] :is(.hero__title, .hero__intro, .hero__period) { opacity: 0 !important; transition: none !important; }
+
+/* 지원하기 버튼은 효과 밖 — 캔버스 위에 */
+.hero:has(> .hero-ripple) .hero__apply { position: relative; z-index: 1; }

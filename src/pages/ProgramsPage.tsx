@@ -5,6 +5,7 @@ import { AnnualTimeline } from '../components/AnnualTimeline/AnnualTimeline';
 import { CourseExplorer } from '../components/CourseExplorer/CourseExplorer';
 import { BlurReveal } from '../components/BlurReveal/BlurReveal';
 import { ApplyButton } from '../components/ApplyButton/ApplyButton';
+import { HeroRipple } from '../components/HeroRipple/HeroRipple';
 import { BackToTop, SiteHeader } from '../components/SiteHeader/SiteHeader';
 import { courseProfiles } from '../data/courseProfiles';
 import { useScrollReveal } from '../hooks/useScrollReveal';
@@ -33,7 +34,7 @@ const toc: TocItem[] = [
 
 /** Blocks that rise in on scroll */
 // 히어로 소개(.blur-reveal)는 자체 블러 등장을 쓰므로 위로 떠오르는 등장에서 뺀다
-const revealTargets = ['.hero > :not(.blur-reveal)','.section-header > *', '.group-label', '.group__lead', '.course-explorer', '.pillar-row', '.annual', '.device-card'].join(', ');
+const revealTargets = ['.hero > :not(.blur-reveal):not(.hero-ripple)','.section-header > *', '.group-label', '.group__lead', '.course-explorer', '.pillar-row', '.annual', '.device-card'].join(', ');
 
 /* ------------------------------------------------------------------ */
 
@@ -241,6 +242,9 @@ export function ProgramsPage() {
             <Text typography="Label" className="hero__period">{applyPeriod.label}</Text>
             <ApplyButton href={applyPeriod.href}>지원하기</ApplyButton>
           </div>
+
+          {/* 4초마다 파동이 글자를 일렁이게 한다 — 토스뱅크 디자인 채용 히어로를 따름(사용자 지시 2026-10-03) */}
+          <HeroRipple />
         </section>
 
         {/* ---------- 역량과 태도 ---------- */}
