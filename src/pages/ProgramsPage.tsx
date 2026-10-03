@@ -227,8 +227,9 @@ export function ProgramsPage() {
       <main className="page">
         {/* ---------- Hero ---------- */}
         <section className="hero container" aria-labelledby="hero-title">
+          {/* 제목은 'Programs' 한 단어(사용자 지시 2026-10-03) */}
           <Text id="hero-title" typography="Display" className="hero__title">
-            Phi Programs
+            Programs
           </Text>
           {/* 소개: 큰 글씨 두 줄 + 설명 한 문장, 단어마다 블러에서 떠오른다(사용자 지시 2026-10-03) */}
           <BlurReveal lines={heroStatement.lines} typography="Subheading" headingClassName="hero__statement" className="hero__intro" delay={250}>

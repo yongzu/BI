@@ -4,7 +4,7 @@
    Pretendard only. Values measured on a 1920px frame; large sizes scale down
    fluidly below that width. Tracking is -3% everywhere except body (-2%).
 
-     Display    80 / Bold    / 1.19 / -3%   hero lines (was 100)
+     Display   215 / Bold    / 0.9  / -3%   hero lines (Toss hero size at 1920×1080, 2026-10-03)
      Heading    48 / Bold    / 1.2  / -3%   section titles
      Subheading 36 / Bold    / 1.2  / -3%   panel titles
      Lead       20 / Regular / 1.4  / -3%   section intro (70%)
@@ -25,7 +25,10 @@
   --tracking-tight: -0.03em;
   --tracking-body: -0.02em;
 
-  --typo-display-size: clamp(3rem, calc(5.21vw - 20px), 5rem); /* 48 → 80 (100에서 20px 줄임, 사용자 지시 2026-09-30) */
+  /* 44 → 215: 토스뱅크 디자인 채용 히어로(Simplify / Banking)를 1920×1080 화면에서 실측한 크기(사용자 지시 2026-10-03).
+     토스 글자 높이(위 끝 → 아래 끝 397px, 줄 간격 193px)에 Pretendard를 맞추면 215px · 줄 간격 0.9.
+     1440×1080 이상에서 215, 그보다 좁거나 낮으면 폭(÷1440) · 높이(÷1080) 중 작은 쪽 비율로 줄어 첫 화면 비율이 유지된다 */
+  --typo-display-size: max(2.75rem, min(13.4375rem, 14.93vw, 19.9svh));
   --typo-heading-size: clamp(2.25rem, 3.34vw, 3rem);    /* 36 → 48 */
   --typo-subheading-size: clamp(1.75rem, 1.88vw, 2.25rem); /* 28 → 36 */
   --typo-lead-size: 1.25rem;                            /* 20 */
@@ -36,7 +39,7 @@
 }
 
 /* ---------- Semantic styles (consumed by <Text />) ---------- */
-.typo-display { font-size: var(--typo-display-size); line-height: 1.19; font-weight: var(--font-weight-bold); letter-spacing: var(--tracking-tight); }
+.typo-display { font-size: var(--typo-display-size); line-height: 0.9; font-weight: var(--font-weight-bold); letter-spacing: var(--tracking-tight); }
 .typo-heading { font-size: var(--typo-heading-size); line-height: 1.2; font-weight: var(--font-weight-bold); letter-spacing: var(--tracking-tight); }
 .typo-subheading { font-size: var(--typo-subheading-size); line-height: 1.2; font-weight: var(--font-weight-bold); letter-spacing: var(--tracking-tight); }
 .typo-lead    { font-size: var(--typo-lead-size); line-height: 1.4; font-weight: var(--font-weight-regular); letter-spacing: var(--tracking-tight); }

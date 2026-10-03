@@ -50,19 +50,30 @@
   justify-content: center;
   min-height: 100vh;
   min-height: 100svh;
-  padding-block: 64px 32px;
+  padding-block: 64px max(32px, 76 * var(--hs)); /* 아래를 12px 더 비워 제목이 토스처럼 160px에 온다(1080 기준) */
   text-align: center;
 }
 .hero__title { color: var(--color-text-primary); }
-/* One gap for title → intro and intro → 과정 개요 */
-.hero { --hero-gap: var(--space-hero-gap); } /* 폭 · 높이 중 작은 쪽 — tokens/foundation.css */
-.hero__intro { max-width: 783px; margin-top: var(--hero-gap); }
-/* 소개: 큰 글씨 두 줄(Subheading) 아래 설명 한 문장 (behaviour in components/BlurReveal) */
-.hero__intro .blur-reveal__body { margin-top: 16px; }
+
+/* ---------- Hero 첫 화면 비율 = 토스뱅크 디자인 채용 히어로(사용자 지시 2026-10-03) ----------
+   1920×1080 화면에서 토스 실측(글자 끝 기준): 제목 160–557 · 설명 두 줄 612–679 · 날짜 735–754 · 버튼 821–880(138×59).
+   아래 px 값이 그 실측이며, --hs(1440 · 1080 기준 폭 · 높이 비율 중 작은 쪽, 최대 1)를 곱해 화면에 맞게 줄인다.
+   토스에 없는 설명 한 문장(blur-reveal__body)은 설명 두 줄 바로 아래에 붙여 그만큼만 버튼이 내려간다.
+   좁은 화면(휴대폰)은 --hs가 아주 작아지므로 글자 · 간격마다 최소값을 둔다. */
+.hero { --hs: min(1px, 100vw / 1440, 100svh / 1080); }
+.hero__intro { max-width: 783px; margin-top: max(28px, 75 * var(--hs)); }
+.hero .hero__statement { font-size: max(22px, 30 * var(--hs)); line-height: 1.333; }
+.hero__intro .blur-reveal__body { margin-top: max(4px, 4 * var(--hs)); }
+.hero__intro .blur-reveal__body > * { font-size: max(16px, 20 * var(--hs)); line-height: 1.4; }
 
 /* 지원 기간 + 지원하기 버튼(behaviour in components/ApplyButton) — 과정 개요 자리를 대신한다(2026-10-03) */
-.hero__apply { display: flex; flex-direction: column; align-items: center; gap: 24px; margin-top: var(--hero-gap); }
-.hero__period { color: var(--color-text-primary); }
+.hero__apply { display: flex; flex-direction: column; align-items: center; gap: max(24px, 66 * var(--hs)); margin-top: max(24px, 50 * var(--hs)); }
+.hero .hero__period { color: var(--color-text-primary); font-size: max(15px, 20 * var(--hs)); line-height: 1.2; }
+.hero .apply-button {
+  padding: max(13px, 16 * var(--hs)) max(28px, 35 * var(--hs));
+  border-radius: max(20px, 24 * var(--hs));
+  font-size: max(17px, 20 * var(--hs));
+}
 
 /* ---------- Sections ---------- */
 .section {
