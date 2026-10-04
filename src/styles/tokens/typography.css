@@ -4,7 +4,7 @@
    Pretendard only. Values measured on a 1920px frame; large sizes scale down
    fluidly below that width. Tracking is -3% everywhere except body (-2%).
 
-     Display   215 / Bold    / 0.9  / -3%   hero lines (Toss hero size at 1920×1080, 2026-10-03)
+     Display   180 / Bold    / 0.9  / -3%   hero lines (Toss hero size 215 → 180, 2026-10-04)
      Heading    48 / Bold    / 1.2  / -3%   section titles
      Subheading 36 / Bold    / 1.2  / -3%   panel titles
      Lead       20 / Regular / 1.4  / -3%   section intro (70%)
@@ -27,8 +27,9 @@
 
   /* 44 → 215: 토스뱅크 디자인 채용 히어로(Simplify / Banking)를 1920×1080 화면에서 실측한 크기(사용자 지시 2026-10-03).
      토스 글자 높이(위 끝 → 아래 끝 397px, 줄 간격 193px)에 Pretendard를 맞추면 215px · 줄 간격 0.9.
-     1440×1080 이상에서 215, 그보다 좁거나 낮으면 폭(÷1440) · 높이(÷1080) 중 작은 쪽 비율로 줄어 첫 화면 비율이 유지된다 */
-  --typo-display-size: max(2.75rem, min(13.4375rem, 14.93vw, 19.9svh));
+     1440×1080 이상에서 215, 그보다 좁거나 낮으면 폭(÷1440) · 높이(÷1080) 중 작은 쪽 비율로 줄어 첫 화면 비율이 유지된다.
+     215 → 180(사용자 지시 2026-10-04): 최대 11.25rem, 줄어드는 비율도 그대로(180/1440 = 12.5vw, 180/1080 = 16.67svh) */
+  --typo-display-size: max(2.75rem, min(11.25rem, 12.5vw, 16.67svh));
   --typo-heading-size: clamp(2.25rem, 3.34vw, 3rem);    /* 36 → 48 */
   --typo-subheading-size: clamp(1.75rem, 1.88vw, 2.25rem); /* 28 → 36 */
   --typo-lead-size: 1.25rem;                            /* 20 */

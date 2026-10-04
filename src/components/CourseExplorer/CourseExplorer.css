@@ -1,5 +1,6 @@
 /* 주요 수업들 — 필터 · 타입 머리글 · 펼쳐지는 수업 줄. Tokens only. */
 .course-explorer {
+  container: course-explorer / inline-size; /* 대분류 머리글 단 나눔은 화면이 아니라 이 폭을 기준으로 */
   --ce-ease: cubic-bezier(0.65, 0, 0.35, 1); /* Dropdown과 같은 곡선 */
   --ce-row-pad-x: 20px;
 }
@@ -199,6 +200,11 @@
 @container (max-width: 1059px) {
   .course-detail { grid-template-columns: minmax(0, 700px); }
   .course-detail__side { padding: 28px 0 0; border-left: 0; border-top: 1px solid var(--color-border); }
+}
+/* 대분류 머리글: 설명 칸(710) 옆 이름 칸이 'Fundamental' · 메타 한 줄(~250px)을 못 담으면 한 단으로 —
+   이름 · 메타를 위아래로 두고 그 아래 설명(사용자 지시 2026-10-04: 좁은 화면에서 이름이 한 글자씩 꺾이던 문제) */
+@container course-explorer (max-width: 979px) {
+  .course-group__head { grid-template-columns: 1fr; gap: 16px; }
 }
 /* 머리글은 한 단, 태그는 이름 아래로 */
 @media (max-width: 720px) {

@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { Text } from '../components/Text/Text';
 import { Toc, type TocItem } from '../components/Toc/Toc';
 import { AnnualTimeline } from '../components/AnnualTimeline/AnnualTimeline';
@@ -16,6 +16,8 @@ import {
   courseTypes,
   applyPeriod,
   devices,
+  facts,
+  heroMore,
   heroStatement,
   months,
   stages,
@@ -25,6 +27,7 @@ import './programs.css';
 const toc: TocItem[] = [
   // 목차는 섹션 다섯 개를 한 층위로 — 역량과 태도의 하위 항목은 없애고, 수업을 관통하는 접근은
   // 커리큘럼 아래에서 빼 같은 층위로(사용자 지시 2026-09-30)
+  { id: 'overview', label: '과정 개요' }, // 맨 위(사용자 지시 2026-10-04)
   { id: 'pillars', label: '역량과 태도' },
   { id: 'curriculum-annual', label: '연간 구조' },
   { id: 'curriculum', label: '커리큘럼' },
@@ -33,8 +36,8 @@ const toc: TocItem[] = [
 ];
 
 /** Blocks that rise in on scroll */
-// 히어로 소개(.blur-reveal)는 자체 블러 등장을 쓰므로 위로 떠오르는 등장에서 뺀다
-const revealTargets = ['.hero > :not(.blur-reveal):not(.hero-ripple)','.section-header > *', '.group-label', '.group__lead', '.course-explorer', '.pillar-row', '.annual', '.device-card'].join(', ');
+// 히어로는 첫 화면 순서(흐린 제목 → 맑아짐 → 소개 · 기간)를 따로 가지므로 떠오르는 등장에서 뺀다
+const revealTargets = ['.section-header > *', '.group-label', '.group__lead', '.course-explorer', '.pillar-row', '.annual', '.device-card'].join(', ');
 
 /* ------------------------------------------------------------------ */
 
@@ -211,41 +214,108 @@ function RowColumns({ columns, numbering = 'continue' }: { columns: { id?: strin
 
 /* ------------------------------------------------------------------ */
 
+/**
+ * 히어로 첫 화면 방식(사용자 지시 2026-10-04):
+ * 'together' — 'Programs' · 소개 · 설명 · 지원 기간이 함께 떠올라 전체가 4.2초 동안 일렁이고, 이어서 지원하기 · 자세히 보기
+ * 'sequence' — 이전 방식(따로 남겨 둠): 제목만 떠올라 일렁인 뒤 소개(단어마다 블러) → 지원 기간 → 지원하기 차례로
+ */
+const INTRO_STYLE: 'together' | 'sequence' = 'together';
+
+/**
+ * 과정 개요(히어로 다음, 목차 맨 위): 왼쪽 소개 글 두 문단, 오른쪽 과정 개요.
+ * 한 화면 높이를 차지하고 내용은 세로 가운데 — 가운데 두면 위아래 다른 섹션이 보이지 않는다(사용자 지시 2026-10-04).
+ * 버튼 없이, 내용 자리(블록 가운데)가 화면 아래 15% 선 위로 올라오면 높이 0fr → 1fr로 한 번 펼쳐진다.
+ * 움직임 줄이기면 처음부터 펼침
+ */
+function HeroMore() {
+  const [open, setOpen] = useState(() => window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  const panel = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = panel.current;
+    if (!el || open) return;
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry.isIntersecting) return;
+        io.disconnect();
+        setOpen(true);
+      },
+      { rootMargin: '0px 0px -15% 0px' },
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, [open]);
+  return (
+    <section id="overview" className="hero-more container" data-open={open} aria-label="과정 개요">
+      <div ref={panel} className="hero-more__panel">
+        <div className="hero-more__inner">
+          <div className="hero-more__text">
+            <Text as="p" typography="Label" className="hero-more__head">1 Year Programs</Text>
+            {heroMore.map((p) => (
+              <Text key={p.slice(0, 12)} typography="Body" color="secondary" className="hero-more__para">{p}</Text>
+            ))}
+          </div>
+          <div className="hero-more__facts">
+            <Text as="p" typography="Label" className="hero-more__head">과정 개요</Text>
+            <dl>
+              {facts.map((f) => (
+                <div key={f.label} className="hero-more__row">
+                  <Text as="dt" typography="Label" color="tertiary">{f.label}</Text>
+                  <Text as="dd" typography="Body">{f.value}</Text>
+                </div>
+              ))}
+            </dl>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+
 export function ProgramsPage() {
   useScrollReveal(revealTargets);
+  // 첫 화면: 흐린 'Programs'와 지원하기만 → 제목이 맑아지면 소개 · 지원 기간(사용자 지시 2026-10-04)
+  const [introDone, setIntroDone] = useState(() => window.matchMedia('(prefers-reduced-motion: reduce)').matches);
 
   return (
     <>
       <SiteHeader />
       <BackToTop />
-      {/* The TOC rides a rail inside the page shell: it starts beside the hero,
-          sticks while reading, and lets go before the footer. */}
-      <div className="page-shell">
+      <main className="page">
+        {/* ---------- Hero ---------- */}
+        <section className="hero container" aria-labelledby="hero-title" data-intro={introDone ? 'done' : INTRO_STYLE === 'together' ? 'rise' : 'blur'} data-intro-style={INTRO_STYLE}>
+          {/* 첫 화면(한 화면 높이, 내용 세로 가운데) — '자세히 보기'는 그 아래 200px(사용자 지시 2026-10-04) */}
+          <div className="hero__atf">
+            {/* 제목은 'Programs' 한 단어(사용자 지시 2026-10-03) */}
+            <Text id="hero-title" typography="Display" className="hero__title">
+              Programs
+            </Text>
+            {/* 소개: 큰 글씨 두 줄 + 설명 한 문장, 단어마다 블러에서 떠오른다(사용자 지시 2026-10-03) */}
+            <BlurReveal lines={heroStatement.lines} typography="Subheading" headingClassName="hero__statement" className="hero__intro" show={INTRO_STYLE === 'together' || introDone}>
+              <Text typography="Intro" color="secondary">{heroStatement.body}</Text>
+            </BlurReveal>
+
+            {/* 과정 개요 대신 지원 기간 + 지원하기 — 토스뱅크 디자인 채용 히어로를 따름(사용자 지시 2026-10-03) */}
+            <div className="hero__apply">
+              <Text typography="Label" className="hero__period">{applyPeriod.label}</Text>
+              <ApplyButton href={applyPeriod.href}>지원하기</ApplyButton>
+            </div>
+          </div>
+
+          {/* 6초마다 파동이 글자를 일렁이게 한다 — 토스뱅크 디자인 채용 히어로를 따름(사용자 지시 2026-10-03) */}
+          <HeroRipple introStyle={INTRO_STYLE} onIntroEnd={() => setIntroDone(true)} />
+        </section>
+
+        {/* 목차는 히어로 다음, '역량과 태도'부터 나온다(사용자 지시 2026-10-04) — 히어로는 화면 정가운데.
+            레일이 섹션들과 함께 시작해 읽는 동안 붙어 있다가 푸터 앞에서 놓아준다 */}
+        <div className="page-shell">
         <div className="toc-rail">
           <Toc items={toc} />
         </div>
 
-      <main className="page">
-        {/* ---------- Hero ---------- */}
-        <section className="hero container" aria-labelledby="hero-title">
-          {/* 제목은 'Programs' 한 단어(사용자 지시 2026-10-03) */}
-          <Text id="hero-title" typography="Display" className="hero__title">
-            Programs
-          </Text>
-          {/* 소개: 큰 글씨 두 줄 + 설명 한 문장, 단어마다 블러에서 떠오른다(사용자 지시 2026-10-03) */}
-          <BlurReveal lines={heroStatement.lines} typography="Subheading" headingClassName="hero__statement" className="hero__intro" delay={250}>
-            <Text typography="Intro" color="secondary">{heroStatement.body}</Text>
-          </BlurReveal>
-
-          {/* 과정 개요 대신 지원 기간 + 지원하기 — 토스뱅크 디자인 채용 히어로를 따름(사용자 지시 2026-10-03) */}
-          <div className="hero__apply">
-            <Text typography="Label" className="hero__period">{applyPeriod.label}</Text>
-            <ApplyButton href={applyPeriod.href}>지원하기</ApplyButton>
-          </div>
-
-          {/* 4초마다 파동이 글자를 일렁이게 한다 — 토스뱅크 디자인 채용 히어로를 따름(사용자 지시 2026-10-03) */}
-          <HeroRipple />
-        </section>
+        {/* ---------- 과정 개요 — 한 화면 높이 가운데, 스크롤해 보이면 펼쳐진다(사용자 지시 2026-10-04) ---------- */}
+        <HeroMore />
 
         {/* ---------- 역량과 태도 ---------- */}
         <section id="pillars" className="section container">
@@ -303,8 +373,8 @@ export function ProgramsPage() {
             <RowColumns columns={[{ items: careerRows.slice(0, 1) }, { items: careerRows.slice(1) }]} />
           </div>
         </section>
+        </div>
       </main>
-      </div>
 
       <footer className="footer container">
         <Text typography="Title">Phi Institute of Design</Text>

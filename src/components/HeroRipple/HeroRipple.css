@@ -12,8 +12,26 @@
 }
 .hero[data-rippling] > .hero-ripple { visibility: visible; }
 
-/* 파동 중엔 캔버스가 같은 자리에 같은 글자를 그리므로 HTML 글자는 잠시 감춘다(자리 · 읽기 순서는 그대로) */
-.hero[data-rippling] :is(.hero__title, .hero__intro, .hero__period) { opacity: 0 !important; transition: none !important; }
+/* 파동 중엔 캔버스가 같은 자리에 같은 글자를 그리므로 HTML 글자는 잠시 감춘다(자리 · 읽기 순서는 그대로).
+   첫 화면(data-rippling='intro')은 제목만 옮겨 그리므로 제목만 감춘다 — 소개 · 기간은 그사이 떠오른다.
+   opacity가 아니라 clip-path로 감춘다: 다시 보일 때 등장 전환(지연 · 페이드)이 되풀이되지 않고, visibility와 달리
+   읽기 도구에선 그대로 읽힌다 — 파동이 쉬지 않고 이어져(4.2초 간격 = 길이) 거의 늘 감춰져 있기 때문(2026-10-04) */
+.hero[data-rippling] .hero__title,
+.hero[data-rippling=''] :is(.hero__intro, .hero__period) { clip-path: inset(50%); }
 
-/* 지원하기 버튼은 효과 밖 — 캔버스 위에 */
-.hero:has(> .hero-ripple) .hero__apply { position: relative; z-index: 1; }
+/* 첫 화면: 떠오르기와 이어지는 파동은 캔버스가 그리므로 HTML 제목은 그동안 투명하게 숨겨 둔다(글꼴 로딩 동안 포함).
+   첫 화면이 끝날 땐 캔버스 아래에서 이미 다 보이는 상태라 캔버스를 걷어도 그대로 이어진다.
+   WebGL을 못 쓸 때(data-intro-css)만 CSS로 40px 아래에서 떠오른다(HeroRipple.tsx) */
+.hero[data-intro='blur'] .hero__title { opacity: 0; }
+.hero[data-intro='blur'][data-intro-css] .hero__title { transform: translateY(40px); }
+.hero[data-intro='blur'][data-intro-css][data-title-in] .hero__title { opacity: 1; transform: none; }
+.hero .hero__title {
+  transition:
+    opacity 1s var(--ease-reveal),
+    transform 1s var(--ease-reveal);
+}
+
+/* 캔버스(불투명)가 그리지 않는 글자는 캔버스 위에 둔다: 지원하기 버튼은 늘, 소개 · 기간은 첫 화면(제목만 그림) 동안.
+   주기 파동 땐 소개 · 기간을 캔버스가 그리고 HTML은 visibility로 감추므로 위에 있어도 상관없다.
+   (소개가 캔버스 아래에 깔려 첫 화면 동안 안 보이다가 끝에 뚝 나타나던 문제, 2026-10-04) */
+.hero:has(> .hero-ripple) :is(.hero__intro, .hero__apply) { position: relative; z-index: 1; }

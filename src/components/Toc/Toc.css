@@ -3,7 +3,8 @@
    then sticks below the pinned CTA, and releases at the end of the rail. */
 .toc {
   position: sticky;
-  top: 88px;
+  /* 화면 세로 가운데에 붙는다(사용자 지시 2026-10-04) — 높이(--toc-h)는 Toc.tsx가 잰다. 상단바(88px) 아래로는 안 올라감 */
+  top: max(88px, calc(50vh - var(--toc-h, 0px) / 2));
   z-index: 40;
   width: var(--toc-width);
   max-height: min(1020px, calc(100vh - 120px));
@@ -14,6 +15,27 @@
   scrollbar-width: none;
 }
 .toc::-webkit-scrollbar { display: none; }
+
+/* 나타나기: 투명 · 24px 위에서 제자리로(Toc.tsx data-shown). 사라질 땐 다 투명해진 뒤 visibility로 감춰
+   보이지 않는 목차에 초점이 가지 않게 한다. 움직임 줄이기면 그냥 보인다 */
+.toc {
+  transition:
+    opacity 600ms var(--ease-reveal),
+    transform 600ms var(--ease-reveal),
+    visibility 0s;
+}
+.toc[data-shown='false'] {
+  opacity: 0;
+  transform: translateY(-24px);
+  visibility: hidden;
+  transition:
+    opacity 300ms var(--ease),
+    transform 300ms var(--ease),
+    visibility 0s linear 300ms;
+}
+@media (prefers-reduced-motion: reduce) {
+  .toc[data-shown='false'] { opacity: 1; transform: none; visibility: visible; }
+}
 
 .toc__title {
   margin-bottom: 12px;
@@ -60,7 +82,8 @@
     opacity 200ms var(--ease);
 }
 
-.toc__lv1 > a { font-weight: var(--font-weight-bold); color: var(--color-nav-strong); }
+/* 지금 보는 섹션만 진하게, 나머지는 회색(사용자 지시 2026-10-04) — 굵기는 그대로 둬 바뀔 때 글자 폭이 흔들리지 않게 */
+.toc__lv1 > a { font-weight: var(--font-weight-bold); color: var(--color-nav-faint); }
 .toc__lv2 > a { padding-left: 24px; }
 .toc__lv3 > a { padding-left: 38px; font-size: 12px; line-height: 18px; }
 

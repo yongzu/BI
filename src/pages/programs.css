@@ -22,15 +22,20 @@
     margin-right: auto;
     padding-inline: 0;
   }
+  /* 히어로 옆엔 목차가 없으므로 디자인 위치(가운데에서 88px 오른쪽) 대신 화면 정가운데(사용자 지시 2026-10-04) */
+  .hero.container {
+    width: min(var(--content-width), calc(100% - 2 * var(--gutter)));
+    margin-inline: auto;
+  }
 }
 
 /* ---------- Page shell & TOC rail ----------
-   Rail starts right where the TOC sticks (88px, below the pinned logo) and ends with the main
-   content — the hero's title now moves with the screen height, so the rail no longer follows it. */
+   셸은 히어로 다음부터(과정 개요의 위 끝). 레일도 거기서 시작해 목차가 과정 개요와 함께 올라오다
+   화면 세로 가운데(Toc.css)에 붙고, 본문 끝에서 놓인다(사용자 지시 2026-10-04) */
 .page-shell { position: relative; }
 .toc-rail {
   position: absolute;
-  top: 88px;
+  top: 0; /* 셸 맨 위 = 과정 개요 블록 위 끝 — 목차가 과정 개요부터 함께한다(2026-10-04) */
   bottom: 0;
   left: var(--toc-left);
   width: var(--toc-width);
@@ -38,20 +43,27 @@
 }
 .toc-rail > * { pointer-events: auto; }
 
-/* ---------- Hero: Full Viewport (사용자 지시 2026-09-30) ----------
-   첫 화면을 꽉 채우고 내용을 세로 가운데 — 크롬 상단바 · 작업 표시줄로 보이는 높이가 달라져도
-   위아래 여백이 늘 같다. 100svh = 주소창이 보이는 상태의 실제 높이(휴대폰에서 잘리지 않음, 데스크톱은 100vh와 같음).
-   min-height라 내용이 한 화면보다 길면(작은 화면) 잘리지 않고 늘어난다.
-   투명한 상단바가 위에 겹치므로 위 64px(상단바 57 + 여유)는 늘 비워 둔다. */
+/* ---------- Hero: 첫 화면 + 자세히 보기(사용자 지시 2026-09-30 · 2026-10-04) ----------
+   .hero__atf = 첫 화면: 한 화면 높이를 채우고 제목 → 지원하기를 세로 가운데에 둔다. 크롬 상단바 · 작업 표시줄로
+   보이는 높이가 달라져도 위아래 여백 비율이 같다. 100svh = 주소창이 보이는 상태의 실제 높이.
+   min-height라 내용이 한 화면보다 길면(작은 화면) 잘리지 않고 늘어난다. 투명한 상단바 때문에 위 64px은 늘 비운다.
+   다음은 한 화면 높이의 과정 개요(.hero-more) — 펼쳐져도 첫 화면(제목)은 움직이지 않는다 */
 .hero {
   display: flex;
   flex-direction: column;
   align-items: center;
+  text-align: center;
+}
+.hero__atf {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   justify-content: center;
+  width: 100%;
   min-height: 100vh;
   min-height: 100svh;
-  padding-block: 64px max(32px, 76 * var(--hs)); /* 아래를 12px 더 비워 제목이 토스처럼 160px에 온다(1080 기준) */
-  text-align: center;
+  /* 위 64 → 128 → 200(사용자 지시 2026-10-04): 내용이 가운데 정렬이라 늘린 만큼의 절반씩 제목이 내려온다 */
+  padding-block: max(64px, 200 * var(--hs)) max(32px, 76 * var(--hs));
 }
 .hero__title { color: var(--color-text-primary); }
 
@@ -59,20 +71,107 @@
    1920×1080 화면에서 토스 실측(글자 끝 기준): 제목 160–557 · 설명 두 줄 612–679 · 날짜 735–754 · 버튼 821–880(138×59).
    아래 px 값이 그 실측이며, --hs(1440 · 1080 기준 폭 · 높이 비율 중 작은 쪽, 최대 1)를 곱해 화면에 맞게 줄인다.
    토스에 없는 설명 한 문장(blur-reveal__body)은 설명 두 줄 바로 아래에 붙여 그만큼만 버튼이 내려간다.
-   좁은 화면(휴대폰)은 --hs가 아주 작아지므로 글자 · 간격마다 최소값을 둔다. */
-.hero { --hs: min(1px, 100vw / 1440, 100svh / 1080); }
-.hero__intro { max-width: 783px; margin-top: max(28px, 75 * var(--hs)); }
-.hero .hero__statement { font-size: max(22px, 30 * var(--hs)); line-height: 1.333; }
+   좁은 화면(휴대폰)은 --hs가 아주 작아지므로 글자 · 간격마다 최소값을 둔다.
+   덩어리 사이 간격은 실측보다 넓혔다: 제목–설명 75→110→140→200→160 · 설명–기간 50→84→66 · 기간–버튼 66→88→128→96(사용자 지시 2026-10-04).
+   소개 · 설명 · 기간 · 버튼 크기는 --fs(폭 ÷ 1440, 최대 1)로만 줄인다 — 토스처럼 화면 높이와 상관없이 1440 이상에서 고정.
+   높이까지 따르던 때는 브라우저 창(1920 모니터에서 보이는 높이 ~940)에서 토스보다 13%쯤 작았다(사용자 제보 2026-10-04).
+   간격은 첫 화면에 다 들어오도록 계속 --hs를 따른다 */
+.hero { --hs: min(1px, 100vw / 1440, 100svh / 1080); --fs: min(1px, 100vw / 1440); }
+.hero__intro { max-width: 783px; margin-top: max(52px, 160 * var(--hs)); }
+.hero .hero__statement { font-size: max(22px, 30 * var(--fs)); line-height: 1.333; }
 .hero__intro .blur-reveal__body { margin-top: max(4px, 4 * var(--hs)); }
-.hero__intro .blur-reveal__body > * { font-size: max(16px, 20 * var(--hs)); line-height: 1.4; }
+.hero__intro .blur-reveal__body > * { font-size: max(16px, 20 * var(--fs)); line-height: 1.4; }
 
 /* 지원 기간 + 지원하기 버튼(behaviour in components/ApplyButton) — 과정 개요 자리를 대신한다(2026-10-03) */
-.hero__apply { display: flex; flex-direction: column; align-items: center; gap: max(24px, 66 * var(--hs)); margin-top: max(24px, 50 * var(--hs)); }
-.hero .hero__period { color: var(--color-text-primary); font-size: max(15px, 20 * var(--hs)); line-height: 1.2; }
+.hero__apply { display: flex; flex-direction: column; align-items: center; gap: max(40px, 96 * var(--hs)); margin-top: max(28px, 66 * var(--hs)); }
+.hero .hero__period {
+  color: var(--color-text-primary);
+  font-size: max(15px, 20 * var(--fs));
+  line-height: 1.2;
+  /* 첫 화면에선 숨었다가 제목이 맑아진 뒤 소개(BlurReveal) 끝무렵 같은 방식으로 떠오른다(사용자 지시 2026-10-04) */
+  transition:
+    opacity 700ms cubic-bezier(0.22, 1, 0.36, 1) 900ms,
+    filter 900ms cubic-bezier(0.22, 1, 0.36, 1) 900ms,
+    transform 900ms cubic-bezier(0.22, 1, 0.36, 1) 900ms;
+}
+.hero[data-intro='blur'] .hero__period { opacity: 0; filter: blur(15px); transform: translateY(10px); }
 .hero .apply-button {
-  padding: max(13px, 16 * var(--hs)) max(28px, 35 * var(--hs));
-  border-radius: max(20px, 24 * var(--hs));
-  font-size: max(17px, 20 * var(--hs));
+  padding: max(13px, 16 * var(--fs)) max(28px, 35 * var(--fs));
+  border-radius: max(20px, 24 * var(--fs));
+  font-size: max(17px, 20 * var(--fs));
+  /* 첫 화면에선 숨었다가 지원 기간까지 다 나온 뒤(소개 시작 + 1.6초) 40px 아래에서 떠오른다(사용자 지시 2026-10-04).
+     호버 배경 전환(ApplyButton.css)은 그대로 둔다 */
+  transition:
+    background-color 180ms ease,
+    opacity 1s var(--ease-reveal) 1.6s,
+    transform 1s var(--ease-reveal) 1.6s;
+}
+.hero:is([data-intro='blur'], [data-intro='rise']) .apply-button { opacity: 0; transform: translateY(40px); pointer-events: none; }
+/* 'together' 첫 화면: 글이 다 떠오르면(onIntroEnd) 지원하기가 곧바로 이어서 떠오른다 */
+.hero[data-intro-style='together'] .apply-button { transition-delay: 0s, 0.1s, 0.1s; }
+/* 'together' 첫 화면: 캔버스가 뜨기 전(글꼴 로딩)엔 글을 투명하게 — 자리는 그대로라 캔버스가 같은 자리에 옮겨 그린다 */
+.hero[data-intro='rise'] :is(.hero__title, .hero__intro, .hero__period) { opacity: 0; }
+
+/* ---------- 과정 개요(사용자 지시 2026-10-04) ----------
+   히어로 바로 다음, 목차 맨 위. 왼쪽 소개 글 · 오른쪽 과정 개요. 한 화면 높이를 차지하고 내용은 세로 가운데 —
+   가운데 두면 위(히어로) · 아래(역량과 태도)가 보이지 않는다(아래는 섹션 윗여백 뒤에 시작).
+   스크롤해 보이면 높이 0fr → 1fr로 펼쳐지고 글은 흐림에서 떠오른다(Dropdown과 같은 곡선, 펼치기는 ProgramsPage HeroMore) */
+.hero-more {
+  --hm-ease: cubic-bezier(0.65, 0, 0.35, 1);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 100vh;
+  min-height: 100svh;
+  padding-block: 88px; /* 위아래 같게(정가운데). 위는 고정된 상단바 아래 — 내용이 길어도 상단바에 가리지 않게 */
+}
+.hero-more__panel {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 520ms var(--hm-ease);
+}
+.hero-more[data-open='true'] .hero-more__panel { grid-template-rows: 1fr; }
+.hero-more__inner {
+  min-height: 0;
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 420px);
+  gap: 64px;
+  max-width: 1040px;
+  margin-inline: auto;
+  text-align: left;
+  opacity: 0;
+  filter: blur(10px);
+  transform: translateY(-8px);
+  transition: opacity 240ms var(--hm-ease), filter 240ms var(--hm-ease), transform 400ms var(--hm-ease);
+}
+.hero-more[data-open='true'] .hero-more__inner {
+  opacity: 1;
+  filter: blur(0);
+  transform: none;
+  transition: opacity 360ms var(--hm-ease) 120ms, filter 560ms var(--hm-ease) 120ms, transform 520ms var(--hm-ease) 120ms;
+}
+/* 펼친 글 위아래 여백은 안쪽에 둬야 접혔을 때 0이 된다 */
+.hero-more__text,
+.hero-more__facts { padding-bottom: 8px; }
+/* 두 칸 제목('1 Year Programs' · '과정 개요') — 아래 가는 선까지 같은 모양 */
+.hero-more__head { padding-bottom: 12px; border-bottom: 1px solid var(--color-border); }
+.hero-more__para { margin-top: 16px; font-size: 17px; line-height: 1.75; }
+.hero-more__row {
+  display: grid;
+  grid-template-columns: 100px minmax(0, 1fr);
+  gap: 16px;
+  padding: 10px 0;
+}
+.hero-more__row + .hero-more__row { border-top: 1px solid var(--color-border); }
+.hero-more__row dt { align-self: center; }
+.hero-more__row :is(dt, dd) { font-size: 15px; }
+@media (max-width: 860px) {
+  .hero-more__inner { grid-template-columns: minmax(0, 1fr); gap: 0; }
+  .hero-more__facts { padding-top: 24px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero-more__panel, .hero-more__inner { transition: none; }
 }
 
 /* ---------- Sections ---------- */
@@ -83,6 +182,8 @@
   scroll-margin-top: calc(88px - 40px - var(--space-section));
 }
 .section--last { padding-bottom: var(--space-section); }
+/* 히어로 → 첫 섹션 간격 = 다른 섹션 사이와 같은 --space-section(사용자 지시 2026-10-04). 히어로가 내용 높이만큼만
+   차지하므로('자세히 보기'까지) 따로 덜어 낼 빈 곳이 없다 */
 
 .section-header {
   display: grid;
