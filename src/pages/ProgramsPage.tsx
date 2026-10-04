@@ -74,14 +74,20 @@ const deviceOutcomes: Record<string, string> = {
 
 /**
  * 줄 목록 — 역량과 태도, 채용 연계가 같은 모양으로 쓴다
- * (사용자 지시 2026-09-30). 줄에는 번호 · 제목 · 보조 문구만 두고, 설명은 마우스를
- * 올리면 0fr → 1fr로 펼친다(사용자 지시 2026-09-23). 줄을 누르면 열린 채로 고정되고,
- * 다른 줄을 열어도 그대로 남는다(여러 줄 동시 고정).
+ * (사용자 지시 2026-09-30). 줄에는 번호 · 제목 · 보조 문구만 두고, 누르면 설명이 0fr → 1fr로 펼쳐진다.
+ * 여러 줄을 함께 펼쳐 둘 수 있다. 커리큘럼 수업 줄처럼 선 없는 흰 면 — 호버하면 회색 면 + 글이 오른쪽으로
+ * 살짝 들어가 누를 수 있음을 알린다(사용자 지시 2026-10-04). 호버만으로는 펼치지 않는다.
  * `start`는 번호를 이어 매기기 위한 값 — 오른쪽 목록이 왼쪽 목록 다음 번호부터 센다.
  */
 type RowItem = { id: string; title: string; sub?: string; body: ReactNode };
 
-function RowList({ items, start = 0 }: { items: RowItem[]; start?: number }) {
+/** 설명 한 개 — 글이면 본문 문단, 아니면 그대로 */
+const renderBody = (body: ReactNode) => (typeof body === 'string' ? <Text typography="Body" color="secondary">{body}</Text> : body);
+
+/**
+ * `group`: 같은 묶음의 모든 줄(양쪽 단 포함). 펼친 칸에 묶음의 설명을 모두 겹쳐 두어 높이를 가장 긴 설명에 맞춘다
+ */
+function RowList({ items, start = 0, group = items }: { items: RowItem[]; start?: number; group?: RowItem[] }) {
   const [pinned, setPinned] = useState<Set<string>>(() => new Set());
   const togglePin = (id: string) => setPinned((prev) => {
     const next = new Set(prev);
@@ -102,17 +108,23 @@ function RowList({ items, start = 0 }: { items: RowItem[]; start?: number }) {
               aria-controls={panelId}
               onClick={() => togglePin(item.id)}
             >
-              <Text as="span" typography="Label" color="tertiary">{String(start + i + 1).padStart(2, '0')}</Text>
-              <span className="pillar-row__titles">
-                <Text as="span" typography="Title">{item.title}</Text>
-                {item.sub && <Text as="span" typography="Label" color="tertiary">{item.sub}</Text>}
+              <span className="pillar-row__lead">
+                <Text as="span" typography="Label" color="tertiary">{String(start + i + 1).padStart(2, '0')}</Text>
+                <span className="pillar-row__titles">
+                  <Text as="span" typography="Title">{item.title}</Text>
+                  {item.sub && <Text as="span" typography="Label" color="tertiary">{item.sub}</Text>}
+                </span>
               </span>
               <span className="pillar-row__icon" aria-hidden="true">＋</span>
             </button>
             <div id={panelId} className="pillar-row__panel" role="region" aria-label={item.title}>
               <div className="pillar-row__clip">
                 <div className="pillar-row__body">
-                  {typeof item.body === 'string' ? <Text typography="Body" color="secondary">{item.body}</Text> : item.body}
+                  {group.map((o) => (
+                    <div key={o.id} className="pillar-row__text" data-ghost={o.id !== item.id} aria-hidden={o.id !== item.id}>
+                      {renderBody(o.body)}
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>
@@ -126,12 +138,10 @@ function RowList({ items, start = 0 }: { items: RowItem[]; start?: number }) {
 const pillarRows = (items: Pillar[]): RowItem[] => items.map((p) => ({ id: p.en.replace(/\s+/g, '-').toLowerCase(), title: p.ko, sub: p.en, body: p.body }));
 
 /**
- * 수업을 관통하는 접근 — 주요 수업들의 코스 박스를 참고한 박스, 한 줄에 2개씩 3줄
- * (사용자 지시 2026-09-29). 박스에는 번호 · 장치 이름 · 결과 한 줄만 보이고, 설명은
- * 마우스를 올리면 펼친다(0fr → 1fr). 닫힌 박스는 작게, 펼친 박스는 설명이 가장 긴 박스
- * 크기로 모두 같다.
- * 누르면 열린 채로 고정되고(여러 박스 동시 고정),
- * 열린 설명을 눌러도 닫힌다 — 역량과 태도 목록과 같은 조작이다.
+ * 수업을 관통하는 접근 — 한 줄에 2개씩 3줄(사용자 지시 2026-09-29). 박스에는 번호 · 장치 이름 · 결과 한 줄만
+ * 보이고, 누르면 설명이 펼쳐진다(0fr → 1fr, 여러 박스 동시). 닫힌 박스는 작게, 펼친 박스는 설명이 가장 긴
+ * 박스 크기로 모두 같다. 열린 설명을 눌러도 닫힌다 — 역량과 태도 목록과 같은 조작.
+ * 회색 면 없는 흰 박스, 호버하면 회색 면 + 글이 오른쪽으로 살짝(사용자 지시 2026-10-04).
  */
 function DeviceGrid({ items }: { items: { name: string; tag: string; body: string }[] }) {
   const [pinned, setPinned] = useState<Set<number>>(() => new Set());
@@ -148,16 +158,19 @@ function DeviceGrid({ items }: { items: { name: string; tag: string; body: strin
         return (
           <article key={d.name} className="device-card" data-pinned={isPinned}>
             <button type="button" className="device-card__hit" aria-expanded={isPinned} aria-controls={panelId} onClick={() => togglePin(i)}>
-              <span className="device-card__topline">
-                {/* 번호(흰 알약) 옆에 배우는 자리 태그(테두리 알약) */}
-                <span className="device-card__chips">
-                  <Text as="span" typography="Label" color="inherit" className="device-card__badge">{String(i + 1).padStart(2, '0')}</Text>
-                  <span className="device-card__tag">{d.tag}</span>
+              {/* 호버하면 글 묶음(.device-card__lead)이 오른쪽으로 살짝 들어간다 */}
+              <span className="device-card__lead">
+                <span className="device-card__topline">
+                  {/* 번호(알약) 옆에 배우는 자리 태그(테두리 알약) */}
+                  <span className="device-card__chips">
+                    <Text as="span" typography="Label" color="inherit" className="device-card__badge">{String(i + 1).padStart(2, '0')}</Text>
+                    <span className="device-card__tag">{d.tag}</span>
+                  </span>
                 </span>
-                <span className="device-card__icon" aria-hidden="true">＋</span>
+                <Text as="h4" typography="Title" className="device-card__name">{d.name}</Text>
+                {deviceOutcomes[d.name] && <Text as="span" typography="Label" color="tertiary">{deviceOutcomes[d.name]}</Text>}
               </span>
-              <Text as="h4" typography="Title" className="device-card__name">{d.name}</Text>
-              {deviceOutcomes[d.name] && <Text as="span" typography="Label" color="tertiary">{deviceOutcomes[d.name]}</Text>}
+              <span className="device-card__icon" aria-hidden="true">＋</span>
             </button>
             <div id={panelId} className="device-card__panel" role="region" aria-label={d.name} onClick={() => togglePin(i)}>
               <div className="device-card__clip">
@@ -197,6 +210,7 @@ const careerRows: RowItem[] = [
  * 번호는 오른쪽이 왼쪽에 이어 세고(continue), 서로 다른 묶음(역량 · 태도)은 각자 01부터(restart).
  */
 function RowColumns({ columns, numbering = 'continue' }: { columns: { id?: string; label?: string; items: RowItem[] }[]; numbering?: 'continue' | 'restart' }) {
+  const group = columns.flatMap((col) => col.items); // 양쪽 단의 줄 — 펼친 높이를 같게
   return (
     <div className="pillar-columns">
       {columns.map((col, c) => {
@@ -204,7 +218,7 @@ function RowColumns({ columns, numbering = 'continue' }: { columns: { id?: strin
         return (
           <div key={col.id ?? c} id={col.id} className="pillar-column">
             {col.label && <GroupLabel>{col.label}</GroupLabel>}
-            <RowList items={col.items} start={from} />
+            <RowList items={col.items} start={from} group={group} />
           </div>
         );
       })}

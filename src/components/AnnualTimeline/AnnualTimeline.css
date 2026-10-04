@@ -55,7 +55,7 @@
   min-height: var(--tl-bar-height);
   border-radius: 18px;
   text-align: left;
-  cursor: pointer;
+  cursor: var(--cursor-pointer);
   background: var(--color-bg-subtle);
   color: var(--color-text-primary);
   white-space: normal;

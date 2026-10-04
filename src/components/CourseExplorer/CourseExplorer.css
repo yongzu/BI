@@ -44,7 +44,7 @@
   padding: 16px var(--ce-row-pad-x);
   border-radius: 12px;
   text-align: left;
-  cursor: pointer;
+  cursor: var(--cursor-pointer);
   transition: background var(--duration) var(--ease);
 }
 /* 호버하면 회색 면 — 누를 수 있는 줄임을 알린다 */
