@@ -115,7 +115,7 @@ function RowList({ items, start = 0, group = items }: { items: RowItem[]; start?
                   {item.sub && <Text as="span" typography="Label" color="tertiary">{item.sub}</Text>}
                 </span>
               </span>
-              <span className="pillar-row__icon" aria-hidden="true">＋</span>
+              <span className="pillar-row__icon" aria-hidden="true" />
             </button>
             <div id={panelId} className="pillar-row__panel" role="region" aria-label={item.title}>
               <div className="pillar-row__clip">
@@ -170,7 +170,7 @@ function DeviceGrid({ items }: { items: { name: string; tag: string; body: strin
                 <Text as="h4" typography="Title" className="device-card__name">{d.name}</Text>
                 {deviceOutcomes[d.name] && <Text as="span" typography="Label" color="tertiary">{deviceOutcomes[d.name]}</Text>}
               </span>
-              <span className="device-card__icon" aria-hidden="true">＋</span>
+              <span className="device-card__icon" aria-hidden="true" />
             </button>
             <div id={panelId} className="device-card__panel" role="region" aria-label={d.name} onClick={() => togglePin(i)}>
               <div className="device-card__clip">

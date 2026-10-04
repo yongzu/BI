@@ -270,7 +270,17 @@
 }
 .pillar-row__titles { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
 .pillar-row__hit:focus-visible { outline: 2px solid var(--color-text-primary); outline-offset: 2px; }
-.pillar-row__icon { font-size: 20px; color: var(--color-text-tertiary); transition: transform 480ms var(--ease-reveal), color var(--duration) var(--ease); }
+/* 펼침 표시: 커리큘럼 수업 줄과 같은 꺾쇠 — 닫히면 아래, 열리면 위(사용자 지시 2026-10-04, ＋ · × 대신) */
+.pillar-row__icon {
+  justify-self: center;
+  width: 9px;
+  height: 9px;
+  border-right: 1.5px solid currentColor;
+  border-bottom: 1.5px solid currentColor;
+  color: var(--color-text-tertiary);
+  transform: translateY(-3px) rotate(45deg);
+  transition: transform 480ms cubic-bezier(0.65, 0, 0.35, 1), color var(--duration) var(--ease);
+}
 @media (hover: hover) {
   .pillar-row__hit:hover { background: var(--color-bg-hover); }
   .pillar-row__hit:hover .pillar-row__lead { transform: translateX(12px); }
@@ -294,7 +304,7 @@
 /* 겹쳐 둔 설명: 제 것만 보이고 남의 것은 자리만 */
 .pillar-row__text { grid-area: 1 / 1; display: flex; flex-direction: column; gap: 8px; }
 .pillar-row__text[data-ghost='true'] { visibility: hidden; }
-.pillar-row[data-pinned='true'] .pillar-row__icon { transform: rotate(45deg); color: var(--color-text-secondary); }
+.pillar-row[data-pinned='true'] .pillar-row__icon { transform: translateY(2px) rotate(225deg); color: var(--color-text-primary); }
 
 /* ---------- Teaching devices: 한 줄에 2개 ----------
    닫힌 박스는 작게, 펼친 박스는 모두 같은 크기(사용자 지시 2026-09-29).
@@ -326,7 +336,18 @@
 }
 .device-card__hit:focus-visible { outline: 2px solid var(--color-text-primary); outline-offset: 2px; }
 .device-card__topline { display: flex; align-items: center; }
-.device-card__icon { font-size: 20px; line-height: 1; color: var(--color-text-tertiary); transition: transform 480ms var(--ease-reveal), color var(--duration) var(--ease); }
+/* 꺾쇠(커리큘럼과 같음) — 번호 알약 줄 가운데 높이에 */
+.device-card__icon {
+  flex: none;
+  margin: 12px 6px 0 0;
+  width: 9px;
+  height: 9px;
+  border-right: 1.5px solid currentColor;
+  border-bottom: 1.5px solid currentColor;
+  color: var(--color-text-tertiary);
+  transform: translateY(-3px) rotate(45deg);
+  transition: transform 480ms cubic-bezier(0.65, 0, 0.35, 1), color var(--duration) var(--ease);
+}
 /* 설명: 높이 0fr → 1fr로 부드럽게 펼치고, 글자는 살짝 늦게 떠오른다 */
 .device-card__panel { display: grid; grid-template-rows: 0fr; cursor: var(--cursor-pointer); transition: grid-template-rows 480ms var(--ease-reveal); }
 .device-card__clip { min-height: 0; overflow: hidden; }
@@ -336,7 +357,7 @@
 .device-card__text[data-ghost='true'] { visibility: hidden; }
 .device-card[data-pinned='true'] .device-card__panel { grid-template-rows: 1fr; }
 .device-card[data-pinned='true'] .device-card__body { opacity: 1; transform: none; transition-delay: 80ms; }
-.device-card[data-pinned='true'] .device-card__icon { transform: rotate(45deg); color: var(--color-text-secondary); }
+.device-card[data-pinned='true'] .device-card__icon { transform: translateY(2px) rotate(225deg); color: var(--color-text-primary); }
 @media (hover: hover) {
   .device-card:hover { background: var(--color-bg-hover); }
   .device-card:hover .device-card__lead { transform: translateX(12px); }
