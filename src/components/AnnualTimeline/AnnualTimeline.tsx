@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type CSSProperties, type PointerEvent } from 'react';
 import { Text } from '../Text/Text';
+import { scrollToTarget } from '../../smoothScroll';
 import './AnnualTimeline.css';
 
 /**
@@ -12,6 +13,8 @@ import './AnnualTimeline.css';
  * - Click: pins the stage so it stays open — while pinned, hovering other stages changes
  *   nothing (사용자 지시 2026-09-22). Click it again, click another stage, choose "전체",
  *   or click anywhere outside the timeline to return to the overview.
+ * - Pinning a stage scrolls the page so the filter sits just under the top bar (88px) and the
+ *   open card shows below it (사용자 지시 2026-10-04). Returning to the overview doesn't scroll.
  * - Stages with `items` (방학 + 캠프 · 수료 & 졸업) stack those as boxes inside the open card
  *   — the two stages replace their old sections (사용자 지시 2026-09-30).
  * Everything is positioned in % of the current view window, so a single state
@@ -43,6 +46,7 @@ const CARD_MIN = 320; // px — the open card is never narrower than this (if th
 // Stages with boxes (방학 + 캠프 · 수료 & 졸업) open wider so the boxes read comfortably — they may
 // zoom in further for it (사용자 지시 2026-09-30); on a narrow chart the card takes 90% of it
 const CARD_MIN_WITH_ITEMS = 600;
+const PIN_TOP = 88; // px — where the filter lands after pinning a stage (below the pinned top bar)
 const SETTLE_MS = 400; // ignore hover while bars are still sliding, so a bar moving under the pointer can't steal focus
 
 export function AnnualTimeline({ stages, months }: Props) {
@@ -110,6 +114,10 @@ export function AnnualTimeline({ stages, months }: Props) {
     setPreview(null);
     setPinned(next);
     markMoving(at);
+    if (next !== null && root.current) {
+      const y = window.scrollY + root.current.getBoundingClientRect().top - PIN_TOP;
+      scrollToTarget(Math.max(0, y));
+    }
   };
 
   // Clicking anywhere outside the timeline returns a pinned view to the overview
