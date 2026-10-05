@@ -41,7 +41,7 @@ const revealTargets = ['.section-header > *', '.group-label', '.group__lead', '.
 
 /* ------------------------------------------------------------------ */
 
-/** Section title (64) + lead (28, 70%) in two columns */
+/** Section title (64) + lead (28, 70%) — 제목 위, 리드 아래(사용자 지시 2026-10-05: 왼 → 오 → 아래로 읽는 피로를 덜게) */
 function SectionHeader({ title, lead }: { title: ReactNode; lead?: string }) {
   return (
     <header className="section-header">
@@ -73,10 +73,11 @@ const deviceOutcomes: Record<string, string> = {
 };
 
 /**
- * 줄 목록 — 역량과 태도, 채용 연계가 같은 모양으로 쓴다
- * (사용자 지시 2026-09-30). 줄에는 번호 · 제목 · 보조 문구만 두고, 누르면 설명이 0fr → 1fr로 펼쳐진다.
- * 여러 줄을 함께 펼쳐 둘 수 있다. 커리큘럼 수업 줄처럼 선 없는 흰 면 — 호버하면 회색 면 + 글이 오른쪽으로
- * 살짝 들어가 누를 수 있음을 알린다(사용자 지시 2026-10-04). 호버만으로는 펼치지 않는다.
+ * 줄 목록 — 역량과 태도가 쓴다(사용자 지시 2026-09-30). 줄에는 번호 · 제목 · 보조 문구만 두고, 누르면 설명이
+ * 0fr → 1fr로 펼쳐진다. 한 줄을 누르면 묶음 전체(양쪽 단)가 함께 여닫힌다(사용자 지시 2026-10-05) — 열림 상태는
+ * RowColumns가 갖는다. 커리큘럼 수업 줄처럼 선 없는 흰 면 — 호버하면 회색 면 + 글이 오른쪽으로 살짝 들어가
+ * 누를 수 있음을 알린다(사용자 지시 2026-10-04). 호버만으로는 펼치지 않는다.
+ * `onToggle`이 없으면 드롭다운 없이 설명까지 늘 보이는 정적 목록(채용 연계, 사용자 지시 2026-10-05).
  * `start`는 번호를 이어 매기기 위한 값 — 오른쪽 목록이 왼쪽 목록 다음 번호부터 센다.
  */
 type RowItem = { id: string; title: string; sub?: string; body: ReactNode };
@@ -87,36 +88,30 @@ const renderBody = (body: ReactNode) => (typeof body === 'string' ? <Text typogr
 /**
  * `group`: 같은 묶음의 모든 줄(양쪽 단 포함). 펼친 칸에 묶음의 설명을 모두 겹쳐 두어 높이를 가장 긴 설명에 맞춘다
  */
-function RowList({ items, start = 0, group = items }: { items: RowItem[]; start?: number; group?: RowItem[] }) {
-  const [pinned, setPinned] = useState<Set<string>>(() => new Set());
-  const togglePin = (id: string) => setPinned((prev) => {
-    const next = new Set(prev);
-    if (next.has(id)) next.delete(id); else next.add(id);
-    return next;
-  });
+function RowList({ items, start = 0, group = items, open, onToggle }: { items: RowItem[]; start?: number; group?: RowItem[]; open: boolean; onToggle?: () => void }) {
   return (
-    <div className="pillar-list">
+    <div className="pillar-list" data-static={!onToggle}>
       {items.map((item, i) => {
-        const isPinned = pinned.has(item.id);
         const panelId = `row-${item.id}`;
+        const lead = (
+          <span className="pillar-row__lead">
+            <Text as="span" typography="Label" color="tertiary">{String(start + i + 1).padStart(2, '0')}</Text>
+            <span className="pillar-row__titles">
+              <Text as="span" typography="Title">{item.title}</Text>
+              {item.sub && <Text as="span" typography="Label" color="tertiary">{item.sub}</Text>}
+            </span>
+          </span>
+        );
         return (
-          <article key={item.id} className="pillar-row" data-pinned={isPinned}>
-            <button
-              type="button"
-              className="pillar-row__hit"
-              aria-expanded={isPinned}
-              aria-controls={panelId}
-              onClick={() => togglePin(item.id)}
-            >
-              <span className="pillar-row__lead">
-                <Text as="span" typography="Label" color="tertiary">{String(start + i + 1).padStart(2, '0')}</Text>
-                <span className="pillar-row__titles">
-                  <Text as="span" typography="Title">{item.title}</Text>
-                  {item.sub && <Text as="span" typography="Label" color="tertiary">{item.sub}</Text>}
-                </span>
-              </span>
-              <span className="pillar-row__icon" aria-hidden="true" />
-            </button>
+          <article key={item.id} className="pillar-row" data-pinned={open}>
+            {onToggle ? (
+              <button type="button" className="pillar-row__hit" aria-expanded={open} aria-controls={panelId} onClick={onToggle}>
+                {lead}
+                <span className="pillar-row__icon" aria-hidden="true" />
+              </button>
+            ) : (
+              <div className="pillar-row__hit">{lead}</div>
+            )}
             <div id={panelId} className="pillar-row__panel" role="region" aria-label={item.title}>
               <div className="pillar-row__clip">
                 <div className="pillar-row__body">
@@ -139,25 +134,21 @@ const pillarRows = (items: Pillar[]): RowItem[] => items.map((p) => ({ id: p.en.
 
 /**
  * 수업을 관통하는 접근 — 한 줄에 2개씩 3줄(사용자 지시 2026-09-29). 박스에는 번호 · 장치 이름 · 결과 한 줄만
- * 보이고, 누르면 설명이 펼쳐진다(0fr → 1fr, 여러 박스 동시). 닫힌 박스는 작게, 펼친 박스는 설명이 가장 긴
+ * 보이고, 누르면 설명이 펼쳐진다(0fr → 1fr, 한 번 누르면 전체가 함께). 닫힌 박스는 작게, 펼친 박스는 설명이 가장 긴
  * 박스 크기로 모두 같다. 열린 설명을 눌러도 닫힌다 — 역량과 태도 목록과 같은 조작.
  * 회색 면 없는 흰 박스, 호버하면 회색 면 + 글이 오른쪽으로 살짝(사용자 지시 2026-10-04).
  */
 function DeviceGrid({ items }: { items: { name: string; tag: string; body: string }[] }) {
-  const [pinned, setPinned] = useState<Set<number>>(() => new Set());
-  const togglePin = (i: number) => setPinned((prev) => {
-    const next = new Set(prev);
-    if (next.has(i)) next.delete(i); else next.add(i);
-    return next;
-  });
+  // 한 박스를 누르면 여섯 박스가 함께 여닫힌다(사용자 지시 2026-10-05)
+  const [open, setOpen] = useState(false);
+  const toggle = () => setOpen((v) => !v);
   return (
     <div className="grid-devices">
       {items.map((d, i) => {
-        const isPinned = pinned.has(i);
         const panelId = `device-panel-${i}`;
         return (
-          <article key={d.name} className="device-card" data-pinned={isPinned}>
-            <button type="button" className="device-card__hit" aria-expanded={isPinned} aria-controls={panelId} onClick={() => togglePin(i)}>
+          <article key={d.name} className="device-card" data-pinned={open}>
+            <button type="button" className="device-card__hit" aria-expanded={open} aria-controls={panelId} onClick={toggle}>
               {/* 호버하면 글 묶음(.device-card__lead)이 오른쪽으로 살짝 들어간다 */}
               <span className="device-card__lead">
                 <span className="device-card__topline">
@@ -172,7 +163,7 @@ function DeviceGrid({ items }: { items: { name: string; tag: string; body: strin
               </span>
               <span className="device-card__icon" aria-hidden="true" />
             </button>
-            <div id={panelId} className="device-card__panel" role="region" aria-label={d.name} onClick={() => togglePin(i)}>
+            <div id={panelId} className="device-card__panel" role="region" aria-label={d.name} onClick={toggle}>
               <div className="device-card__clip">
                 {/* 여섯 설명을 한 칸에 겹쳐 두고 자기 설명만 보인다 — 펼친 높이가 늘 가장 긴 설명에 맞춰진다 */}
                 <div className="device-card__body">
@@ -209,8 +200,11 @@ const careerRows: RowItem[] = [
  * 역량과 태도와 같은 두 단: 왼쪽 목록 · 오른쪽 목록, 좁으면 위아래.
  * 번호는 오른쪽이 왼쪽에 이어 세고(continue), 서로 다른 묶음(역량 · 태도)은 각자 01부터(restart).
  */
-function RowColumns({ columns, numbering = 'continue' }: { columns: { id?: string; label?: string; items: RowItem[] }[]; numbering?: 'continue' | 'restart' }) {
+function RowColumns({ columns, numbering = 'continue', collapsible = true }: { columns: { id?: string; label?: string; items: RowItem[] }[]; numbering?: 'continue' | 'restart'; collapsible?: boolean }) {
   const group = columns.flatMap((col) => col.items); // 양쪽 단의 줄 — 펼친 높이를 같게
+  // 한 줄을 누르면 양쪽 단 전체가 함께 여닫힌다(사용자 지시 2026-10-05). 접지 않는 목록은 늘 펼침
+  const [open, setOpen] = useState(!collapsible);
+  const toggle = collapsible ? () => setOpen((v) => !v) : undefined;
   return (
     <div className="pillar-columns">
       {columns.map((col, c) => {
@@ -218,7 +212,7 @@ function RowColumns({ columns, numbering = 'continue' }: { columns: { id?: strin
         return (
           <div key={col.id ?? c} id={col.id} className="pillar-column">
             {col.label && <GroupLabel>{col.label}</GroupLabel>}
-            <RowList items={col.items} start={from} group={group} />
+            <RowList items={col.items} start={from} group={group} open={open} onToggle={toggle} />
           </div>
         );
       })}
@@ -381,10 +375,10 @@ export function ProgramsPage() {
         {/* ---------- 채용 연계 ---------- */}
         <section id="career" className="section section--last container">
           <SectionHeader title="채용 연계" lead="Phi의 1년제 프로그램 졸업자들은 토스의 별도 채용 전형에 지원할 수 있습니다." />
-          {/* 역량과 태도와 같은 두 단 목록(로컬 시험, 2026-09-30): 왼쪽 채용 전형 · 오른쪽 입사 특전 */}
+          {/* 역량과 태도와 같은 두 단 목록: 왼쪽 채용 전형 · 오른쪽 입사 특전 — 드롭다운 없이 내용까지 바로(사용자 지시 2026-10-05) */}
           <div className="group">
             <GroupLabel>with Toss</GroupLabel>
-            <RowColumns columns={[{ items: careerRows.slice(0, 1) }, { items: careerRows.slice(1) }]} />
+            <RowColumns collapsible={false} columns={[{ items: careerRows.slice(0, 1) }, { items: careerRows.slice(1) }]} />
           </div>
         </section>
         </div>

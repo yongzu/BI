@@ -185,11 +185,12 @@
 /* 히어로 → 첫 섹션 간격 = 다른 섹션 사이와 같은 --space-section(사용자 지시 2026-10-04). 히어로가 내용 높이만큼만
    차지하므로('자세히 보기'까지) 따로 덜어 낼 빈 곳이 없다 */
 
+/* 제목 위, 리드 아래 — 왼 → 오 → 아래로 시선이 꺾이던 두 단 배치보다 덜 피로하다(사용자 지시 2026-10-05) */
 .section-header {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, var(--lead-width));
-  gap: 24px;
-  align-items: center; /* lead is vertically centred on the title */
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 20px;
 }
 
 .group { margin-top: var(--space-group); scroll-margin-top: 48px; }
@@ -234,7 +235,7 @@
 
 /* ---------- Responsive ---------- */
 @media (max-width: 1100px) {
-  .section-header { grid-template-columns: 1fr; gap: 16px; }
+  .section-header { gap: 16px; }
 }
 /* ---------- 역량 · 태도 / 채용 연계 줄 ----------
    커리큘럼 수업 줄과 같은 모양(사용자 지시 2026-10-04): 선 없는 흰 면, 호버하면 회색 면 + 글이 오른쪽으로 12px
@@ -305,6 +306,12 @@
 .pillar-row__text { grid-area: 1 / 1; display: flex; flex-direction: column; gap: 8px; }
 .pillar-row__text[data-ghost='true'] { visibility: hidden; }
 .pillar-row[data-pinned='true'] .pillar-row__icon { transform: translateY(2px) rotate(225deg); color: var(--color-text-primary); }
+/* 정적 목록(채용 연계): 누르지 않으므로 커서 · 호버 면 · 꺾쇠 자리 없이 설명까지 늘 보인다(사용자 지시 2026-10-05) */
+.pillar-list[data-static='true'] .pillar-row__hit { grid-template-columns: minmax(0, 1fr); cursor: auto; padding-bottom: 12px; }
+.pillar-list[data-static='true'] .pillar-row__hit:hover { background: none; }
+.pillar-list[data-static='true'] .pillar-row__hit:hover .pillar-row__lead { transform: none; }
+.pillar-list[data-static='true'] .pillar-row__panel,
+.pillar-list[data-static='true'] .pillar-row__body { transition: none; }
 
 /* ---------- Teaching devices: 한 줄에 2개 ----------
    닫힌 박스는 작게, 펼친 박스는 모두 같은 크기(사용자 지시 2026-09-29).
