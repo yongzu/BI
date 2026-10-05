@@ -10,6 +10,7 @@ import { HeroLogo3D } from '../components/HeroLogo3D/HeroLogo3D';
 import { BackToTop, SiteHeader } from '../components/SiteHeader/SiteHeader';
 import { courseProfiles } from '../data/courseProfiles';
 import { useScrollReveal } from '../hooks/useScrollReveal';
+import { scrollToTarget } from '../smoothScroll';
 import type { Pillar } from '../data/programs';
 import {
   attitudes,
@@ -83,13 +84,36 @@ const deviceOutcomes: Record<string, string> = {
  */
 type RowItem = { id: string; title: string; sub?: string; body: ReactNode };
 
+/**
+ * 펼치면서 누른 박스를 화면 세로 가운데로(사용자 지시 2026-10-05). 펼침(0.48초)이 끝나길 기다리지 않고 누르는 순간
+ * 펼친 뒤의 자리를 미리 계산해 함께 움직인다: 각 칸이 늘어날 높이 = 접힌 칸 안 내용의 높이(scrollHeight),
+ * 누른 박스 위(같은 세로 줄)에서 늘어나는 칸만큼 박스가 내려가고, 박스 자신은 제 칸만큼 길어진다.
+ * 박스가 화면에 다 안 들어가면(위아래 88px 제외) 목차처럼 위 88px에 맞춘다.
+ */
+function centerOnOpen(target: HTMLElement, scope: HTMLElement, clipSelector: string) {
+  const t = target.getBoundingClientRect();
+  let above = 0;
+  let own = 0;
+  scope.querySelectorAll<HTMLElement>(clipSelector).forEach((clip) => {
+    const grow = clip.scrollHeight - clip.clientHeight;
+    if (grow <= 0) return;
+    if (target.contains(clip)) { own += grow; return; }
+    const r = clip.getBoundingClientRect();
+    if (r.left < t.right && r.right > t.left && r.bottom <= t.top + 1) above += grow;
+  });
+  const top = window.scrollY + t.top + above;
+  const height = t.height + own;
+  const y = height > window.innerHeight - 2 * 88 ? top - 88 : top + height / 2 - window.innerHeight / 2;
+  scrollToTarget(Math.max(0, y));
+}
+
 /** 설명 한 개 — 글이면 본문 문단, 아니면 그대로 */
 const renderBody = (body: ReactNode) => (typeof body === 'string' ? <Text typography="Body" color="secondary">{body}</Text> : body);
 
 /**
  * `group`: 같은 묶음의 모든 줄(양쪽 단 포함). 펼친 칸에 묶음의 설명을 모두 겹쳐 두어 높이를 가장 긴 설명에 맞춘다
  */
-function RowList({ items, start = 0, group = items, open, onToggle }: { items: RowItem[]; start?: number; group?: RowItem[]; open: boolean; onToggle?: () => void }) {
+function RowList({ items, start = 0, group = items, open, onToggle }: { items: RowItem[]; start?: number; group?: RowItem[]; open: boolean; onToggle?: (row: HTMLElement | null) => void }) {
   return (
     <div className="pillar-list" data-static={!onToggle}>
       {items.map((item, i) => {
@@ -106,7 +130,7 @@ function RowList({ items, start = 0, group = items, open, onToggle }: { items: R
         return (
           <article key={item.id} className="pillar-row" data-pinned={open}>
             {onToggle ? (
-              <button type="button" className="pillar-row__hit" aria-expanded={open} aria-controls={panelId} onClick={onToggle}>
+              <button type="button" className="pillar-row__hit" aria-expanded={open} aria-controls={panelId} onClick={(e) => onToggle(e.currentTarget.closest<HTMLElement>('.pillar-row'))}>
                 {lead}
               </button>
             ) : (
@@ -141,14 +165,19 @@ const pillarRows = (items: Pillar[]): RowItem[] => items.map((p) => ({ id: p.en.
 function DeviceGrid({ items }: { items: { name: string; tag: string; body: string }[] }) {
   // 한 박스를 누르면 여섯 박스가 함께 여닫힌다(사용자 지시 2026-10-05)
   const [open, setOpen] = useState(false);
-  const toggle = () => setOpen((v) => !v);
+  const grid = useRef<HTMLDivElement>(null);
+  // 펼칠 때만 누른 박스를 화면 가운데로
+  const toggle = (card: HTMLElement | null) => {
+    if (!open && card && grid.current) centerOnOpen(card, grid.current, '.device-card__clip');
+    setOpen((v) => !v);
+  };
   return (
-    <div className="grid-devices">
+    <div ref={grid} className="grid-devices">
       {items.map((d, i) => {
         const panelId = `device-panel-${i}`;
         return (
           <article key={d.name} className="device-card" data-pinned={open}>
-            <button type="button" className="device-card__hit" aria-expanded={open} aria-controls={panelId} onClick={toggle}>
+            <button type="button" className="device-card__hit" aria-expanded={open} aria-controls={panelId} onClick={(e) => toggle(e.currentTarget.closest<HTMLElement>('.device-card'))}>
               {/* 호버하면 글 묶음(.device-card__lead)이 오른쪽으로 살짝 들어간다 */}
               <span className="device-card__lead">
                 <span className="device-card__topline">
@@ -162,7 +191,7 @@ function DeviceGrid({ items }: { items: { name: string; tag: string; body: strin
                 {deviceOutcomes[d.name] && <Text as="span" typography="Label" color="tertiary">{deviceOutcomes[d.name]}</Text>}
               </span>
             </button>
-            <div id={panelId} className="device-card__panel" role="region" aria-label={d.name} onClick={toggle}>
+            <div id={panelId} className="device-card__panel" role="region" aria-label={d.name} onClick={() => toggle(null)}>
               <div className="device-card__clip">
                 {/* 여섯 설명을 한 칸에 겹쳐 두고 자기 설명만 보인다 — 펼친 높이가 늘 가장 긴 설명에 맞춰진다 */}
                 <div className="device-card__body">
@@ -203,9 +232,16 @@ function RowColumns({ columns, numbering = 'continue', collapsible = true }: { c
   const group = columns.flatMap((col) => col.items); // 양쪽 단의 줄 — 펼친 높이를 같게
   // 한 줄을 누르면 양쪽 단 전체가 함께 여닫힌다(사용자 지시 2026-10-05). 접지 않는 목록은 늘 펼침
   const [open, setOpen] = useState(!collapsible);
-  const toggle = collapsible ? () => setOpen((v) => !v) : undefined;
+  const root = useRef<HTMLDivElement>(null);
+  // 펼칠 때만 누른 줄을 화면 가운데로
+  const toggle = collapsible
+    ? (row: HTMLElement | null) => {
+      if (!open && row && root.current) centerOnOpen(row, root.current, '.pillar-row__clip');
+      setOpen((v) => !v);
+    }
+    : undefined;
   return (
-    <div className="pillar-columns">
+    <div ref={root} className="pillar-columns">
       {columns.map((col, c) => {
         const from = numbering === 'continue' ? columns.slice(0, c).reduce((n, prev) => n + prev.items.length, 0) : 0;
         return (
