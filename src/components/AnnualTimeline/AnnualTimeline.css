@@ -38,6 +38,7 @@
   color: var(--color-text-tertiary);
   transition: color var(--tl-duration) var(--tl-ease);
 }
+.annual__tick[data-edge='true'] .annual__month { transform: none; padding-left: 6px; }
 .annual__tick[data-focus='true'] { border-left-color: var(--color-text-tertiary); }
 .annual__tick[data-focus='true'] .annual__month { color: var(--color-text-primary); font-weight: var(--font-weight-bold); }
 
@@ -57,7 +58,8 @@
   border-radius: 18px;
   text-align: left;
   cursor: var(--cursor-pointer);
-  background: var(--color-bg-subtle);
+  background: var(--color-bg-default);
+  box-shadow: inset 0 0 0 1px var(--color-border);
   color: var(--color-text-primary);
   white-space: normal;
   transition:
@@ -68,16 +70,21 @@
     border-radius var(--tl-duration) var(--tl-ease),
     box-shadow var(--duration) var(--ease);
 }
-/* 호버는 테두리만 — 펼치지 않는다(사용자 지시 2026-10-05) */
-.annual__bar:not([data-state='selected']):hover { box-shadow: inset 0 0 0 1px var(--color-border); }
+/* 닫힌 막대는 흰 면 + 테두리, 호버하면 다른 줄처럼 회색 면 + 이름이 오른쪽으로 12px(살짝 튕김) — 누를 수 있음을
+   알린다(사용자 지시 2026-10-05). 호버만으로는 펼치지 않는다 */
+@media (hover: hover) {
+  .annual__bar:not([data-state='selected']):hover { background: var(--color-bg-hover); box-shadow: inset 0 0 0 1px transparent; }
+  .annual__bar:not([data-state='selected']):hover .annual__bar-name { transform: translateX(12px); }
+}
 /* 펼친 카드는 커리큘럼처럼 회색 면 + 진한 글씨(검정 카드로 뒤집히던 명암 대비를 없앰, 2026-10-05).
    다른 막대는 흰 면 + 테두리로 물러나 회색 카드가 구분된다 */
 .annual__bar[data-state='selected'] {
   border-radius: 24px;
   background: var(--color-bg-subtle);
+  box-shadow: inset 0 0 0 1px transparent;
   color: var(--color-text-primary);
 }
-.annual__bar[data-state='muted'] { background: var(--color-bg-default); box-shadow: inset 0 0 0 1px var(--color-border); color: var(--color-text-tertiary); }
+.annual__bar[data-state='muted'] { color: var(--color-text-tertiary); }
 
 /* The stage name never switches layout mode (align stays flex-end); only height and padding
    change, on the same curve as the bar. 글자 크기는 펼쳐도 그대로 15px — 크기를 움직이면 글자가
@@ -101,6 +108,7 @@
   font-weight: var(--font-weight-bold);
   letter-spacing: var(--tracking-tight);
   white-space: nowrap;
+  transition: transform 600ms cubic-bezier(0.34, 1.32, 0.64, 1); /* 다른 줄의 호버 들여쓰기와 같은 튕김 */
 }
 .annual__bar[data-state='selected'] .annual__bar-head { min-height: 56px; padding: 20px 28px 0; }
 

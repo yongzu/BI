@@ -128,7 +128,8 @@ export function AnnualTimeline({ stages, months }: Props) {
         {/* Month axis + grid lines share the same scale as the bars */}
         <div className="annual__axis" aria-hidden="true">
           {months.map((m, i) => (
-            <span key={i} className="annual__tick" data-focus={inFocus(i)} style={{ left: pct(i) }}>
+            // 맨 왼쪽 눈금(차트 왼쪽 끝)의 월 글자는 가운데 정렬이면 반이 잘린다 — 오른쪽으로 붙인다(사용자 제보 2026-10-05)
+            <span key={i} className="annual__tick" data-focus={inFocus(i)} data-edge={i - view.from <= 0.001 && i - view.from >= -0.001} style={{ left: pct(i) }}>
               <span className="annual__month">{m}</span>
             </span>
           ))}
