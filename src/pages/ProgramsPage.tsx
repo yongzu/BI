@@ -18,6 +18,7 @@ import {
   courseTypes,
   applyPeriod,
   devices,
+  deviceGroups,
   facts,
   heroMore,
   heroStatement,
@@ -39,7 +40,7 @@ const toc: TocItem[] = [
 
 /** Blocks that rise in on scroll */
 // 히어로는 첫 화면 순서(흐린 제목 → 맑아짐 → 소개 · 기간)를 따로 가지므로 떠오르는 등장에서 뺀다
-const revealTargets = ['.section-header > *', '.group-label', '.group__lead', '.course-explorer', '.pillar-row', '.annual', '.device-card'].join(', ');
+const revealTargets = ['.section-header > *', '.group-label', '.group__lead', '.course-explorer', '.pillar-row', '.annual', '.device-group__head', '.device-card'].join(', ');
 
 /* ------------------------------------------------------------------ */
 
@@ -157,12 +158,14 @@ function RowList({ items, start = 0, group = items, open, onToggle }: { items: R
 const pillarRows = (items: Pillar[]): RowItem[] => items.map((p) => ({ id: p.en.replace(/\s+/g, '-').toLowerCase(), title: p.ko, sub: p.en, body: p.body }));
 
 /**
- * 수업을 관통하는 접근 — 한 줄에 2개씩 3줄(사용자 지시 2026-09-29). 박스에는 번호 · 장치 이름 · 결과 한 줄만
+ * 수업을 관통하는 접근 — 묶음(관찰 · 성찰 · 확장)마다 머리글을 위에, 박스 두 개를 아래에(사용자 지시 2026-10-05:
+ * 커리큘럼 유형 머리글처럼 위아래로 — 왼쪽에 두면 페이지 레이아웃과 어긋난다). 박스마다 붙던 배우는 자리 태그는
+ * 머리글 메타로 옮겼다. 박스에는 번호 · 장치 이름 · 결과 한 줄만
  * 보이고, 누르면 설명이 펼쳐진다(0fr → 1fr, 한 번 누르면 전체가 함께). 닫힌 박스는 작게, 펼친 박스는 설명이 가장 긴
  * 박스 크기로 모두 같다. 열린 설명을 눌러도 닫힌다 — 역량과 태도 목록과 같은 조작.
  * 회색 면 없는 흰 박스, 호버하면 회색 면 + 글이 오른쪽으로 살짝(사용자 지시 2026-10-04).
  */
-function DeviceGrid({ items }: { items: { name: string; tag: string; body: string }[] }) {
+function DeviceGrid({ items, groups }: { items: { name: string; tag: string; body: string }[]; groups: typeof deviceGroups }) {
   // 한 박스를 누르면 여섯 박스가 함께 여닫힌다(사용자 지시 2026-10-05)
   const [open, setOpen] = useState(false);
   const grid = useRef<HTMLDivElement>(null);
@@ -172,8 +175,19 @@ function DeviceGrid({ items }: { items: { name: string; tag: string; body: strin
     setOpen((v) => !v);
   };
   return (
-    <div ref={grid} className="grid-devices">
+    <div ref={grid} className="device-groups">
+      {groups.map((g) => (
+        <section key={g.tag} className="device-group" aria-labelledby={`device-group-${g.en.toLowerCase()}`}>
+          <header className="device-group__head">
+            <div className="device-group__title">
+              <h4 id={`device-group-${g.en.toLowerCase()}`} className="device-group__name">{g.name} <span className="device-group__en">{g.en}</span></h4>
+              <span className="device-group__meta">{g.meta}</span>
+            </div>
+            <Text typography="Body" color="secondary" className="device-group__body">{g.body}</Text>
+          </header>
+          <div className="grid-devices">
       {items.map((d, i) => {
+        if (d.tag !== g.tag) return null;
         const panelId = `device-panel-${i}`;
         return (
           <article key={d.name} className="device-card" data-pinned={open}>
@@ -181,11 +195,7 @@ function DeviceGrid({ items }: { items: { name: string; tag: string; body: strin
               {/* 호버하면 글 묶음(.device-card__lead)이 오른쪽으로 살짝 들어간다 */}
               <span className="device-card__lead">
                 <span className="device-card__topline">
-                  {/* 번호(알약) 옆에 배우는 자리 태그(테두리 알약) */}
-                  <span className="device-card__chips">
-                    <Text as="span" typography="Label" color="inherit" className="device-card__badge">{String(i + 1).padStart(2, '0')}</Text>
-                    <span className="device-card__tag">{d.tag}</span>
-                  </span>
+                  <Text as="span" typography="Label" color="inherit" className="device-card__badge">{String(i + 1).padStart(2, '0')}</Text>
                 </span>
                 <Text as="h4" typography="Title" className="device-card__name">{d.name}</Text>
                 {deviceOutcomes[d.name] && <Text as="span" typography="Label" color="tertiary">{deviceOutcomes[d.name]}</Text>}
@@ -204,6 +214,9 @@ function DeviceGrid({ items }: { items: { name: string; tag: string; body: strin
           </article>
         );
       })}
+          </div>
+        </section>
+      ))}
     </div>
   );
 }
@@ -406,8 +419,8 @@ export function ProgramsPage() {
           />
           {/* 두 단 목록을 시험해 본 뒤 박스로 되돌림(사용자 지시 2026-09-30) */}
           <div className="group">
-            <GroupLabel>핵심 수업 장치</GroupLabel>
-            <DeviceGrid items={devices} />
+            {/* '핵심 수업 장치' 라벨은 묶음 머리글(관찰 · 성찰 · 확장)이 대신한다(2026-10-05) */}
+            <DeviceGrid items={devices} groups={deviceGroups} />
           </div>
         </section>
 

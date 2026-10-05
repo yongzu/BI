@@ -8,16 +8,16 @@
 /* ---------- 필터: 모양은 연간 구조와 같은 공통 세그먼트(styles/segmented.css), 아래에 구분선 ---------- */
 .course-filter { padding-bottom: 28px; border-bottom: 1px solid var(--color-border); }
 
-/* ---------- 대분류 머리글: 왼쪽 이름 · 메타, 오른쪽 설명(섹션 머리글과 같은 칸) ---------- */
+/* ---------- 대분류 머리글: 이름 · 메타 아래에 설명(사용자 지시 2026-10-05: 좌우 → 위아래, 섹션 머리글과 같게) ---------- */
 /* 위계(사용자 지시 2026-10-03): 이름은 Subheading 크기 · 대분류 사이는 넓게(140),
    머리글과 수업 사이는 좁게(24) — 수업이 제 머리글에 붙어 보인다. 대분류 위 잉크 선은 뺐다 */
 .course-group { margin-top: 56px; }
 .course-group + .course-group { margin-top: 140px; }
 .course-group__head {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, var(--lead-width));
-  gap: 24px;
-  align-items: start;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 16px;
 }
 .course-group__title { display: flex; flex-direction: column; gap: 8px; }
 .course-group__name {
@@ -28,7 +28,7 @@
   color: var(--color-text-primary);
 }
 .course-group__meta { font-size: 14px; line-height: 1.4; font-weight: var(--font-weight-medium); color: var(--color-text-tertiary); }
-.course-group__body { font-size: 15px; }
+.course-group__body { max-width: var(--lead-width); font-size: 15px; }
 
 /* ---------- 수업 줄 ---------- */
 /* 회색 면이 글자 바깥으로 깔리도록 줄을 양옆으로 내민다 — 글자는 머리글과 같은 선에 선다 */
@@ -208,18 +208,13 @@
   .course-detail { grid-template-columns: minmax(0, 700px); }
   .course-detail__side { padding: 28px 0 0; border-left: 0; border-top: 1px solid var(--color-border); }
 }
-/* 대분류 머리글: 설명 칸(710) 옆 이름 칸이 'Fundamental' · 메타 한 줄(~250px)을 못 담으면 한 단으로 —
-   이름 · 메타를 위아래로 두고 그 아래 설명(사용자 지시 2026-10-04: 좁은 화면에서 이름이 한 글자씩 꺾이던 문제) */
-@container course-explorer (max-width: 979px) {
-  .course-group__head { grid-template-columns: 1fr; gap: 16px; }
-}
 /* 머리글은 한 단, 태그는 이름 아래로 */
 @media (max-width: 720px) {
   .course-explorer { --ce-row-pad-x: 12px; }
   .course-filter { margin-inline: calc(-1 * var(--gutter)); padding-inline: var(--gutter); }
   .course-group { margin-top: 40px; }
   .course-group + .course-group { margin-top: 96px; }
-  .course-group__head { grid-template-columns: 1fr; gap: 12px; }
+  .course-group__head { gap: 12px; }
   .course-row__hit { grid-template-columns: minmax(0, 1fr) 20px; row-gap: 10px; }
   .course-row__tags { grid-row: 2; grid-column: 1; justify-content: flex-start; }
   .course-row__name { font-size: 17px; }
