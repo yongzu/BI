@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type CSSProperties, type PointerEvent } from 'react';
+import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { Text } from '../Text/Text';
 import { scrollToTarget } from '../../smoothScroll';
 import './AnnualTimeline.css';
@@ -8,11 +8,11 @@ import './AnnualTimeline.css';
  * - Overview: all stages sit side by side on one row, placed on a month axis
  *   (상단 필터 칩을 없애고 4줄 → 1줄, 사용자 지시 2026-09-29).
  * - Filter on top (전체 + each stage): the same controls as the bars.
- * - Hover a stage (bar or filter): preview — the axis zooms to that stage's months and the
- *   bar grows into a detail card. Leaving the timeline ends the preview.
- * - Click: pins the stage so it stays open — while pinned, hovering other stages changes
- *   nothing (사용자 지시 2026-09-22). Click it again, click another stage, choose "전체",
- *   or click anywhere outside the timeline to return to the overview.
+ * - Click a stage (bar or filter): the axis zooms a little toward that stage's months and the bar
+ *   grows into a detail card. Click it again, click another stage, choose "전체", or click anywhere
+ *   outside the timeline to return to the overview. 호버만으로 미리 펼치던 동작은 없앴다 — 막대 위를
+ *   훑기만 해도 축 전체가 확대되며 시각을 자극했다(사용자 지시 2026-10-05). 호버는 막대 테두리만.
+ * - 움직임을 줄였다(2026-10-05): 확대는 최대 1.2배, 짧은 단계는 축 대신 카드만 읽을 수 있는 폭까지 넓어진다.
  * - Pinning a stage scrolls the page so the filter sits just under the top bar (88px) and the
  *   open card shows below it (사용자 지시 2026-10-04). Returning to the overview doesn't scroll.
  * - Stages with `items` (방학 + 캠프 · 수료 & 졸업) stack those as boxes inside the open card
@@ -35,33 +35,29 @@ export type Stage = { name: string; period: string; marker?: string; start: numb
 type Props = { stages: Stage[]; months: number[] };
 
 /*
- * Zoom (줌을 줄임, 사용자 지시 2026-09-30): the view used to shrink to the stage ± 1.15 months,
- * blowing a 2-month stage up about 3×. Now the view stays at least ZOOM_FLOOR of the year and
- * leaves the stage breathing room, but never lets the open card get narrower than CARD_MIN px —
- * so short stages still zoom a little on desktop and fill the width on a phone.
+ * Zoom (줌을 줄임, 사용자 지시 2026-09-30 · 2026-10-05): the view stays at least ZOOM_FLOOR of the year
+ * (max 1.2×) and leaves the stage breathing room. The axis no longer zooms further to make a short stage's
+ * card readable — instead the open card alone widens to CARD_MIN px (sliding left if it would overflow),
+ * overlapping its muted neighbours. On a phone the card takes 90% of the chart.
  */
-const ZOOM_FLOOR = 0.6; // the view never shows less than 60% of the year (max ≈ 1.7×)
+const ZOOM_FLOOR = 1 / 1.2; // the view never shows less than 83% of the year (max 1.2×)
 const ZOOM_ROOM = 1.4; // view ≥ (stage + 1 month on each side) × 1.4
 const CARD_MIN = 320; // px — the open card is never narrower than this (if the chart is wide enough)
-// Stages with boxes (방학 + 캠프 · 수료 & 졸업) open wider so the boxes read comfortably — they may
-// zoom in further for it (사용자 지시 2026-09-30); on a narrow chart the card takes 90% of it
+// Stages with boxes (방학 + 캠프 · 수료 & 졸업) open wider so the boxes read comfortably
+// (사용자 지시 2026-09-30); on a narrow chart the card takes 90% of it
 const CARD_MIN_WITH_ITEMS = 600;
 const PIN_TOP = 88; // px — where the filter lands after pinning a stage (below the pinned top bar)
-const SETTLE_MS = 400; // ignore hover while bars are still sliding, so a bar moving under the pointer can't steal focus
 
 export function AnnualTimeline({ stages, months }: Props) {
   const [pinned, setPinned] = useState<number | null>(null);
-  const [preview, setPreview] = useState<number | null>(null);
   const [chartWidth, setChartWidth] = useState(0);
   const root = useRef<HTMLDivElement>(null);
-  const settleUntil = useRef(0);
-  const suppressHover = useRef(false);
 
-  const selected = preview ?? pinned;
+  const selected = pinned;
   const total = months.length; // axis spans [0, total]
 
   // Track the chart's width so the zoom can keep the open card readable: measured on every
-  // hover/click (always fresh) and kept current while a stage is open and the window resizes
+  // click (always fresh) and kept current while a stage is open and the window resizes
   const measure = () => { if (root.current) setChartWidth(root.current.clientWidth); };
   useEffect(() => {
     const el = root.current;
@@ -76,10 +72,7 @@ export function AnnualTimeline({ stages, months }: Props) {
     if (selected === null) return { from: 0, to: total };
     const start = stages[selected].start;
     const length = barEnd(selected) - start;
-    let size = Math.max(total * ZOOM_FLOOR, (length + 2) * ZOOM_ROOM);
-    const cardMin = stages[selected].items ? Math.min(CARD_MIN_WITH_ITEMS, chartWidth * 0.9) : CARD_MIN;
-    if (chartWidth > 0) size = Math.min(size, (length * chartWidth) / cardMin); // keep the card ≥ cardMin
-    size = Math.min(total, Math.max(size, length + 0.3));
+    const size = Math.min(total, Math.max(total * ZOOM_FLOOR, (length + 2) * ZOOM_ROOM));
     // Centre the stage, but stay inside the year so no empty axis shows at either end
     const from = Math.min(Math.max(start + length / 2 - size / 2, 0), total - size);
     return { from, to: from + size };
@@ -89,31 +82,10 @@ export function AnnualTimeline({ stages, months }: Props) {
   const len = (d: number) => `${(d / span) * 100}%`;
   const inFocus = (m: number) => selected !== null && m >= Math.floor(stages[selected].start) && m < Math.ceil(stages[selected].end);
 
-  // Event timestamps (not performance.now) keep these handlers pure for the linter
-  const markMoving = (at: number) => { settleUntil.current = at + SETTLE_MS; };
-
-  const hover = (i: number, e: PointerEvent) => {
-    if (e.pointerType !== 'mouse' || suppressHover.current || pinned !== null) return;
-    if (e.timeStamp < settleUntil.current) return;
-    if (i !== selected) markMoving(e.timeStamp);
-    measure();
-    setPreview(i);
-  };
-
-  const leave = (e: PointerEvent) => {
-    suppressHover.current = false;
-    if (preview !== null && preview !== pinned) markMoving(e.timeStamp);
-    setPreview(null);
-  };
-
-  const pin = (i: number | null, at: number) => {
+  const pin = (i: number | null) => {
     const next = i === null || pinned === i ? null : i;
-    // Unpinning while the pointer is still over the bar: don't let hover reopen it
-    if (next === null) suppressHover.current = true;
     measure();
-    setPreview(null);
     setPinned(next);
-    markMoving(at);
     if (next !== null && root.current) {
       const y = window.scrollY + root.current.getBoundingClientRect().top - PIN_TOP;
       scrollToTarget(Math.max(0, y));
@@ -123,10 +95,9 @@ export function AnnualTimeline({ stages, months }: Props) {
   // Clicking anywhere outside the timeline returns a pinned view to the overview
   useEffect(() => {
     if (pinned === null) return;
-    const onDown = (e: globalThis.PointerEvent) => {
+    const onDown = (e: PointerEvent) => {
       if (root.current && !root.current.contains(e.target as Node)) {
         setPinned(null);
-        setPreview(null);
       }
     };
     document.addEventListener('pointerdown', onDown);
@@ -134,10 +105,10 @@ export function AnnualTimeline({ stages, months }: Props) {
   }, [pinned]);
 
   return (
-    <div ref={root} className="annual" data-zoomed={selected !== null} onPointerLeave={leave}>
-      {/* 상단 필터(다시 추가, 사용자 지시 2026-09-30): 올리면 미리 보고, 누르면 고정, '전체'는 개요로 */}
+    <div ref={root} className="annual" data-zoomed={selected !== null}>
+      {/* 상단 필터(다시 추가, 사용자 지시 2026-09-30): 누르면 펼치고, '전체'는 개요로 */}
       <div className="segmented annual__filter" role="group" aria-label="연간 구조 보기">
-        <button type="button" className="segmented__tab" aria-pressed={selected === null} onClick={(e) => pin(null, e.timeStamp)}>
+        <button type="button" className="segmented__tab" aria-pressed={selected === null} onClick={() => pin(null)}>
           전체
         </button>
         {stages.map((s, i) => (
@@ -146,8 +117,7 @@ export function AnnualTimeline({ stages, months }: Props) {
             type="button"
             className="segmented__tab"
             aria-pressed={selected === i}
-            onPointerEnter={(e) => hover(i, e)}
-            onClick={(e) => pin(i, e.timeStamp)}
+            onClick={() => pin(i)}
           >
             {s.name}
           </button>
@@ -168,7 +138,15 @@ export function AnnualTimeline({ stages, months }: Props) {
           {stages.map((s, i) => {
             const isSelected = selected === i;
             // 캡슐 모양은 그대로, 캡슐 사이 간격만 없앤다(사용자 지시 2026-09-29): 각 막대가 다음 단계 시작점까지 이어진다
-            const style: CSSProperties = { marginLeft: pct(s.start), width: len(barEnd(i) - s.start) };
+            let style: CSSProperties = { marginLeft: pct(s.start), width: len(barEnd(i) - s.start) };
+            // 펼친 카드는 축을 더 확대하는 대신 저만 읽을 수 있는 폭까지 넓어지고, 넘치면 왼쪽으로 비켜 선다
+            if (isSelected && chartWidth > 0) {
+              const cardMin = Math.min(s.items ? CARD_MIN_WITH_ITEMS : CARD_MIN, chartWidth * 0.9);
+              const left = ((s.start - view.from) / span) * chartWidth;
+              const width = Math.max(((barEnd(i) - s.start) / span) * chartWidth, cardMin);
+              const x = Math.max(0, Math.min(left, chartWidth - width));
+              style = { marginLeft: `${(x / chartWidth) * 100}%`, width: `${(width / chartWidth) * 100}%` };
+            }
             return (
               <li key={s.name} className="annual__row">
                 {/* 막대 전체가 누르는 영역이고, 키보드 · 보조기기용 버튼은 이름 줄이다 — 펼친 카드 안에
@@ -178,8 +156,7 @@ export function AnnualTimeline({ stages, months }: Props) {
                   data-state={isSelected ? 'selected' : selected === null ? 'idle' : 'muted'}
                   data-pinned={pinned === i}
                   style={style}
-                  onPointerEnter={(e) => hover(i, e)}
-                  onClick={(e) => pin(i, e.timeStamp)}
+                  onClick={() => pin(i)}
                 >
                   <button type="button" className="annual__bar-head" aria-expanded={isSelected} aria-pressed={pinned === i} aria-controls={`annual-detail-${i}`}>
                     <span className="annual__bar-name">{s.name}</span>
