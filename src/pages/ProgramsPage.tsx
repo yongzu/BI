@@ -5,7 +5,8 @@ import { AnnualTimeline } from '../components/AnnualTimeline/AnnualTimeline';
 import { CourseExplorer } from '../components/CourseExplorer/CourseExplorer';
 import { BlurReveal } from '../components/BlurReveal/BlurReveal';
 import { ApplyButton } from '../components/ApplyButton/ApplyButton';
-import { HeroRipple } from '../components/HeroRipple/HeroRipple';
+import { HeroRipple, type RippleControl } from '../components/HeroRipple/HeroRipple';
+import { HeroLogo3D } from '../components/HeroLogo3D/HeroLogo3D';
 import { BackToTop, SiteHeader } from '../components/SiteHeader/SiteHeader';
 import { courseProfiles } from '../data/courseProfiles';
 import { useScrollReveal } from '../hooks/useScrollReveal';
@@ -107,7 +108,6 @@ function RowList({ items, start = 0, group = items, open, onToggle }: { items: R
             {onToggle ? (
               <button type="button" className="pillar-row__hit" aria-expanded={open} aria-controls={panelId} onClick={onToggle}>
                 {lead}
-                <span className="pillar-row__icon" aria-hidden="true" />
               </button>
             ) : (
               <div className="pillar-row__hit">{lead}</div>
@@ -161,7 +161,6 @@ function DeviceGrid({ items }: { items: { name: string; tag: string; body: strin
                 <Text as="h4" typography="Title" className="device-card__name">{d.name}</Text>
                 {deviceOutcomes[d.name] && <Text as="span" typography="Label" color="tertiary">{deviceOutcomes[d.name]}</Text>}
               </span>
-              <span className="device-card__icon" aria-hidden="true" />
             </button>
             <div id={panelId} className="device-card__panel" role="region" aria-label={d.name} onClick={toggle}>
               <div className="device-card__clip">
@@ -285,6 +284,8 @@ export function ProgramsPage() {
   useScrollReveal(revealTargets);
   // 첫 화면: 흐린 'Programs'와 지원하기만 → 제목이 맑아지면 소개 · 지원 기간(사용자 지시 2026-10-04)
   const [introDone, setIntroDone] = useState(() => window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  // 3D 로고가 X자가 될 때마다 글자를 일렁이게 한다(사용자 지시 2026-10-05)
+  const rippleCtl = useRef<RippleControl | null>(null);
 
   return (
     <>
@@ -295,6 +296,8 @@ export function ProgramsPage() {
         <section className="hero container" aria-labelledby="hero-title" data-intro={introDone ? 'done' : INTRO_STYLE === 'together' ? 'rise' : 'blur'} data-intro-style={INTRO_STYLE}>
           {/* 첫 화면(한 화면 높이, 내용 세로 가운데) — '자세히 보기'는 그 아래 200px(사용자 지시 2026-10-04) */}
           <div className="hero__atf">
+            {/* phi.design 히어로의 3D Φ 로고 — 'Programs' 위, 제목과 함께 떠오른다(사용자 지시 2026-10-05) */}
+            <HeroLogo3D onPose={() => rippleCtl.current?.ripple()} />
             {/* 제목은 'Programs' 한 단어(사용자 지시 2026-10-03) */}
             <Text id="hero-title" typography="Display" className="hero__title">
               Programs
@@ -312,7 +315,7 @@ export function ProgramsPage() {
           </div>
 
           {/* 6초마다 파동이 글자를 일렁이게 한다 — 토스뱅크 디자인 채용 히어로를 따름(사용자 지시 2026-10-03) */}
-          <HeroRipple introStyle={INTRO_STYLE} onIntroEnd={() => setIntroDone(true)} />
+          <HeroRipple introStyle={INTRO_STYLE} onIntroEnd={() => setIntroDone(true)} controlRef={rippleCtl} />
         </section>
 
         {/* 목차는 히어로 다음, '역량과 태도'부터 나온다(사용자 지시 2026-10-04) — 히어로는 화면 정가운데.

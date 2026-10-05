@@ -1,0 +1,20 @@
+/* 히어로 3D Φ 로고(behaviour in HeroLogo3D.tsx) — 'Programs' 위.
+   크기는 phi.design 실측(1920 × 1080에서 271px 정사각, 사용자 지시 2026-10-05: 기존과 동일)에 히어로 간격 배율 --hs를 곱한다 */
+.hero-logo {
+  position: relative;
+  z-index: 1; /* 일렁임 캔버스(불투명, 히어로 전체를 덮음) 위 — 로고는 일렁이지 않는다 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: max(150px, 271 * var(--hs));
+  height: max(150px, 271 * var(--hs));
+  /* 캔버스 가장자리가 비어 있어(고리는 가운데 약 80%) 제목과 따로 띄우지 않는다 */
+  transition:
+    opacity 1s var(--ease-reveal),
+    transform 1s var(--ease-reveal);
+}
+.hero-logo[data-failed] { display: none; }
+
+/* 첫 화면: 제목과 함께 40px 아래에서 떠오른다 — 일렁임 캔버스가 제목을 띄우기 시작할 때(data-intro-go) 같이 출발 */
+.hero[data-intro='rise']:not([data-intro-go]) .hero-logo,
+.hero[data-intro='blur']:not([data-intro-go]) .hero-logo { opacity: 0; transform: translateY(40px); }

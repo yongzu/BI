@@ -65,6 +65,8 @@
   /* 위 64 → 128 → 200(사용자 지시 2026-10-04): 내용이 가운데 정렬이라 늘린 만큼의 절반씩 제목이 내려온다 */
   padding-block: max(64px, 200 * var(--hs)) max(32px, 76 * var(--hs));
 }
+/* 3D 로고가 제목 위를 채우므로(사용자 지시 2026-10-05) 위 여백은 상단바 높이만 — 첫 화면에 지원하기까지 들어오게 */
+.hero__atf:has(> .hero-logo) { padding-block: max(64px, 72 * var(--hs)) max(32px, 40 * var(--hs)); }
 .hero__title { color: var(--color-text-primary); }
 
 /* ---------- Hero 첫 화면 비율 = 토스뱅크 디자인 채용 히어로(사용자 지시 2026-10-03) ----------
@@ -250,8 +252,7 @@
 }
 .pillar-row__hit {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 28px;
-  gap: 20px;
+  grid-template-columns: minmax(0, 1fr); /* 꺾쇠는 없앴다(사용자 지시 2026-10-05) */
   align-items: center;
   width: 100%;
   min-height: 72px;
@@ -271,21 +272,9 @@
 }
 .pillar-row__titles { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
 .pillar-row__hit:focus-visible { outline: 2px solid var(--color-text-primary); outline-offset: 2px; }
-/* 펼침 표시: 커리큘럼 수업 줄과 같은 꺾쇠 — 닫히면 아래, 열리면 위(사용자 지시 2026-10-04, ＋ · × 대신) */
-.pillar-row__icon {
-  justify-self: center;
-  width: 9px;
-  height: 9px;
-  border-right: 1.5px solid currentColor;
-  border-bottom: 1.5px solid currentColor;
-  color: var(--color-text-tertiary);
-  transform: translateY(-3px) rotate(45deg);
-  transition: transform 480ms cubic-bezier(0.65, 0, 0.35, 1), color var(--duration) var(--ease);
-}
 @media (hover: hover) {
   .pillar-row__hit:hover { background: var(--color-bg-hover); }
   .pillar-row__hit:hover .pillar-row__lead { transform: translateX(12px); }
-  .pillar-row__hit:hover .pillar-row__icon { color: var(--color-text-primary); }
 }
 /* 펼침: 높이 0fr → 1fr, 글자는 살짝 늦게 떠오른다. 설명 안에 문단이 여럿이면(채용 연계의 각주) 사이를 띄운다.
    한 묶음(역량 + 태도, 채용 연계 두 줄)의 설명을 모두 한 칸에 겹쳐 두고 제 설명만 보인다 — 펼친 높이가 늘
@@ -305,9 +294,8 @@
 /* 겹쳐 둔 설명: 제 것만 보이고 남의 것은 자리만 */
 .pillar-row__text { grid-area: 1 / 1; display: flex; flex-direction: column; gap: 8px; }
 .pillar-row__text[data-ghost='true'] { visibility: hidden; }
-.pillar-row[data-pinned='true'] .pillar-row__icon { transform: translateY(2px) rotate(225deg); color: var(--color-text-primary); }
 /* 정적 목록(채용 연계): 누르지 않으므로 커서 · 호버 면 · 꺾쇠 자리 없이 설명까지 늘 보인다(사용자 지시 2026-10-05) */
-.pillar-list[data-static='true'] .pillar-row__hit { grid-template-columns: minmax(0, 1fr); cursor: auto; padding-bottom: 12px; }
+.pillar-list[data-static='true'] .pillar-row__hit { cursor: auto; padding-bottom: 12px; }
 .pillar-list[data-static='true'] .pillar-row__hit:hover { background: none; }
 .pillar-list[data-static='true'] .pillar-row__hit:hover .pillar-row__lead { transform: none; }
 .pillar-list[data-static='true'] .pillar-row__panel,
@@ -343,18 +331,6 @@
 }
 .device-card__hit:focus-visible { outline: 2px solid var(--color-text-primary); outline-offset: 2px; }
 .device-card__topline { display: flex; align-items: center; }
-/* 꺾쇠(커리큘럼과 같음) — 번호 알약 줄 가운데 높이에 */
-.device-card__icon {
-  flex: none;
-  margin: 12px 6px 0 0;
-  width: 9px;
-  height: 9px;
-  border-right: 1.5px solid currentColor;
-  border-bottom: 1.5px solid currentColor;
-  color: var(--color-text-tertiary);
-  transform: translateY(-3px) rotate(45deg);
-  transition: transform 480ms cubic-bezier(0.65, 0, 0.35, 1), color var(--duration) var(--ease);
-}
 /* 설명: 높이 0fr → 1fr로 부드럽게 펼치고, 글자는 살짝 늦게 떠오른다 */
 .device-card__panel { display: grid; grid-template-rows: 0fr; cursor: var(--cursor-pointer); transition: grid-template-rows 480ms var(--ease-reveal); }
 .device-card__clip { min-height: 0; overflow: hidden; }
@@ -364,11 +340,9 @@
 .device-card__text[data-ghost='true'] { visibility: hidden; }
 .device-card[data-pinned='true'] .device-card__panel { grid-template-rows: 1fr; }
 .device-card[data-pinned='true'] .device-card__body { opacity: 1; transform: none; transition-delay: 80ms; }
-.device-card[data-pinned='true'] .device-card__icon { transform: translateY(2px) rotate(225deg); color: var(--color-text-primary); }
 @media (hover: hover) {
   .device-card:hover { background: var(--color-bg-hover); }
   .device-card:hover .device-card__lead { transform: translateX(12px); }
-  .device-card:hover .device-card__icon { color: var(--color-text-primary); }
   /* 회색 면이 깔리면 번호 알약은 흰색으로 뒤집어 묻히지 않게(커리큘럼 태그와 같은 규칙) */
   .device-card:hover .device-card__badge { background: var(--color-bg-default); }
 }
@@ -403,7 +377,6 @@
 
 @media (max-width: 720px) {
   .pillar-list { --row-pad-x: 12px; }
-  .pillar-row__hit { grid-template-columns: minmax(0, 1fr) 24px; gap: 12px; }
   .pillar-row__lead { grid-template-columns: 36px minmax(0, 1fr); gap: 12px; }
   .pillar-row__body { padding: 4px 36px 22px calc(48px + var(--row-pad-x)); }
 }

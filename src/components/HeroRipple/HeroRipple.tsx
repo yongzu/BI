@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, type RefObject } from 'react';
 import { FRAG, VERT } from './shader';
 import './HeroRipple.css';
 
@@ -23,7 +23,13 @@ import './HeroRipple.css';
  * 평소엔 HTML 글자가 그대로 보이고, 파동이 도는 동안만 글자를 캔버스에 옮겨 그린 WebGL 화면으로 바꾼다
  * (읽기 도구 · 검색 · 블러 등장은 HTML 그대로). 움직임 줄이기 설정 · WebGL2 미지원 · 화면 밖이면 돌지 않는다.
  * 지원하기 버튼은 효과 밖에 둔다.
+ *
+ * controlRef를 주면 바깥에서 파동을 보낼 수 있다 — 3D 로고가 X자가 되는 순간마다(사용자 지시 2026-10-05).
+ * 한 번이라도 바깥에서 부르면 자체 주기(PERIOD_MS)는 멈추고 바깥 박자만 따른다. 로고를 못 띄우면 자체 주기 그대로.
+ * 첫 화면 떠오르기가 시작되면 히어로에 data-intro-go를 단다 — 로고가 같은 순간 함께 떠오른다.
  */
+
+export type RippleControl = { ripple: () => void };
 
 const SOURCES = ['.hero__title', '.hero__intro', '.hero__period'];
 const INTRO_SOURCES = ['.hero__title'];
@@ -100,13 +106,16 @@ type Props = {
   introStyle?: 'together' | 'sequence';
   /** 첫 화면에서 제목이 거의 맑아졌을 때(효과를 못 쓰면 바로) 한 번 부른다 */
   onIntroEnd?: () => void;
+  /** 바깥에서 파동을 보내는 손잡이(3D 로고 박자) */
+  controlRef?: RefObject<RippleControl | null>;
 };
 
-export function HeroRipple({ onIntroEnd, introStyle = 'together' }: Props) {
+export function HeroRipple({ onIntroEnd, introStyle = 'together', controlRef }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const introEndRef = useRef(onIntroEnd);
   useEffect(() => { introEndRef.current = onIntroEnd; }, [onIntroEnd]);
   const introStyleRef = useRef(introStyle); // 첫 화면은 한 번뿐이라 처음 값만 쓴다
+  const controlRefRef = useRef(controlRef); // 손잡이 ref는 처음 것만 쓴다
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -123,6 +132,7 @@ export function HeroRipple({ onIntroEnd, introStyle = 'together' }: Props) {
     const fallback = () => {
       if (!withIntro) return;
       hero.setAttribute('data-intro-css', '');
+      hero.setAttribute('data-intro-go', '');
       void hero.offsetWidth; // 숨은 상태를 먼저 그려야 떠오르기 전환이 돈다
       hero.setAttribute('data-title-in', '');
       const id = window.setTimeout(introEnd, RISE_S * 1000);
@@ -283,6 +293,7 @@ export function HeroRipple({ onIntroEnd, introStyle = 'together' }: Props) {
       prepare(titleOnly ? INTRO_SOURCES : SOURCES);
       draw(0, intro ? 0 : 1);
       hero.setAttribute('data-rippling', titleOnly ? 'intro' : '');
+      if (intro) hero.setAttribute('data-intro-go', '');
       const lead = intro ? WAVE_AT_S : 0;
       const begin = performance.now();
       const frame = (now: number) => {
@@ -295,7 +306,10 @@ export function HeroRipple({ onIntroEnd, introStyle = 'together' }: Props) {
       };
       raf = requestAnimationFrame(frame);
     };
+    let external = false; // 바깥 박자를 따르는 중
+    let ready = false; // 첫 화면이 끝나 주기 파동을 보낼 수 있음
     const run = () => {
+      if (external) return;
       timer = window.setTimeout(run, PERIOD_MS);
       if (!visible || document.hidden) return;
       play(false, () => {});
@@ -304,13 +318,27 @@ export function HeroRipple({ onIntroEnd, introStyle = 'together' }: Props) {
     let cancelled = false;
     document.fonts.ready.then(() => {
       if (cancelled) return;
-      const periodic = () => { timer = window.setTimeout(run, FIRST_DELAY_MS); };
+      const periodic = () => {
+        ready = true;
+        if (!external) timer = window.setTimeout(run, FIRST_DELAY_MS);
+      };
       if (withIntro) play(true, periodic);
       else periodic();
     });
 
     const io = new IntersectionObserver(([entry]) => { visible = entry.isIntersecting; });
     io.observe(hero);
+
+    const control = controlRefRef.current;
+    if (control) {
+      control.current = {
+        ripple: () => {
+          if (!external) { external = true; window.clearTimeout(timer); }
+          if (!ready || !visible || document.hidden) return;
+          play(false, () => {});
+        },
+      };
+    }
 
     // 개발용: window.__heroRipple(t 0~1, intro?, rise?)로 한 장면을 멈춰 볼 수 있다(검증 · 스크린샷)
     if (import.meta.env.DEV) {
@@ -326,6 +354,7 @@ export function HeroRipple({ onIntroEnd, introStyle = 'together' }: Props) {
     }
 
     return () => {
+      if (control) control.current = null;
       cancelled = true;
       window.clearTimeout(timer);
       stop();
