@@ -65,8 +65,11 @@
   /* 위 64 → 128 → 200(사용자 지시 2026-10-04): 내용이 가운데 정렬이라 늘린 만큼의 절반씩 제목이 내려온다 */
   padding-block: max(64px, 200 * var(--hs)) max(32px, 76 * var(--hs));
 }
-/* 3D 로고가 제목 위를 채우므로(사용자 지시 2026-10-05) 위 여백은 상단바 높이만 — 첫 화면에 지원하기까지 들어오게 */
-.hero__atf:has(> .hero-logo) { padding-block: max(64px, 72 * var(--hs)) max(32px, 40 * var(--hs)); }
+/* 3D 로고가 들어온 뒤 첫 화면이 꽉 차 여백이 없어 전체를 줄이고 다시 배치(사용자 지시 2026-10-05).
+   내용 덩어리(로고 → 제목 → 소개 → 기간 → 지원하기)는 세로 가운데, 위아래 여백은 같게 — 위는 상단바(64) 아래로만.
+   1920 × 1080 기준 값에 --hs를 곱한다: 로고 200 · 제목 140 · 제목–소개 96 · 소개–기간 48 · 기간–버튼 64 */
+.hero__atf:has(> .hero-logo) { padding-block: max(64px, 80 * var(--hs)) max(40px, 80 * var(--hs)); }
+.hero .hero__title { font-size: max(44px, 140 * var(--hs)); }
 .hero__title { color: var(--color-text-primary); }
 
 /* ---------- Hero 첫 화면 비율 = 토스뱅크 디자인 채용 히어로(사용자 지시 2026-10-03) ----------
@@ -75,17 +78,18 @@
    토스에 없는 설명 한 문장(blur-reveal__body)은 설명 두 줄 바로 아래에 붙여 그만큼만 버튼이 내려간다.
    좁은 화면(휴대폰)은 --hs가 아주 작아지므로 글자 · 간격마다 최소값을 둔다.
    덩어리 사이 간격은 실측보다 넓혔다: 제목–설명 75→110→140→200→160 · 설명–기간 50→84→66 · 기간–버튼 66→88→128→96(사용자 지시 2026-10-04).
+   3D 로고가 들어오며 다시 줄였다: 제목–설명 96 · 설명–기간 48 · 기간–버튼 64(2026-10-05).
    소개 · 설명 · 기간 · 버튼 크기는 --fs(폭 ÷ 1440, 최대 1)로만 줄인다 — 토스처럼 화면 높이와 상관없이 1440 이상에서 고정.
    높이까지 따르던 때는 브라우저 창(1920 모니터에서 보이는 높이 ~940)에서 토스보다 13%쯤 작았다(사용자 제보 2026-10-04).
    간격은 첫 화면에 다 들어오도록 계속 --hs를 따른다 */
 .hero { --hs: min(1px, 100vw / 1440, 100svh / 1080); --fs: min(1px, 100vw / 1440); }
-.hero__intro { max-width: 783px; margin-top: max(52px, 160 * var(--hs)); }
+.hero__intro { max-width: 783px; margin-top: max(40px, 96 * var(--hs)); }
 .hero .hero__statement { font-size: max(22px, 30 * var(--fs)); line-height: 1.333; }
 .hero__intro .blur-reveal__body { margin-top: max(4px, 4 * var(--hs)); }
 .hero__intro .blur-reveal__body > * { font-size: max(16px, 20 * var(--fs)); line-height: 1.4; }
 
 /* 지원 기간 + 지원하기 버튼(behaviour in components/ApplyButton) — 과정 개요 자리를 대신한다(2026-10-03) */
-.hero__apply { display: flex; flex-direction: column; align-items: center; gap: max(40px, 96 * var(--hs)); margin-top: max(28px, 66 * var(--hs)); }
+.hero__apply { display: flex; flex-direction: column; align-items: center; gap: max(32px, 64 * var(--hs)); margin-top: max(24px, 48 * var(--hs)); }
 .hero .hero__period {
   color: var(--color-text-primary);
   font-size: max(15px, 20 * var(--fs));

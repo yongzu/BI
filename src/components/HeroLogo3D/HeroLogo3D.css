@@ -1,14 +1,16 @@
 /* 히어로 3D Φ 로고(behaviour in HeroLogo3D.tsx) — 'Programs' 위.
-   크기는 phi.design 실측(1920 × 1080에서 271px 정사각, 사용자 지시 2026-10-05: 기존과 동일)에 히어로 간격 배율 --hs를 곱한다 */
+   크기: 1920 × 1080에서 200px 정사각(고리는 가운데 약 80% ≈ 160px)에 히어로 간격 배율 --hs를 곱한다.
+   phi.design 실측 271px로 넣었더니 첫 화면이 꽉 차 줄였다(사용자 지시 2026-10-05) */
 .hero-logo {
   position: relative;
   z-index: 1; /* 일렁임 캔버스(불투명, 히어로 전체를 덮음) 위 — 로고는 일렁이지 않는다 */
   display: flex;
   align-items: center;
   justify-content: center;
-  width: max(150px, 271 * var(--hs));
-  height: max(150px, 271 * var(--hs));
-  /* 캔버스 가장자리가 비어 있어(고리는 가운데 약 80%) 제목과 따로 띄우지 않는다 */
+  width: max(120px, 200 * var(--hs));
+  height: max(120px, 200 * var(--hs));
+  /* 캔버스 가장자리가 비어 있어(고리 아래 ~20px) 제목과는 조금만 더 띄운다 — 보이는 간격 ≈ 40px */
+  margin-bottom: max(4px, 8 * var(--hs));
   transition:
     opacity 1s var(--ease-reveal),
     transform 1s var(--ease-reveal);

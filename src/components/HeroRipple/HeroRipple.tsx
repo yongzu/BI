@@ -27,6 +27,10 @@ import './HeroRipple.css';
  * controlRef를 주면 바깥에서 파동을 보낼 수 있다 — 3D 로고가 X자가 되는 순간마다(사용자 지시 2026-10-05).
  * 한 번이라도 바깥에서 부르면 자체 주기(PERIOD_MS)는 멈추고 바깥 박자만 따른다. 로고를 못 띄우면 자체 주기 그대로.
  * 첫 화면 떠오르기가 시작되면 히어로에 data-intro-go를 단다 — 로고가 같은 순간 함께 떠오른다.
+ *
+ * 파동 · 떠오르기 도중 화면 크기가 바뀌면 다음 프레임에 글자를 새 자리에서 다시 옮겨 그리고 진행 중이던 지점부터 잇는다
+ * (사용자 지시 2026-10-05) — 끝난 뒤에 한꺼번에 재배치되지 않고 로고와 함께 바로 제자리를 찾는다.
+ * 창을 끄는 동안에도 다시 그리기는 프레임당 한 번뿐이다.
  */
 
 export type RippleControl = { ripple: () => void };
@@ -275,6 +279,8 @@ export function HeroRipple({ onIntroEnd, introStyle = 'together', controlRef }: 
     };
 
     let visible = true;
+    let sources: string[] = SOURCES; // 지금 도는 파동이 옮겨 그린 글자
+    let dirty = false; // 크기가 바뀌어 다시 옮겨 그려야 함
     let raf = 0;
     let timer = 0;
     let revealed = false;
@@ -290,7 +296,9 @@ export function HeroRipple({ onIntroEnd, introStyle = 'together', controlRef }: 
       cancelAnimationFrame(raf); // 간격 = 길이라 앞 파동의 마지막 프레임과 겹칠 수 있다 — 새 파동만 남긴다
       // 'together'면 첫 화면도 글 전체를 옮겨 그리고 주기 파동과 같은 길이 · 같은 감춤
       const titleOnly = intro && !together;
-      prepare(titleOnly ? INTRO_SOURCES : SOURCES);
+      sources = titleOnly ? INTRO_SOURCES : SOURCES;
+      dirty = false;
+      prepare(sources);
       draw(0, intro ? 0 : 1);
       hero.setAttribute('data-rippling', titleOnly ? 'intro' : '');
       if (intro) hero.setAttribute('data-intro-go', '');
@@ -301,6 +309,7 @@ export function HeroRipple({ onIntroEnd, introStyle = 'together', controlRef }: 
         const t = Math.max(0, el - lead) / (titleOnly ? INTRO_DURATION_S : DURATION_S);
         if (intro && !revealed && (together ? el >= RISE_S : t >= INTRO_REVEAL_T)) { revealed = true; introEnd(); }
         if (t >= 1) { stop(); return then(); }
+        if (dirty) { dirty = false; prepare(sources); }
         draw(t, intro ? el / RISE_S : 1);
         raf = requestAnimationFrame(frame);
       };
@@ -325,6 +334,12 @@ export function HeroRipple({ onIntroEnd, introStyle = 'together', controlRef }: 
       if (withIntro) play(true, periodic);
       else periodic();
     });
+
+    // 히어로(글자 배치) 또는 화면 폭이 바뀌면 다음 프레임에 다시 옮겨 그린다 — 도는 중일 때만 의미가 있다
+    const onResize = () => { if (hero.hasAttribute('data-rippling')) dirty = true; };
+    const ro = new ResizeObserver(onResize);
+    ro.observe(hero);
+    window.addEventListener('resize', onResize);
 
     const io = new IntersectionObserver(([entry]) => { visible = entry.isIntersecting; });
     io.observe(hero);
@@ -359,6 +374,8 @@ export function HeroRipple({ onIntroEnd, introStyle = 'together', controlRef }: 
       window.clearTimeout(timer);
       stop();
       io.disconnect();
+      ro.disconnect();
+      window.removeEventListener('resize', onResize);
       gl.deleteTexture(tex);
       gl.deleteBuffer(buf);
       gl.deleteProgram(prog);
