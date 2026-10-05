@@ -197,7 +197,10 @@ function DeviceGrid({ items }: { items: { name: string; tag: string; body: strin
     <div ref={grid} className="device-groups">
       {groups.map((tag) => (
         <section key={tag} className="device-group" aria-label={tag}>
-          <GroupLabel>{tag}</GroupLabel>
+          {/* 분류 표시: 박스 이름(Title)과 같은 크기라 구분이 애매해 작은 회색 글씨 + 오른쪽 가는 선으로 낮췄다(사용자 지시 2026-10-05) */}
+          <div className="device-group__label">
+            <Text as="h3" typography="Label" color="secondary">{tag}</Text>
+          </div>
           <div className="grid-devices">
       {items.map((d, i) => {
         if (d.tag !== tag) return null;

@@ -313,7 +313,12 @@
 /* 배우는 자리 묶음: 라벨(역량 · Competency와 같은 Title) 아래 45px에 박스 — 역량과 태도 목록과 같은 간격(사용자 지시 2026-10-05).
    묶음 사이는 그룹 사이 간격. 박스를 양옆으로 24px 내밀어 박스 안 글자가 라벨과 같은 선에 선다 */
 .device-group + .device-group { margin-top: clamp(56px, 3.6vw, 72px); }
-.grid-devices { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; gap: 20px; margin: 45px -24px 0; }
+/* 묶음 라벨 = 분류 표시(사용자 지시 2026-10-05): 15px Medium · 70% 회색, 오른쪽으로 가는 선이 묶음의 시작을 알린다.
+   박스 이름(Title)이 섹션에서 가장 큰 글씨가 된다. 라벨이 작아진 만큼 박스와의 간격도 45 → 16(박스 안 여백 24 포함 ≈ 40) */
+.device-group__label { display: flex; align-items: center; gap: 16px; }
+.device-group__label > * { flex: none; font-size: 15px; }
+.device-group__label::after { content: ''; flex: 1; height: 1px; background: var(--color-border); }
+.grid-devices { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; gap: 20px; margin: 16px -24px 0; }
 .device-card {
   border-radius: 20px;
   transition: background var(--duration) var(--ease);
