@@ -89,14 +89,24 @@ type RowItem = { id: string; title: string; sub?: string; body: ReactNode };
  * 원인: 한 번에 모두 여닫히므로 누른 박스 위의 박스 · 줄들도 함께 늘거나 줄어, 스크롤 위치는 그대로인데 내용이 딸려 움직였다.
  * 여닫히는 동안(0.48초 + 여유) 프레임마다 박스가 움직인 만큼 스크롤을 같이 옮겨 박스가 제자리에 머문다.
  * 펼칠 때 누른 박스를 화면 가운데로 옮기던 자동 스크롤은 방해된다고 해 없앴다(사용자 지시 2026-10-05) — 박스는 누른 자리 그대로.
+ * 사용자가 휠 · 터치 · 키보드 · 스크롤바로 직접 스크롤을 시작하면 즉시 손을 뗀다 — 프레임마다 스크롤을 덮어쓰던 동안엔
+ * 여닫히는 0.6초 내내 휠이 먹지 않았다(사용자 제보 2026-10-05: 인터랙션 도중에도 스크롤할 수 있게).
  */
+const USER_SCROLL_EVENTS = ['wheel', 'touchmove', 'keydown', 'pointerdown'] as const;
 function keepInPlace(target: HTMLElement, ms = 600) {
   const startTop = target.getBoundingClientRect().top;
   const end = performance.now() + ms;
+  let released = false;
+  // 누른 그 클릭(pointerdown)은 이미 지나갔으므로, 여기서 듣는 건 그 뒤의 사용자 입력뿐이다
+  const release = () => { released = true; };
+  USER_SCROLL_EVENTS.forEach((type) => window.addEventListener(type, release, { passive: true, capture: true }));
+  const cleanup = () => USER_SCROLL_EVENTS.forEach((type) => window.removeEventListener(type, release, { capture: true }));
   const frame = (now: number) => {
+    if (released) return cleanup();
     const delta = target.getBoundingClientRect().top - startTop;
     if (Math.abs(delta) >= 0.5) scrollToTarget(Math.max(0, window.scrollY + delta), { immediate: true });
     if (now < end) requestAnimationFrame(frame);
+    else cleanup();
   };
   requestAnimationFrame(frame);
 }
