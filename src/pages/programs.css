@@ -310,23 +310,10 @@
    align-items: start — 한 박스가 펼쳐져도 옆 박스는 작은 채로 남는다.
    회색 면 없는 흰 박스(사용자 지시 2026-10-04) — 호버하면 회색 면 + 글 묶음이 오른쪽으로 12px + 아이콘이 진해진다.
    누르면 설명이 펼쳐진다(호버만으로는 안 펼침) */
-/* 묶음(관찰 · 성찰 · 확장): 머리글(이름 · 메타 · 설명)을 위, 박스 두 개를 아래 — 커리큘럼 유형 머리글과 같은 모양 · 간격
-   (사용자 지시 2026-10-05). 박스를 양옆으로 24px 내밀어 박스 안 글자가 머리글과 같은 선에 선다 */
-.device-groups { margin-top: 56px; }
-.device-group + .device-group { margin-top: 120px; }
-.device-group__head { display: flex; flex-direction: column; align-items: flex-start; gap: 16px; }
-.device-group__title { display: flex; flex-direction: column; gap: 8px; }
-.device-group__name {
-  font-size: var(--typo-subheading-size);
-  line-height: 1.2;
-  font-weight: var(--font-weight-bold);
-  letter-spacing: var(--tracking-tight);
-  color: var(--color-text-primary);
-}
-.device-group__en { color: var(--color-text-tertiary); }
-.device-group__meta { font-size: 14px; line-height: 1.4; font-weight: var(--font-weight-medium); color: var(--color-text-tertiary); }
-.device-group__body { max-width: var(--lead-width); font-size: 15px; }
-.grid-devices { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; gap: 20px; margin: 24px -24px 0; }
+/* 배우는 자리 묶음: 라벨(역량 · Competency와 같은 Title) 아래 45px에 박스 — 역량과 태도 목록과 같은 간격(사용자 지시 2026-10-05).
+   묶음 사이는 그룹 사이 간격. 박스를 양옆으로 24px 내밀어 박스 안 글자가 라벨과 같은 선에 선다 */
+.device-group + .device-group { margin-top: clamp(56px, 3.6vw, 72px); }
+.grid-devices { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; gap: 20px; margin: 45px -24px 0; }
 .device-card {
   border-radius: 20px;
   transition: background var(--duration) var(--ease);
@@ -382,8 +369,6 @@
 .device-card__name { margin-top: 8px; }
 @media (max-width: 560px) { .grid-devices { grid-template-columns: 1fr; } }
 @media (max-width: 720px) {
-  .device-group + .device-group { margin-top: 80px; }
-  .device-group__head { gap: 12px; }
   .grid-devices { margin-inline: 0; }
 }
 

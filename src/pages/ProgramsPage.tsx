@@ -18,7 +18,6 @@ import {
   courseTypes,
   applyPeriod,
   devices,
-  deviceGroups,
   facts,
   heroMore,
   heroStatement,
@@ -40,12 +39,12 @@ const toc: TocItem[] = [
 
 /** Blocks that rise in on scroll */
 // 히어로는 첫 화면 순서(흐린 제목 → 맑아짐 → 소개 · 기간)를 따로 가지므로 떠오르는 등장에서 뺀다
-const revealTargets = ['.section-header > *', '.group-label', '.group__lead', '.course-explorer', '.pillar-row', '.annual', '.device-group__head', '.device-card'].join(', ');
+const revealTargets = ['.section-header > *', '.group-label', '.group__lead', '.course-explorer', '.pillar-row', '.annual', '.device-card'].join(', ');
 
 /* ------------------------------------------------------------------ */
 
 /** Section title (64) + lead (28, 70%) — 제목 위, 리드 아래(사용자 지시 2026-10-05: 왼 → 오 → 아래로 읽는 피로를 덜게) */
-function SectionHeader({ title, lead }: { title: ReactNode; lead?: string }) {
+function SectionHeader({ title, lead }: { title: ReactNode; lead?: ReactNode }) {
   return (
     <header className="section-header">
       <Text typography="Heading">{title}</Text>
@@ -108,6 +107,22 @@ function centerOnOpen(target: HTMLElement, scope: HTMLElement, clipSelector: str
   scrollToTarget(Math.max(0, y));
 }
 
+/**
+ * 접을 때 누른 박스를 화면의 같은 자리에 붙잡아 둔다(사용자 제보 2026-10-05: 워크숍을 닫으면 화면이 아래로 내려가는 듯했다).
+ * 원인: 한 번에 모두 접히므로 누른 박스 위의 박스 · 줄들도 함께 줄어들어, 스크롤 위치는 그대로인데 내용이 위로 딸려 올라갔다.
+ * 접히는 동안(0.48초 + 여유) 프레임마다 박스가 올라간 만큼 스크롤을 같이 올려 박스가 제자리에 머문다.
+ */
+function keepInPlace(target: HTMLElement, ms = 600) {
+  const startTop = target.getBoundingClientRect().top;
+  const end = performance.now() + ms;
+  const frame = (now: number) => {
+    const delta = target.getBoundingClientRect().top - startTop;
+    if (Math.abs(delta) >= 0.5) scrollToTarget(Math.max(0, window.scrollY + delta), { immediate: true });
+    if (now < end) requestAnimationFrame(frame);
+  };
+  requestAnimationFrame(frame);
+}
+
 /** 설명 한 개 — 글이면 본문 문단, 아니면 그대로 */
 const renderBody = (body: ReactNode) => (typeof body === 'string' ? <Text typography="Body" color="secondary">{body}</Text> : body);
 
@@ -158,36 +173,34 @@ function RowList({ items, start = 0, group = items, open, onToggle }: { items: R
 const pillarRows = (items: Pillar[]): RowItem[] => items.map((p) => ({ id: p.en.replace(/\s+/g, '-').toLowerCase(), title: p.ko, sub: p.en, body: p.body }));
 
 /**
- * 수업을 관통하는 접근 — 묶음(관찰 · 성찰 · 확장)마다 머리글을 위에, 박스 두 개를 아래에(사용자 지시 2026-10-05:
- * 커리큘럼 유형 머리글처럼 위아래로 — 왼쪽에 두면 페이지 레이아웃과 어긋난다). 박스마다 붙던 배우는 자리 태그는
- * 머리글 메타로 옮겼다. 박스에는 번호 · 장치 이름 · 결과 한 줄만
+ * 수업을 관통하는 접근 — 배우는 자리(세션 안에서 · 스스로 돌아보기 · 세션 밖에서)마다 라벨 아래 박스 두 개.
+ * 라벨은 역량과 태도의 '역량 · Competency'와 같은 크기 · 간격(사용자 지시 2026-10-05: 관찰 · 성찰 · 확장 머리글과 설명은
+ * 볼륨이 너무 커서 걷어 내고 간단히 묶기만). 박스마다 붙던 태그는 라벨로 옮겼다. 박스에는 번호 · 장치 이름 · 결과 한 줄만
  * 보이고, 누르면 설명이 펼쳐진다(0fr → 1fr, 한 번 누르면 전체가 함께). 닫힌 박스는 작게, 펼친 박스는 설명이 가장 긴
  * 박스 크기로 모두 같다. 열린 설명을 눌러도 닫힌다 — 역량과 태도 목록과 같은 조작.
  * 회색 면 없는 흰 박스, 호버하면 회색 면 + 글이 오른쪽으로 살짝(사용자 지시 2026-10-04).
  */
-function DeviceGrid({ items, groups }: { items: { name: string; tag: string; body: string }[]; groups: typeof deviceGroups }) {
+function DeviceGrid({ items }: { items: { name: string; tag: string; body: string }[] }) {
+  const groups = [...new Set(items.map((d) => d.tag))]; // 데이터 순서대로
   // 한 박스를 누르면 여섯 박스가 함께 여닫힌다(사용자 지시 2026-10-05)
   const [open, setOpen] = useState(false);
   const grid = useRef<HTMLDivElement>(null);
   // 펼칠 때만 누른 박스를 화면 가운데로
   const toggle = (card: HTMLElement | null) => {
-    if (!open && card && grid.current) centerOnOpen(card, grid.current, '.device-card__clip');
+    if (card && grid.current) {
+      if (open) keepInPlace(card);
+      else centerOnOpen(card, grid.current, '.device-card__clip');
+    }
     setOpen((v) => !v);
   };
   return (
     <div ref={grid} className="device-groups">
-      {groups.map((g) => (
-        <section key={g.tag} className="device-group" aria-labelledby={`device-group-${g.en.toLowerCase()}`}>
-          <header className="device-group__head">
-            <div className="device-group__title">
-              <h4 id={`device-group-${g.en.toLowerCase()}`} className="device-group__name">{g.name} <span className="device-group__en">{g.en}</span></h4>
-              <span className="device-group__meta">{g.meta}</span>
-            </div>
-            <Text typography="Body" color="secondary" className="device-group__body">{g.body}</Text>
-          </header>
+      {groups.map((tag) => (
+        <section key={tag} className="device-group" aria-label={tag}>
+          <GroupLabel>{tag}</GroupLabel>
           <div className="grid-devices">
       {items.map((d, i) => {
-        if (d.tag !== g.tag) return null;
+        if (d.tag !== tag) return null;
         const panelId = `device-panel-${i}`;
         return (
           <article key={d.name} className="device-card" data-pinned={open}>
@@ -201,7 +214,7 @@ function DeviceGrid({ items, groups }: { items: { name: string; tag: string; bod
                 {deviceOutcomes[d.name] && <Text as="span" typography="Label" color="tertiary">{deviceOutcomes[d.name]}</Text>}
               </span>
             </button>
-            <div id={panelId} className="device-card__panel" role="region" aria-label={d.name} onClick={() => toggle(null)}>
+            <div id={panelId} className="device-card__panel" role="region" aria-label={d.name} onClick={(e) => toggle(e.currentTarget.closest<HTMLElement>('.device-card'))}>
               <div className="device-card__clip">
                 {/* 여섯 설명을 한 칸에 겹쳐 두고 자기 설명만 보인다 — 펼친 높이가 늘 가장 긴 설명에 맞춰진다 */}
                 <div className="device-card__body">
@@ -249,7 +262,10 @@ function RowColumns({ columns, numbering = 'continue', collapsible = true }: { c
   // 펼칠 때만 누른 줄을 화면 가운데로
   const toggle = collapsible
     ? (row: HTMLElement | null) => {
-      if (!open && row && root.current) centerOnOpen(row, root.current, '.pillar-row__clip');
+      if (row && root.current) {
+        if (open) keepInPlace(row);
+        else centerOnOpen(row, root.current, '.pillar-row__clip');
+      }
       setOpen((v) => !v);
     }
     : undefined;
@@ -415,12 +431,12 @@ export function ProgramsPage() {
         <section id="devices" className="section container">
           <SectionHeader
             title={<>수업을<br />관통하는 접근</>}
-            lead="Phi의 교육은 인지적 도제(Cognitive Apprenticeship)를 토대로 설계되었습니다. 전문가의 사고 과정을 학습자가 능동적으로 관찰할 수 있도록 다양한 장치가 준비되어있습니다."
+            lead={<>Phi의 교육은 인지적 도제(Cognitive Apprenticeship)를 토대로 설계되었습니다.<br />전문가의 사고 과정을 학습자가 능동적으로 관찰할 수 있도록 다양한 장치가 준비되어있습니다.</>}
           />
           {/* 두 단 목록을 시험해 본 뒤 박스로 되돌림(사용자 지시 2026-09-30) */}
           <div className="group">
-            {/* '핵심 수업 장치' 라벨은 묶음 머리글(관찰 · 성찰 · 확장)이 대신한다(2026-10-05) */}
-            <DeviceGrid items={devices} groups={deviceGroups} />
+            {/* '핵심 수업 장치' 라벨은 배우는 자리 라벨 셋이 대신한다(2026-10-05) */}
+            <DeviceGrid items={devices} />
           </div>
         </section>
 
