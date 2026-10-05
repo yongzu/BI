@@ -85,32 +85,10 @@ const deviceOutcomes: Record<string, string> = {
 type RowItem = { id: string; title: string; sub?: string; body: ReactNode };
 
 /**
- * 펼치면서 누른 박스를 화면 세로 가운데로(사용자 지시 2026-10-05). 펼침(0.48초)이 끝나길 기다리지 않고 누르는 순간
- * 펼친 뒤의 자리를 미리 계산해 함께 움직인다: 각 칸이 늘어날 높이 = 접힌 칸 안 내용의 높이(scrollHeight),
- * 누른 박스 위(같은 세로 줄)에서 늘어나는 칸만큼 박스가 내려가고, 박스 자신은 제 칸만큼 길어진다.
- * 박스가 화면에 다 안 들어가면(위아래 88px 제외) 목차처럼 위 88px에 맞춘다.
- */
-function centerOnOpen(target: HTMLElement, scope: HTMLElement, clipSelector: string) {
-  const t = target.getBoundingClientRect();
-  let above = 0;
-  let own = 0;
-  scope.querySelectorAll<HTMLElement>(clipSelector).forEach((clip) => {
-    const grow = clip.scrollHeight - clip.clientHeight;
-    if (grow <= 0) return;
-    if (target.contains(clip)) { own += grow; return; }
-    const r = clip.getBoundingClientRect();
-    if (r.left < t.right && r.right > t.left && r.bottom <= t.top + 1) above += grow;
-  });
-  const top = window.scrollY + t.top + above;
-  const height = t.height + own;
-  const y = height > window.innerHeight - 2 * 88 ? top - 88 : top + height / 2 - window.innerHeight / 2;
-  scrollToTarget(Math.max(0, y));
-}
-
-/**
- * 접을 때 누른 박스를 화면의 같은 자리에 붙잡아 둔다(사용자 제보 2026-10-05: 워크숍을 닫으면 화면이 아래로 내려가는 듯했다).
- * 원인: 한 번에 모두 접히므로 누른 박스 위의 박스 · 줄들도 함께 줄어들어, 스크롤 위치는 그대로인데 내용이 위로 딸려 올라갔다.
- * 접히는 동안(0.48초 + 여유) 프레임마다 박스가 올라간 만큼 스크롤을 같이 올려 박스가 제자리에 머문다.
+ * 여닫을 때 누른 박스를 화면의 같은 자리에 붙잡아 둔다(사용자 제보 2026-10-05: 워크숍을 닫으면 화면이 아래로 내려가는 듯했다).
+ * 원인: 한 번에 모두 여닫히므로 누른 박스 위의 박스 · 줄들도 함께 늘거나 줄어, 스크롤 위치는 그대로인데 내용이 딸려 움직였다.
+ * 여닫히는 동안(0.48초 + 여유) 프레임마다 박스가 움직인 만큼 스크롤을 같이 옮겨 박스가 제자리에 머문다.
+ * 펼칠 때 누른 박스를 화면 가운데로 옮기던 자동 스크롤은 방해된다고 해 없앴다(사용자 지시 2026-10-05) — 박스는 누른 자리 그대로.
  */
 function keepInPlace(target: HTMLElement, ms = 600) {
   const startTop = target.getBoundingClientRect().top;
@@ -184,17 +162,12 @@ function DeviceGrid({ items }: { items: { name: string; tag: string; body: strin
   const groups = [...new Set(items.map((d) => d.tag))]; // 데이터 순서대로
   // 한 박스를 누르면 여섯 박스가 함께 여닫힌다(사용자 지시 2026-10-05)
   const [open, setOpen] = useState(false);
-  const grid = useRef<HTMLDivElement>(null);
-  // 펼칠 때만 누른 박스를 화면 가운데로
   const toggle = (card: HTMLElement | null) => {
-    if (card && grid.current) {
-      if (open) keepInPlace(card);
-      else centerOnOpen(card, grid.current, '.device-card__clip');
-    }
+    if (card) keepInPlace(card);
     setOpen((v) => !v);
   };
   return (
-    <div ref={grid} className="device-groups">
+    <div className="device-groups">
       {groups.map((tag) => (
         <section key={tag} className="device-group" aria-label={tag}>
           {/* 분류 표시: 박스 이름(Title)과 같은 크기라 구분이 애매해 작은 회색 글씨 + 오른쪽 가는 선으로 낮췄다(사용자 지시 2026-10-05) */}
@@ -261,19 +234,14 @@ function RowColumns({ columns, numbering = 'continue', collapsible = true }: { c
   const group = columns.flatMap((col) => col.items); // 양쪽 단의 줄 — 펼친 높이를 같게
   // 한 줄을 누르면 양쪽 단 전체가 함께 여닫힌다(사용자 지시 2026-10-05). 접지 않는 목록은 늘 펼침
   const [open, setOpen] = useState(!collapsible);
-  const root = useRef<HTMLDivElement>(null);
-  // 펼칠 때만 누른 줄을 화면 가운데로
   const toggle = collapsible
     ? (row: HTMLElement | null) => {
-      if (row && root.current) {
-        if (open) keepInPlace(row);
-        else centerOnOpen(row, root.current, '.pillar-row__clip');
-      }
+      if (row) keepInPlace(row);
       setOpen((v) => !v);
     }
     : undefined;
   return (
-    <div ref={root} className="pillar-columns">
+    <div className="pillar-columns">
       {columns.map((col, c) => {
         const from = numbering === 'continue' ? columns.slice(0, c).reduce((n, prev) => n + prev.items.length, 0) : 0;
         return (

@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { Text } from '../Text/Text';
-import { scrollToTarget } from '../../smoothScroll';
 import './AnnualTimeline.css';
 
 /**
@@ -13,8 +12,8 @@ import './AnnualTimeline.css';
  *   outside the timeline to return to the overview. 호버만으로 미리 펼치던 동작은 없앴다 — 막대 위를
  *   훑기만 해도 축 전체가 확대되며 시각을 자극했다(사용자 지시 2026-10-05). 호버는 막대 테두리만.
  * - 움직임을 줄였다(2026-10-05): 확대는 최대 1.2배, 짧은 단계는 축 대신 카드만 읽을 수 있는 폭까지 넓어진다.
- * - Pinning a stage scrolls the page so the filter sits just under the top bar (88px) and the
- *   open card shows below it (사용자 지시 2026-10-04). Returning to the overview doesn't scroll.
+ * - Opening a stage doesn't scroll the page — 카드가 보이게 위로 옮기던 자동 스크롤은 방해된다고 해 없앴다
+ *   (사용자 지시 2026-10-05).
  * - Stages with `items` (방학 + 캠프 · 수료 & 졸업) stack those as boxes inside the open card
  *   — the two stages replace their old sections (사용자 지시 2026-09-30).
  * Everything is positioned in % of the current view window, so a single state
@@ -46,7 +45,6 @@ const CARD_MIN = 320; // px — the open card is never narrower than this (if th
 // Stages with boxes (방학 + 캠프 · 수료 & 졸업) open wider so the boxes read comfortably
 // (사용자 지시 2026-09-30); on a narrow chart the card takes 90% of it
 const CARD_MIN_WITH_ITEMS = 600;
-const PIN_TOP = 88; // px — where the filter lands after pinning a stage (below the pinned top bar)
 
 export function AnnualTimeline({ stages, months }: Props) {
   const [pinned, setPinned] = useState<number | null>(null);
@@ -86,10 +84,6 @@ export function AnnualTimeline({ stages, months }: Props) {
     const next = i === null || pinned === i ? null : i;
     measure();
     setPinned(next);
-    if (next !== null && root.current) {
-      const y = window.scrollY + root.current.getBoundingClientRect().top - PIN_TOP;
-      scrollToTarget(Math.max(0, y));
-    }
   };
 
   // Clicking anywhere outside the timeline returns a pinned view to the overview
