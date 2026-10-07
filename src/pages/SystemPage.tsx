@@ -4,14 +4,14 @@ import './programs.css';
 import './system.css';
 
 const typeSpec: Record<Typography, string> = {
-  Display: '80 · Bold · 1.19 · -3%',
-  Heading: '48 · Bold · 1.2 · -3%',
-  Subheading: '36 · Bold · 1.2 · -3%',
-  Lead: '20 · Regular · 1.4 · -3%',
-  Intro: '20 · Regular · 1.4 · -3%',
-  Title: '24 · Bold · 1.2 · -3%',
-  Label: '16 · Medium · 1.2 · -3%',
+  Display: '180 · Bold · 0.9 · -4%',
+  Heading: '48 · Bold · 1.2 · -4%',
+  Lead: '20 · Regular · 1.4 · -2%',
+  Title: '24 · Bold · 1.2 · -4%',
+  Label: '16 · Medium · 1.2 · -2%',
   Body: '16 · Regular · 1.6 · -2%',
+  Meta: '14 · Regular · 1.5 · -2%',
+  Caption: '12 · Medium · 1.5 · -2%',
 };
 
 const colors = [

@@ -9,7 +9,7 @@
   width: var(--toc-width);
   max-height: min(1020px, calc(100vh - 120px));
   overflow-y: auto;
-  padding-left: 14px;
+  padding-left: var(--space-16);
   border-left: 1px solid var(--color-nav-rule);
   background: transparent;
   scrollbar-width: none;
@@ -38,25 +38,25 @@
 }
 
 .toc__title {
-  margin-bottom: 12px;
-  font-size: 11px;
-  line-height: 16.5px;
+  margin-bottom: var(--space-12);
+  font-size: var(--typo-caption-size);
+  line-height: 1.5;
   font-weight: var(--font-weight-bold);
-  letter-spacing: 0.02em;
+  letter-spacing: var(--tracking-body);
   color: var(--color-nav-faint);
 }
 
 .toc ul { display: flex; flex-direction: column; }
-.toc > ul { gap: 2px; } /* 14 → 2px: 항목 간격 약 44 → 32px(사용자 지시 2026-09-30) */
+.toc > ul { gap: var(--space-4); } /* 14 → 2px: 항목 간격 약 44 → 32px(사용자 지시 2026-09-30) */
 
 .toc a {
   position: relative;
   display: block;
-  margin-left: -15px;
-  padding: 5px 0 5px 10px;
-  font-size: 13px;
-  line-height: 19.5px;
-  letter-spacing: -0.16px;
+  margin-left: calc(-1 * var(--space-16));
+  padding: var(--space-4) 0 var(--space-4) var(--space-8);
+  font-size: var(--typo-meta-size);
+  line-height: 1.5;
+  letter-spacing: var(--tracking-body);
   color: var(--color-nav);
   white-space: nowrap;
   transition: color 150ms;
@@ -84,8 +84,8 @@
 
 /* 지금 보는 섹션만 진하게, 나머지는 회색(사용자 지시 2026-10-04) — 굵기는 그대로 둬 바뀔 때 글자 폭이 흔들리지 않게 */
 .toc__lv1 > a { font-weight: var(--font-weight-bold); color: var(--color-nav-faint); }
-.toc__lv2 > a { padding-left: 24px; }
-.toc__lv3 > a { padding-left: 38px; font-size: 12px; line-height: 18px; }
+.toc__lv2 > a { padding-left: var(--space-24); }
+.toc__lv3 > a { padding-left: var(--space-40); font-size: var(--typo-caption-size); line-height: 1.5; }
 
 @media (max-width: 1279px) {
   .toc-rail { display: none; }
