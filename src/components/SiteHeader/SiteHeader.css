@@ -1,7 +1,7 @@
 /* Toolbar values from the Phi Brain style kit: 16px/32px padding, 24px gap,
    10pt type, 6px 12px pills with a 20px squircle radius, #F8F9FA hover fill. */
 .site-header {
-  --sh-fs: 10pt;
+  --sh-fs: var(--typo-meta-size);
   --sh-pad-x: 12px;
   --sh-radius: 20px;
   --sh-fill: var(--color-bg-subtle);
@@ -16,9 +16,9 @@
   z-index: 50;
   display: flex;
   align-items: center;
-  gap: 24px;
+  gap: var(--space-24);
   min-height: 57px; /* 로고 · CTA가 고정으로 빠져도 상단바 높이는 그대로(16 + 25 + 16) */
-  padding: 16px 32px 16px 44px;
+  padding: var(--space-16) var(--space-32) var(--space-16) var(--space-48);
   background: transparent;
 }
 
@@ -28,17 +28,17 @@
   top: 18px; /* 맨 위에서 메뉴 줄과 같은 높이(패딩 16 + 가운데 정렬 2) */
   left: 44px;
   z-index: 60;
-  font-size: 18px;
+  font-size: var(--typo-body-size);
   line-height: 25px;
   font-weight: var(--font-weight-bold);
-  letter-spacing: -0.04em;
+  letter-spacing: var(--tracking-heading);
   color: var(--color-text-primary);
 }
 
-.site-header__nav { display: flex; align-items: center; gap: 4px; margin-left: auto; }
+.site-header__nav { display: flex; align-items: center; gap: var(--space-4); margin-left: auto; }
 
 .site-header__link {
-  padding: 6px var(--sh-pad-x);
+  padding: var(--space-8) var(--sh-pad-x);
   border-radius: var(--sh-radius);
   corner-shape: squircle;
   font-size: var(--sh-fs);
@@ -58,7 +58,7 @@
   top: 13px;
   right: 32px;
   z-index: 60;
-  padding: 8px 16px;
+  padding: var(--space-8) var(--space-16);
   border-radius: var(--sh-radius);
   corner-shape: squircle;
   background: var(--color-text-primary);
@@ -66,7 +66,7 @@
   font-size: var(--sh-fs);
   line-height: 1.45;
   font-weight: var(--font-weight-bold);
-  letter-spacing: -0.01em;
+  letter-spacing: var(--tracking-body);
   white-space: nowrap;
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
   transition: background 160ms, transform 240ms var(--ease);
@@ -87,7 +87,7 @@
   border-radius: 50%;
   background: var(--color-text-primary);
   color: var(--color-bg-default);
-  font-size: 18px;
+  font-size: var(--typo-body-size);
   line-height: 1;
   cursor: var(--cursor-pointer);
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
@@ -102,7 +102,7 @@
 
 @media (max-width: 720px) {
   .back-to-top { right: 20px; bottom: 20px; }
-  .site-header { min-height: 53px; padding: 14px 20px; gap: 12px; }
+  .site-header { min-height: 53px; padding: var(--space-16) var(--space-20); gap: var(--space-12); }
   .site-header__brand { top: 14px; left: 20px; }
   .site-header__nav { display: none; }
   .site-header__cta { right: 20px; top: 11px; }

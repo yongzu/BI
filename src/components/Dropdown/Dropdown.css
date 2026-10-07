@@ -9,9 +9,9 @@
 .dropdown__trigger {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: var(--space-16);
   width: 100%;
-  padding: 20px var(--dd-pad-x);
+  padding: var(--space-20) var(--dd-pad-x);
   text-align: left;
   transition: background var(--duration) var(--ease);
 }

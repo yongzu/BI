@@ -6,15 +6,15 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 14px 29px;
+  padding: var(--space-16) var(--space-28);
   border-radius: 22px;
   background: var(--apply-bg);
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 3px 8px -4px rgba(0, 0, 0, 0.1);
   color: var(--color-bg-default);
-  font-size: 19px;
+  font-size: var(--typo-body-size);
   line-height: 1.35;
   font-weight: var(--font-weight-bold);
-  letter-spacing: var(--tracking-tight);
+  letter-spacing: var(--tracking-body);
   text-decoration: none;
   transition: background-color 180ms ease;
 }
@@ -58,7 +58,7 @@
 .apply-button__arrow svg { width: 1em; height: 1em; flex-shrink: 0; }
 .apply-button__arrow path { stroke: var(--apply-bg); } /* 동그라미 안 화살표는 버튼 색으로 뚫어 보이게 */
 .apply-button:hover .apply-button__arrow,
-.apply-button:focus-visible .apply-button__arrow { width: 1em; margin-left: 8px; opacity: 1; }
+.apply-button:focus-visible .apply-button__arrow { width: 1em; margin-left: var(--space-8); opacity: 1; }
 
 @media (prefers-reduced-motion: reduce) {
   .apply-button,

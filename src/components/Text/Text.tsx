@@ -13,12 +13,12 @@ import type { Typography, TextColor } from './typography';
 const defaultElement: Record<Typography, ElementType> = {
   Display: 'h1',
   Heading: 'h2',
-  Subheading: 'h2',
   Lead: 'p',
-  Intro: 'p',
   Title: 'h3',
   Label: 'p',
   Body: 'p',
+  Meta: 'p',
+  Caption: 'span',
 };
 
 type TextProps<E extends ElementType> = {

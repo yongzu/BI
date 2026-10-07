@@ -2,16 +2,22 @@
    Typography tokens — Figma "Phi Design Institute" (node 1650:6417)
    --------------------------------------------------------------------------
    Pretendard only. Values measured on a 1920px frame; large sizes scale down
-   fluidly below that width. Tracking is -3% everywhere except body (-2%).
+   fluidly below that width. Tracking: headings -4%, everything else -2% (사용자 지시 2026-10-07).
 
-     Display   180 / Bold    / 0.9  / -3%   hero lines (Toss hero size 215 → 180, 2026-10-04)
-     Heading    48 / Bold    / 1.2  / -3%   section titles
-     Subheading 36 / Bold    / 1.2  / -3%   panel titles
-     Lead       20 / Regular / 1.4  / -3%   section intro (70%)
-     Intro      20 / Regular / 1.4  / -3%   hero copy (70%)
-     Title      24 / Bold    / 1.2  / -3%   item & group titles
-     Label      16 / Medium  / 1.2  / -3%   English sub-labels (40%)
+     Display   140 / Bold / 0.9 / -4%   hero lines (215 → 180 → 140: 3D 로고가 들어오며 줄임, 2026-10-05)
+     Heading    48 / Bold / 1.2 / -4%   section titles
+     Lead       20 / Regular / 1.4  / -2%   section intro (70%)
+     Title      24 / Bold / 1.2 / -4%   item & group titles
+     Label      16 / Medium  / 1.2  / -2%   English sub-labels (40%) — Body와 같은 크기, 굵기만 다름
      Body       16 / Regular / 1.6  / -2%   item copy (70%)
+     Meta       14 / Regular / 1.5  / -2%   secondary info, tabs, nav, detail panel
+     Caption    12 / Medium  / 1.5  / -2%   tags, badges, months, small labels
+
+   글자 크기는 7가지만 쓴다(사용자 지시 2026-10-07, 10 → 7): 140 · 48 · 24 · 20 · 16 · 14 · 12.
+   같은 위계면 같은 크기 — 위계는 크기보다 굵기(Regular · Medium · Bold)와 잉크(100 · 70 · 40%)로 먼저 나눈다.
+   Subheading 36 · 히어로 문장 30 → Title 24, Intro → Lead, Emphasis 18 → Body Bold 16으로 합쳤다.
+   컴포넌트 CSS에 11 · 13 · 15 · 17 · 19px 같은 값을 직접 쓰지 말고 아래 --typo-*-size를 쓴다.
+   굵기 · 색은 컴포넌트마다 달라도 크기는 이 단계에서 고른다.
    ========================================================================== */
 
 :root {
@@ -22,32 +28,34 @@
   --font-weight-medium: 500;
   --font-weight-bold: 700;
 
-  --tracking-tight: -0.03em;
+  /* 자간 두 단계(사용자 지시 2026-10-07): 한글은 네모 칸을 꽉 채워 그려져 기본 자간(0)이면 퍼져 보인다.
+     웹 한글 자간은 -0.02 ~ -0.05em 사이가 적당 — 본문은 -0.02em, 크게 쓰는 제목(Display · Heading · Title)은 더 좁혀 -0.04em */
+  --tracking-heading: -0.04em;
   --tracking-body: -0.02em;
 
   /* 44 → 215: 토스뱅크 디자인 채용 히어로(Simplify / Banking)를 1920×1080 화면에서 실측한 크기(사용자 지시 2026-10-03).
      토스 글자 높이(위 끝 → 아래 끝 397px, 줄 간격 193px)에 Pretendard를 맞추면 215px · 줄 간격 0.9.
      1440×1080 이상에서 215, 그보다 좁거나 낮으면 폭(÷1440) · 높이(÷1080) 중 작은 쪽 비율로 줄어 첫 화면 비율이 유지된다.
      215 → 180(사용자 지시 2026-10-04): 최대 11.25rem, 줄어드는 비율도 그대로(180/1440 = 12.5vw, 180/1080 = 16.67svh) */
-  --typo-display-size: max(2.75rem, min(11.25rem, 12.5vw, 16.67svh));
+  --typo-display-size: max(2.75rem, min(8.75rem, 9.722vw, 12.963svh)); /* 140 = 1440 · 1080 이상에서 고정, 그보다 작으면 폭 · 높이 중 작은 비율로(= 히어로 --hs × 140, 2026-10-07 토큰으로 옮김) */
   --typo-heading-size: clamp(2.25rem, 3.34vw, 3rem);    /* 36 → 48 */
-  --typo-subheading-size: clamp(1.75rem, 1.88vw, 2.25rem); /* 28 → 36 */
   --typo-lead-size: 1.25rem;                            /* 20 */
-  --typo-intro-size: clamp(1.0625rem, 1.05vw, 1.25rem); /* 17 → 20 */
-  --typo-title-size: clamp(1.25rem, 1.25vw, 1.5rem);    /* 20 → 24 */
+  --typo-title-size: clamp(1.25rem, 1.667vw, 1.5rem);   /* 20 → 24 — 1440 이상에서 24(1920 기준이던 것을 Heading처럼 1440 기준으로, 2026-10-07) */
   --typo-label-size: 1rem;                              /* 16 */
   --typo-body-size: 1rem;                               /* 16 */
+  --typo-meta-size: 0.875rem;                           /* 14 */
+  --typo-caption-size: 0.75rem;                         /* 12 */
 }
 
 /* ---------- Semantic styles (consumed by <Text />) ---------- */
-.typo-display { font-size: var(--typo-display-size); line-height: 0.9; font-weight: var(--font-weight-bold); letter-spacing: var(--tracking-tight); }
-.typo-heading { font-size: var(--typo-heading-size); line-height: 1.2; font-weight: var(--font-weight-bold); letter-spacing: var(--tracking-tight); }
-.typo-subheading { font-size: var(--typo-subheading-size); line-height: 1.2; font-weight: var(--font-weight-bold); letter-spacing: var(--tracking-tight); }
-.typo-lead    { font-size: var(--typo-lead-size); line-height: 1.4; font-weight: var(--font-weight-regular); letter-spacing: var(--tracking-tight); }
-.typo-intro   { font-size: var(--typo-intro-size); line-height: 1.4; font-weight: var(--font-weight-regular); letter-spacing: var(--tracking-tight); }
-.typo-title   { font-size: var(--typo-title-size); line-height: 1.2; font-weight: var(--font-weight-bold); letter-spacing: var(--tracking-tight); }
-.typo-label   { font-size: var(--typo-label-size); line-height: 1.2; font-weight: var(--font-weight-medium); letter-spacing: var(--tracking-tight); }
+.typo-display { font-size: var(--typo-display-size); line-height: 0.9; font-weight: var(--font-weight-bold); letter-spacing: var(--tracking-heading); }
+.typo-heading { font-size: var(--typo-heading-size); line-height: 1.2; font-weight: var(--font-weight-bold); letter-spacing: var(--tracking-heading); }
+.typo-lead    { font-size: var(--typo-lead-size); line-height: 1.4; font-weight: var(--font-weight-regular); letter-spacing: var(--tracking-body); }
+.typo-title   { font-size: var(--typo-title-size); line-height: 1.2; font-weight: var(--font-weight-bold); letter-spacing: var(--tracking-heading); }
+.typo-label   { font-size: var(--typo-label-size); line-height: 1.2; font-weight: var(--font-weight-medium); letter-spacing: var(--tracking-body); }
 .typo-body    { font-size: var(--typo-body-size); line-height: 1.6; font-weight: var(--font-weight-regular); letter-spacing: var(--tracking-body); }
+.typo-meta    { font-size: var(--typo-meta-size); line-height: 1.5; font-weight: var(--font-weight-regular); letter-spacing: var(--tracking-body); }
+.typo-caption { font-size: var(--typo-caption-size); line-height: 1.5; font-weight: var(--font-weight-medium); letter-spacing: var(--tracking-body); }
 
 .color-primary   { color: var(--color-text-primary); }
 .color-secondary { color: var(--color-text-secondary); }

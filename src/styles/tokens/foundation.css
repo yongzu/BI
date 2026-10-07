@@ -1,28 +1,74 @@
 /* ==========================================================================
    Layout & motion tokens — Figma "Phi Design Institute" (node 1650:6417)
    --------------------------------------------------------------------------
-   Content: 1200px column (was 1140px in the Figma frame), 40px grid gaps.
-   Section header: title column + 710px lead column.
+   Content: 1200px column (was 1140px in the Figma frame) on a 12-column grid.
    Page TOC sits at the left, 237px wide.
    ========================================================================== */
 
 :root {
   --content-width: 1200px; /* 1140 → 1200 (사용자 지시 2026-09-30) */
-  --grid-gap: 40px;
-  --lead-width: 710px;
   --gutter: max(24px, 4vw);
 
-  --toc-left: clamp(24px, 3vw, 59px);
+  /* ---------- 12열 그리드(사용자 지시 2026-10-07) ----------
+     1200px = 12열 × 63.33 + 11칸 × 40. 페이지 단위 레이아웃은 모두 이 열에 선다.
+     두 칸으로 나누는 곳(과정 개요 · 역량과 태도 · 수업 장치)은 전부 6 + 6 — 같은 가운데 세로선을 공유한다.
+     섹션 · 커리큘럼 머리글은 제목 위, 리드 아래(사용자 지시 2026-10-05) — 리드 폭만 8열로 맞춘다.
+     쓰는 법: grid-template-columns: var(--grid-template); column-gap: var(--grid-gap); 자식은 grid-column: span 6.
+     좁은 화면(--bp-md 이하)에선 두 칸이 위아래로 쌓인다(grid-column: 1 / -1) */
+  --grid-columns: 12;
+  --grid-gap: 40px;
+  --grid-template: repeat(var(--grid-columns), minmax(0, 1fr));
+  --col-width: calc((var(--content-width) - (var(--grid-columns) - 1) * var(--grid-gap)) / var(--grid-columns));
+  --lead-width: calc(8 * var(--col-width) + 7 * var(--grid-gap)); /* 8열 ≈ 787px — 리드 · 설명 글 최대 폭(이전 710에 가장 가까운 열 폭) */
+
+  /* ---------- 브레이크포인트 ----------
+     CSS 변수는 @media 안에서 못 쓰므로 값만 여기 적어 두고, 미디어 쿼리엔 이 세 숫자만 쓴다.
+       --bp-sm  720px   휴대폰: 줄 · 카드 안쪽 여백을 줄이고, 2열 카드를 1열로
+       --bp-md  900px   태블릿: 6 + 6 두 칸을 위아래로 쌓는다
+       --bp-lg 1280px   데스크톱: 왼쪽 목차가 나타나고 본문이 목차 옆으로 비킨다(1279px 이하에선 목차 숨김)
+     컴포넌트 안쪽 칸 나눔(수업 상세 · 주간 시간표)은 자기 폭을 보는 @container를 따로 쓴다 */
+
+  /* ---------- 간격 스케일(사용자 지시 2026-10-07) ----------
+     gap · padding · margin은 이 값만 쓴다. 32까지는 4px씩, 64까지는 8px씩, 그 위는 16px씩.
+     기존 값은 가장 가까운 단계로 옮겼고, 딱 가운데면 8의 배수 쪽으로(6 → 8, 10 → 8, 14 → 16, 18 → 16, 22 · 26 → 24).
+     예외: 1px 선, 아이콘 크기 · 위치(top/left), 히어로 첫 화면의 화면 비례 값(programs.css .hero) */
+  --space-4: 4px;
+  --space-8: 8px;
+  --space-12: 12px;
+  --space-16: 16px;
+  --space-20: 20px;
+  --space-24: 24px;
+  --space-28: 28px;
+  --space-32: 32px;
+  --space-40: 40px;
+  --space-48: 48px;
+  --space-56: 56px;
+  --space-64: 64px;
+  --space-80: 80px;
+  --space-96: 96px;
+  --space-112: 112px;
+  --space-128: 128px;
+  --space-144: 144px;
+  --space-160: 160px;
+
+  --toc-left: clamp(24px, 3vw, 56px);
   --toc-width: 237px;
-  --toc-space: calc(var(--toc-left) + var(--toc-width) + 40px);
+  --toc-space: calc(var(--toc-left) + var(--toc-width) + var(--space-40));
   --design-offset: 88px; /* content sits 88px right of center on the 1920 frame */
 
   /* 히어로 위 여백은 없앴다 — 히어로가 한 화면 높이로 내용을 가운데 정렬한다(Full Viewport, 2026-09-30).
      히어로 안 간격은 토스 첫 화면 실측값으로 pages/programs.css에서 정한다(2026-10-03) */
-  --space-section: clamp(160px, 22vw, 430px);
-  --space-group: clamp(64px, 5.7vw, 110px);
+  --space-section: clamp(160px, 22vw, 432px);
+  --space-group: clamp(64px, 5.7vw, 112px);
+  --space-after-header: clamp(80px, 5.8vw, 112px); /* 섹션 머리글 → 첫 그룹 · 연간 구조 */
+  --space-group-stack: clamp(56px, 3.6vw, 72px);   /* 그룹 → 다음 그룹 */
 
   --ease: cubic-bezier(0.25, 0.1, 0.25, 1);
   --ease-reveal: cubic-bezier(0.16, 1, 0.3, 1);
   --duration: 300ms;
+}
+
+/* 태블릿 이하(--bp-md): 두 칸이 쌓이므로 열 간격도 줄인다 */
+@media (max-width: 900px) {
+  :root { --grid-gap: 24px; }
 }

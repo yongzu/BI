@@ -349,8 +349,8 @@ export function ProgramsPage() {
               Programs
             </Text>
             {/* 소개: 큰 글씨 두 줄 + 설명 한 문장, 단어마다 블러에서 떠오른다(사용자 지시 2026-10-03) */}
-            <BlurReveal lines={heroStatement.lines} typography="Subheading" headingClassName="hero__statement" className="hero__intro" show={INTRO_STYLE === 'together' || introDone}>
-              <Text typography="Intro" color="secondary">{heroStatement.body}</Text>
+            <BlurReveal lines={heroStatement.lines} typography="Title" headingClassName="hero__statement" className="hero__intro" show={INTRO_STYLE === 'together' || introDone}>
+              <Text typography="Lead" color="secondary">{heroStatement.body}</Text>
             </BlurReveal>
 
             {/* 과정 개요 대신 지원 기간 + 지원하기 — 토스뱅크 디자인 채용 히어로를 따름(사용자 지시 2026-10-03) */}
