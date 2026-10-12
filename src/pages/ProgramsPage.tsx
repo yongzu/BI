@@ -3,6 +3,7 @@ import { Text } from '../components/Text/Text';
 import { Toc, type TocItem } from '../components/Toc/Toc';
 import { AnnualTimeline } from '../components/AnnualTimeline/AnnualTimeline';
 import { CourseExplorer } from '../components/CourseExplorer/CourseExplorer';
+import { PillarStrip, type StripItem } from '../components/PillarStrip/PillarStrip';
 import { BlurReveal } from '../components/BlurReveal/BlurReveal';
 import { ApplyButton } from '../components/ApplyButton/ApplyButton';
 import { HeroRipple, type RippleControl } from '../components/HeroRipple/HeroRipple';
@@ -39,15 +40,26 @@ const toc: TocItem[] = [
 
 /** Blocks that rise in on scroll */
 // 히어로는 첫 화면 순서(흐린 제목 → 맑아짐 → 소개 · 기간)를 따로 가지므로 떠오르는 등장에서 뺀다
-const revealTargets = ['.section-header > *', '.group-label', '.group__lead', '.course-explorer', '.pillar-row', '.annual', '.device-card'].join(', ');
+const revealTargets = ['.section-header > *', '.group-label', '.group__lead', '.course-explorer', '.pillar-strip__track', '.pillar-row', '.annual', '.device-card'].join(', ');
 
 /* ------------------------------------------------------------------ */
 
-/** Section title (64) + lead (28, 70%) — 제목 위, 리드 아래(사용자 지시 2026-10-05: 왼 → 오 → 아래로 읽는 피로를 덜게) */
-function SectionHeader({ title, lead }: { title: ReactNode; lead?: ReactNode }) {
+/**
+ * Section title + lead — 제목 왼쪽 4열, 리드 오른쪽 8열, 세로 가운데(사용자 지시 2026-10-12).
+ * 제목은 줄마다 보이지 않는 틀 안에서 아래에서 위로 올라온다(사용자 지시 2026-10-12, AI in Design Report 2026의 '01 Tools').
+ * 여러 줄이면 배열로 — 줄마다 틀이 따로라 한 줄씩 차례로(Text 아래 .rise-line, programs.css).
+ */
+function SectionHeader({ title, lead }: { title: string | string[]; lead?: ReactNode }) {
+  const lines = typeof title === 'string' ? [title] : title;
   return (
     <header className="section-header">
-      <Text typography="Heading">{title}</Text>
+      <Text typography="Heading" className="section-header__title" aria-label={lines.join(' ')}>
+        {lines.map((line, i) => (
+          <span key={line} className="rise-line" style={{ '--line': i } as React.CSSProperties} aria-hidden="true">
+            <span className="rise-line__text">{line}</span>
+          </span>
+        ))}
+      </Text>
       {lead && <Text typography="Lead" color="secondary">{lead}</Text>}
     </header>
   );
@@ -158,7 +170,7 @@ function RowList({ items, start = 0, group = items, open, onToggle }: { items: R
   );
 }
 
-const pillarRows = (items: Pillar[]): RowItem[] => items.map((p) => ({ id: p.en.replace(/\s+/g, '-').toLowerCase(), title: p.ko, sub: p.en, body: p.body }));
+const stripItems = (items: Pillar[]): StripItem[] => items.map((p) => ({ id: p.en.replace(/\s+/g, '-').toLowerCase(), title: p.ko, en: p.en, summary: p.summary, body: p.body }));
 
 /**
  * 수업을 관통하는 접근 — 배우는 자리(세션 안에서 · 스스로 돌아보기 · 세션 밖에서)마다 라벨 아래 박스 두 개.
@@ -377,13 +389,13 @@ export function ProgramsPage() {
         {/* ---------- 역량과 태도 ---------- */}
         <section id="pillars" className="section container">
           <SectionHeader title="역량과 태도" lead="어떤 환경에서도 스스로 답을 찾을 수 있는 사고방식을 만들기 위해, Phi는 아래 역량과 태도를 중요시합니다." />
-          {/* 역량은 왼쪽, 태도는 오른쪽 — 두 목록을 나란히 세로로(사용자 지시 2026-09-30). 설명은 호버로 펼친다 */}
+          {/* 휠(2026-10-12 오전, 컴포넌트는 PillarWheel로 남겨 둠) → 가로 두 줄 상자(사용자 지시 2026-10-12):
+              마우스를 올리면 상자가 넓어지며 전체 설명, 누르면 고정 */}
           <div className="group">
-            <RowColumns
-              numbering="restart"
-              columns={[
-                { id: 'pillars-competency', label: '역량 · Competency', items: pillarRows(competencies) },
-                { id: 'pillars-attitude', label: '태도 · Phi OS', items: pillarRows(attitudes) },
+            <PillarStrip
+              rows={[
+                { id: 'competency', title: '역량', en: 'Competency', items: stripItems(competencies) },
+                { id: 'attitude', title: '태도', en: 'Phi OS', items: stripItems(attitudes) },
               ]}
             />
           </div>
@@ -411,7 +423,7 @@ export function ProgramsPage() {
         {/* ---------- 수업을 관통하는 접근 ---------- */}
         <section id="devices" className="section container">
           <SectionHeader
-            title={<>수업을<br />관통하는 접근</>}
+            title={['수업을', '관통하는 접근']}
             lead={<>Phi의 교육은 인지적 도제(Cognitive Apprenticeship)를 토대로 설계되었습니다.<br />전문가의 사고 과정을 학습자가 능동적으로 관찰할 수 있도록 다양한 장치가 준비되어있습니다.</>}
           />
           {/* 두 단 목록을 시험해 본 뒤 박스로 되돌림(사용자 지시 2026-09-30) */}

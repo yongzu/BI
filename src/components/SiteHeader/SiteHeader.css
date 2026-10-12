@@ -23,11 +23,19 @@
 }
 
 /* ---------- Pinned logo ---------- */
+/* 본문이 화면 가운데 열을 다 쓰게 되어(2026-10-12) 스크롤하면 로고 밑으로 글이 지나간다 — 목차(Toc.css)와 같은
+   반투명 흰 판 + 흐림을 깔아 겹쳐도 읽히게. 흰 배경 위에선 판이 보이지 않는다. 글자 자리는 예전과 같다(18 · 44) */
 .site-header__brand {
   position: fixed;
-  top: 18px; /* 맨 위에서 메뉴 줄과 같은 높이(패딩 16 + 가운데 정렬 2) */
-  left: 44px;
+  top: 10px;
+  left: 32px;
   z-index: 60;
+  padding: var(--space-8) var(--space-12);
+  border-radius: var(--sh-radius);
+  corner-shape: squircle;
+  background: rgba(255, 255, 255, 0.82);
+  -webkit-backdrop-filter: blur(16px) saturate(1.4);
+  backdrop-filter: blur(16px) saturate(1.4);
   font-size: var(--typo-body-size);
   line-height: 25px;
   font-weight: var(--font-weight-bold);
@@ -51,13 +59,11 @@
 .site-header__link:focus-visible,
 .site-header__link[aria-current='page'] { background: var(--sh-fill); color: var(--color-text-primary); }
 
-/* ---------- Pinned CTA ---------- */
-.site-header__cta-space { width: 132px; flex: none; }
+/* ---------- CTA ----------
+   상단바 맨 오른쪽, 상단바와 함께 스크롤되어 사라진다(사용자 지시 2026-10-12: 상단에만 고정).
+   그 자리는 히어로를 지나면 페이지 목차(Toc.css)가 이어받는다 */
 .site-header__cta {
-  position: fixed;
-  top: 13px;
-  right: 32px;
-  z-index: 60;
+  flex: none;
   padding: var(--space-8) var(--space-16);
   border-radius: var(--sh-radius);
   corner-shape: squircle;
@@ -103,7 +109,7 @@
 @media (max-width: 720px) {
   .back-to-top { right: 20px; bottom: 20px; }
   .site-header { min-height: 53px; padding: var(--space-16) var(--space-20); gap: var(--space-12); }
-  .site-header__brand { top: 14px; left: 20px; }
+  .site-header__brand { top: 6px; left: 8px; }
   .site-header__nav { display: none; }
-  .site-header__cta { right: 20px; top: 11px; }
+  .site-header__cta { margin-left: auto; } /* 메뉴가 숨으면 CTA가 오른쪽 끝에 */
 }

@@ -1,23 +1,15 @@
-/* Page TOC — values from Figma node 1654:6874 ("Nav - 페이지 목차"), placed at the left. */
-/* Responsive to scroll: scrolls with the page from its starting line,
-   then sticks below the pinned CTA, and releases at the end of the rail. */
+/* Page TOC — 오른쪽 위에 고정된 세로 목록(사용자 지시 2026-10-12).
+   예전엔 왼쪽에 세로로 붙어(Figma node 1654:6874) 본문이 오른쪽으로 밀렸다. 이제 본문은 화면 가운데 1200px 열을 그대로 쓴다.
+   감싸는 판 · 그림자 · 왼쪽 선 없이 글자만 두고, 지금 섹션은 테두리 없는 회색 면(상단바 메뉴 알약과 같은 면)으로 표시한다 */
 .toc {
-  position: sticky;
-  /* 화면 세로 가운데에 붙는다(사용자 지시 2026-10-04) — 높이(--toc-h)는 Toc.tsx가 잰다. 상단바(88px) 아래로는 안 올라감 */
-  top: max(88px, calc(50vh - var(--toc-h, 0px) / 2));
-  z-index: 40;
-  width: var(--toc-width);
-  max-height: min(1020px, calc(100vh - 120px));
-  overflow-y: auto;
-  padding-left: var(--space-16);
-  border-left: 1px solid var(--color-nav-rule);
-  background: transparent;
-  scrollbar-width: none;
+  position: fixed;
+  top: 13px; /* 상단바 CTA가 있던 높이 — 상단바는 맨 위에서만 보이고 스크롤하면 사라진다 */
+  right: 32px;
+  z-index: 60;
 }
-.toc::-webkit-scrollbar { display: none; }
 
-/* 나타나기: 투명 · 24px 위에서 제자리로(Toc.tsx data-shown). 사라질 땐 다 투명해진 뒤 visibility로 감춰
-   보이지 않는 목차에 초점이 가지 않게 한다. 움직임 줄이기면 그냥 보인다 */
+/* 나타나기: 투명 · 12px 위에서 제자리로(Toc.tsx data-shown) — 히어로를 지나 과정 개요가 올라올 때.
+   사라질 땐 다 투명해진 뒤 visibility로 감춰 보이지 않는 목차에 초점이 가지 않게 한다. 움직임 줄이기면 그냥 보인다 */
 .toc {
   transition:
     opacity 600ms var(--ease-reveal),
@@ -26,7 +18,7 @@
 }
 .toc[data-shown='false'] {
   opacity: 0;
-  transform: translateY(-24px);
+  transform: translateY(-12px);
   visibility: hidden;
   transition:
     opacity 300ms var(--ease),
@@ -37,56 +29,46 @@
   .toc[data-shown='false'] { opacity: 1; transform: none; visibility: visible; }
 }
 
-.toc__title {
-  margin-bottom: var(--space-12);
-  font-size: var(--typo-caption-size);
-  line-height: 1.5;
-  font-weight: var(--font-weight-bold);
-  letter-spacing: var(--tracking-body);
-  color: var(--color-nav-faint);
-}
-
-.toc ul { display: flex; flex-direction: column; }
-.toc > ul { gap: var(--space-4); } /* 14 → 2px: 항목 간격 약 44 → 32px(사용자 지시 2026-09-30) */
+/* 항목은 목록 폭을 꽉 채운다 — 회색 면이 항목마다 같은 폭(가장 긴 '수업을 관통하는 접근')으로 */
+.toc ul { position: relative; display: flex; flex-direction: column; }
 
 .toc a {
   position: relative;
+  z-index: 1; /* 미끄러지는 면(.toc__bar) 위 */
   display: block;
-  margin-left: calc(-1 * var(--space-16));
-  padding: var(--space-4) 0 var(--space-4) var(--space-8);
+  padding: var(--space-4) var(--space-12);
   font-size: var(--typo-meta-size);
   line-height: 1.5;
   letter-spacing: var(--tracking-body);
-  color: var(--color-nav);
+  color: var(--color-nav-faint);
   white-space: nowrap;
-  transition: color 150ms;
+  transition: color 200ms var(--ease);
 }
 .toc a:hover { color: var(--color-nav-strong); }
-.toc a.is-active { color: var(--color-nav-strong); font-weight: var(--font-weight-bold); }
+/* 지금 보는 섹션만 진하게 — 굵기는 그대로 둬 바뀔 때 글자 폭이 흔들리지 않게(사용자 지시 2026-10-04) */
+.toc a.is-active { color: var(--color-nav-strong); }
+.toc a:focus-visible { outline: 2px solid var(--color-focus-ring); outline-offset: -2px; border-radius: 12px; }
 
-/* Active-section bar: one element that glides along the rule to the active link
-   (its place and height come from Toc.tsx), instead of jumping between links */
+/* 지금 섹션 면: 하나의 면이 항목 사이를 미끄러져 간다(자리 · 높이는 Toc.tsx). 끝에서 길게 감속하는 곡선 */
 .toc__bar {
   position: absolute;
   top: 0;
-  left: -1px; /* sits on the 1px rule */
-  width: 3px;
+  left: 0;
+  right: 0;
   height: 0;
-  border-radius: 2px;
-  background: var(--color-nav-strong);
+  border-radius: 12px;
+  corner-shape: squircle;
+  background: var(--color-bg-subtle);
   opacity: 0;
   pointer-events: none;
   transition:
-    transform 420ms var(--ease-reveal),
-    height 420ms var(--ease-reveal),
+    transform 480ms var(--ease-reveal),
+    height 480ms var(--ease-reveal),
     opacity 200ms var(--ease);
 }
+.toc[data-shown='false'] .toc__bar { transition: none; } /* 숨어 있는 동안 자리만 옮겨 두고, 나타날 때 미끄러지지 않게 */
 
-/* 지금 보는 섹션만 진하게, 나머지는 회색(사용자 지시 2026-10-04) — 굵기는 그대로 둬 바뀔 때 글자 폭이 흔들리지 않게 */
-.toc__lv1 > a { font-weight: var(--font-weight-bold); color: var(--color-nav-faint); }
-.toc__lv2 > a { padding-left: var(--space-24); }
-.toc__lv3 > a { padding-left: var(--space-40); font-size: var(--typo-caption-size); line-height: 1.5; }
-
-@media (max-width: 1279px) {
+/* 태블릿 이하(--bp-md)는 본문과 겹치므로 감춘다 */
+@media (max-width: 900px) {
   .toc-rail { display: none; }
 }

@@ -1,0 +1,124 @@
+/* ==========================================================================
+   역량과 태도 — 가로 두 줄, 줄마다 상자 다섯(PillarStrip.tsx)
+   --------------------------------------------------------------------------
+   움직임: 펼치는 상자의 flex-grow 1 → --grow(2.4), 나머지는 그만큼 좁아진다. 같은 640ms · --ease-reveal 곡선으로
+   폭이 먼저 열리고, 설명은 높이 0fr → 1fr로 120ms 늦게 따라 내려오며 떠오른다 — 넓어짐 → 길어짐 순서.
+   접힐 땐 설명이 먼저 빠르게(160ms) 사라지고 폭이 닫힌다.
+   면: 테두리 없는 회색 면(--color-bg-subtle). 펼친 상자 아래엔 잉크 2px 띠 — 지금 보는 상자(레퍼런스의 주황 띠).
+   ========================================================================== */
+
+.pillar-strip { display: flex; flex-direction: column; gap: var(--space-56); }
+.pillar-strip__row { display: flex; flex-direction: column; gap: var(--space-24); }
+
+.pillar-strip__track {
+  --grow: 2.4;
+  --gap: var(--space-12);
+  --pad: var(--space-24);
+  /* 상자 폭을 줄 폭(cqw)에서 셈한다: 닫힌 상자 = 1몫, 펼친 상자 = --grow몫(펼친 상자가 있을 때) */
+  --unit: calc((100cqw - 4 * var(--gap)) / (4 + var(--grow)));
+  container-type: inline-size;
+  display: flex;
+  align-items: flex-start; /* 펼친 상자만 아래로 길어진다 */
+  gap: var(--gap);
+}
+
+.pillar-strip__card {
+  position: relative;
+  flex: 1 1 0;
+  min-width: 0;
+  border-radius: 16px;
+  corner-shape: squircle;
+  background: var(--color-bg-subtle);
+  cursor: var(--cursor-pointer, pointer);
+  transition: flex-grow 640ms var(--ease-reveal);
+}
+.pillar-strip__card[data-open='true'] { flex-grow: var(--grow); }
+
+/* 지금 펼친 상자 아래 띠 — 왼쪽에서 오른쪽으로 그어진다 */
+.pillar-strip__card::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 2px;
+  border-radius: 0 0 16px 16px;
+  background: var(--color-text-primary);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 640ms var(--ease-reveal);
+}
+.pillar-strip__card[data-open='true']::after { transform: none; }
+
+.pillar-strip__hit {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-16);
+  width: 100%;
+  min-height: 240px; /* 닫힌 상자 제목이 두 줄로 꺾여도 상자 높이가 같게 */
+  padding: var(--pad);
+  text-align: left;
+  cursor: inherit;
+}
+.pillar-strip__hit:focus-visible { outline: 2px solid var(--color-focus-ring); outline-offset: 2px; border-radius: 16px; }
+
+.pillar-strip__num { font-variant-numeric: tabular-nums; }
+.pillar-strip__titles { display: flex; flex-direction: column; gap: var(--space-4); }
+/* 닫힌 상자는 좁다(1200 열에서 약 170px) — 제목 · 영어 제목은 단어 단위로 줄을 바꾼다 */
+.pillar-strip__title { word-break: keep-all; }
+/* 한 줄 설명은 밑에 붙인다 — 상자마다 제목 길이가 달라도 설명 줄이 같은 높이에서 시작 */
+.pillar-strip__summary {
+  margin-top: auto;
+  word-break: keep-all;
+}
+
+/* ---------- 전체 설명 ---------- */
+.pillar-strip__panel {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 360ms var(--ease);
+}
+.pillar-strip__clip { min-height: 0; overflow: hidden; }
+.pillar-strip__body {
+  /* 펼친 상자의 글 폭으로 고정 — 폭이 열리는 동안 줄바꿈이 바뀌지 않는다 */
+  width: calc(var(--unit) * var(--grow) - 2 * var(--pad));
+  padding: 0 var(--pad) var(--pad);
+  box-sizing: content-box;
+  opacity: 0;
+  transform: translateY(-8px);
+  transition: opacity 160ms var(--ease), transform 160ms var(--ease);
+}
+.pillar-strip__card[data-open='true'] .pillar-strip__panel {
+  grid-template-rows: 1fr;
+  transition: grid-template-rows 560ms var(--ease-reveal) 120ms;
+}
+.pillar-strip__card[data-open='true'] .pillar-strip__body {
+  opacity: 1;
+  transform: none;
+  transition: opacity 400ms var(--ease) 240ms, transform 560ms var(--ease-reveal) 200ms;
+}
+
+/* 호버 피드백: 마우스를 올린 상자 면이 살짝 짙어진다 */
+@media (hover: hover) {
+  .pillar-strip__card { transition: flex-grow 640ms var(--ease-reveal), background 200ms var(--ease); }
+  .pillar-strip__card:hover { background: color-mix(in srgb, var(--color-bg-subtle), var(--palette-ink) 3%); }
+}
+
+/* 태블릿 이하: 다섯 상자가 한 줄에 들어가지 않아 세로 목록으로. 폭 변화 없이 누른 상자만 아래로 펼친다 */
+@media (max-width: 900px) {
+  .pillar-strip__track { flex-direction: column; align-items: stretch; }
+  .pillar-strip__card,
+  .pillar-strip__card[data-open='true'] { flex: none; }
+  .pillar-strip__hit { min-height: 0; }
+  .pillar-strip__body { width: auto; box-sizing: border-box; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pillar-strip__card,
+  .pillar-strip__card::after,
+  .pillar-strip__panel,
+  .pillar-strip__body,
+  .pillar-strip__card[data-open='true'] .pillar-strip__panel,
+  .pillar-strip__card[data-open='true'] .pillar-strip__body { transition: none; }
+}

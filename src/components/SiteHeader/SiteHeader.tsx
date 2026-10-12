@@ -3,10 +3,10 @@ import { scrollToTarget } from '../../smoothScroll';
 import './SiteHeader.css';
 
 /**
- * Top bar in the Phi Brain toolbar style: wordmark left, quiet pill links right.
- * The bar itself is fully transparent and scrolls away with the page, taking the menu
- * links with it — only the Phi wordmark (top-left) and the 2기 오픈 알림 신청 CTA
- * (an ink box, the page's most important action, top-right) stay pinned (사용자 지시 2026-09-30).
+ * Top bar in the Phi Brain toolbar style: wordmark left, quiet pill links and the CTA right.
+ * The bar itself is fully transparent and scrolls away with the page, taking the menu links and
+ * the 2기 오픈 알림 신청 CTA with it (사용자 지시 2026-10-12: CTA는 상단에만) — only the Phi wordmark
+ * stays pinned. Past the hero, the page TOC takes the top-right corner (Toc.css).
  */
 const links = ['About', 'Programs', 'Experts', 'Admissions'];
 
@@ -47,8 +47,6 @@ export function SiteHeader({ current = 'Programs' }: { current?: string }) {
           </a>
         ))}
       </nav>
-      {/* Placeholder keeps the nav from sliding under the fixed CTA */}
-      <span className="site-header__cta-space" aria-hidden="true" />
       <a href="https://www.phi.design/updates" className="site-header__cta" target="_blank" rel="noreferrer">
         2기 오픈 알림 신청
       </a>

@@ -48,7 +48,7 @@ const WAVE_W = 360; // 고리 폭
 const END_W = 2;
 const STRENGTH = 22; // 굴절 — 토스 34는 너무 세서 예전 값으로(사용자 지시 2026-10-04)
 const CHROMA = 9; // 색번짐
-const BLUR = 30; // 흐림
+const BLUR = 18; // 흐림 — 30 → 18, 고리 자리만 번지게(사용자 지시 2026-10-12)
 const RISE_S = 1; // 제목이 떠오르는 시간
 const RISE_PX = 40; // 떠오르는 거리 — 아래 섹션들의 떠오르기(programs.css data-reveal)와 같게
 // 떠오르기가 88%쯤(0.3초) 됐을 때 파동을 출발시킨다. 세기가 서서히 켜지므로 다 오른 순간 일렁이기 시작하는 것으로 보인다

@@ -3,10 +3,9 @@ import { scrollToTarget } from '../../smoothScroll';
 import './Toc.css';
 
 /**
- * Hierarchical table of contents, titled "Programs" (was "ON THIS PAGE", 사용자 지시 2026-10-04).
- * Three levels, hairline rule on the left, a 3px bar marks the section in view.
- * The bar is one element that glides to the active item (사용자 지시 2026-09-30) instead of
- * being redrawn on each link, which made it jump from block to block.
+ * 페이지 목차 — 화면 오른쪽 위에 고정된 세로 목록(사용자 지시 2026-10-12: 왼쪽 세로 목차가 본문을 오른쪽으로 밀어
+ * 가운데 정렬이 안 되고 화면을 다 못 쓰던 것을 고침). 감싸는 판 · 선 없이 글자만.
+ * 지금 보는 섹션은 테두리 없는 회색 면 하나가 그 항목으로 미끄러져 간다(사용자 지시 2026-09-30: 항목마다 다시 그리면 뚝뚝 끊겨 보였다).
  */
 export type TocItem = { id: string; label: string; children?: TocItem[] };
 
@@ -89,8 +88,8 @@ export function Toc({ items, onNavigate }: TocProps) {
         return;
       }
       b.style.opacity = '1';
-      b.style.transform = `translateY(${link.offsetTop + 4}px)`;
-      b.style.height = `${link.offsetHeight - 8}px`;
+      b.style.transform = `translateY(${link.offsetTop}px)`;
+      b.style.height = `${link.offsetHeight}px`;
     };
     place();
     window.addEventListener('resize', place);
@@ -110,17 +109,6 @@ export function Toc({ items, onNavigate }: TocProps) {
       scrollToTarget(Math.max(0, window.scrollY + box.top + h / 2 - window.innerHeight / 2));
     });
   };
-
-  // 목차는 화면 세로 가운데에 붙는다 — 제 높이를 재어 CSS(--toc-h)로 넘긴다
-  useLayoutEffect(() => {
-    const el = nav.current;
-    if (!el) return;
-    const set = () => el.style.setProperty('--toc-h', `${el.offsetHeight}px`);
-    set();
-    const ro = new ResizeObserver(set);
-    ro.observe(el);
-    return () => ro.disconnect();
-  }, []);
 
   const renderList = (list: TocItem[], level: number) => (
     <ul>
@@ -146,7 +134,6 @@ export function Toc({ items, onNavigate }: TocProps) {
   return (
     <nav ref={nav} className="toc" aria-label="페이지 목차" data-shown={shown}>
       <span ref={bar} className="toc__bar" aria-hidden="true" />
-      <p className="toc__title">Programs</p>
       {renderList(items, 1)}
     </nav>
   );

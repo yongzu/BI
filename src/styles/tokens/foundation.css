@@ -2,7 +2,7 @@
    Layout & motion tokens — Figma "Phi Design Institute" (node 1650:6417)
    --------------------------------------------------------------------------
    Content: 1200px column (was 1140px in the Figma frame) on a 12-column grid.
-   Page TOC sits at the left, 237px wide.
+   Page TOC is a fixed pill row at the top-right (Toc.css) — it no longer takes a column.
    ========================================================================== */
 
 :root {
@@ -50,11 +50,6 @@
   --space-128: 128px;
   --space-144: 144px;
   --space-160: 160px;
-
-  --toc-left: clamp(24px, 3vw, 56px);
-  --toc-width: 237px;
-  --toc-space: calc(var(--toc-left) + var(--toc-width) + var(--space-40));
-  --design-offset: 88px; /* content sits 88px right of center on the 1920 frame */
 
   /* 히어로 위 여백은 없앴다 — 히어로가 한 화면 높이로 내용을 가운데 정렬한다(Full Viewport, 2026-09-30).
      히어로 안 간격은 토스 첫 화면 실측값으로 pages/programs.css에서 정한다(2026-10-03) */

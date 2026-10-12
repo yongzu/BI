@@ -6,39 +6,25 @@
 .link:hover { text-decoration: underline; text-underline-offset: 4px; }
 
 /* ---------- Content column ----------
-   1200px column. On wide screens it keeps the design's position (88px right of
-   center) but never slides under the fixed TOC. */
+   화면 가운데 1200px 열(12열 그리드). 왼쪽 세로 목차 자리(--toc-space)만큼 오른쪽으로 비키던 배치는 없앴다 —
+   목차가 오른쪽 위 가로 줄로 옮겨 가(Toc.css) 히어로부터 채용 연계까지 모든 섹션이 같은 가운데 열을 쓴다(사용자 지시 2026-10-12) */
 .container {
   width: 100%;
   max-width: calc(var(--content-width) + 2 * var(--gutter));
   margin-inline: auto;
   padding-inline: var(--gutter);
 }
-@media (min-width: 1280px) {
-  .container {
-    width: min(var(--content-width), calc(100% - var(--toc-space) - var(--gutter)));
-    max-width: none;
-    margin-left: max(var(--toc-space), calc((100% - var(--content-width)) / 2 + var(--design-offset)));
-    margin-right: auto;
-    padding-inline: 0;
-  }
-  /* 히어로 옆엔 목차가 없으므로 디자인 위치(가운데에서 88px 오른쪽) 대신 화면 정가운데(사용자 지시 2026-10-04) */
-  .hero.container {
-    width: min(var(--content-width), calc(100% - 2 * var(--gutter)));
-    margin-inline: auto;
-  }
-}
 
 /* ---------- Page shell & TOC rail ----------
-   셸은 히어로 다음부터(과정 개요의 위 끝). 레일도 거기서 시작해 목차가 과정 개요와 함께 올라오다
-   화면 세로 가운데(Toc.css)에 붙고, 본문 끝에서 놓인다(사용자 지시 2026-10-04) */
+   셸은 히어로 다음부터(과정 개요의 위 끝). 레일은 셸 전체 높이의 보이지 않는 띠 — Toc.tsx가 이 띠가 화면에 들어오는지로
+   목차를 보이고 감춘다(과정 개요가 올라오면 나타나고, 히어로로 돌아가면 사라진다). 목차 자체는 화면에 고정(Toc.css) */
 .page-shell { position: relative; }
 .toc-rail {
   position: absolute;
-  top: 0; /* 셸 맨 위 = 과정 개요 블록 위 끝 — 목차가 과정 개요부터 함께한다(2026-10-04) */
+  top: 0;
   bottom: 0;
-  left: var(--toc-left);
-  width: var(--toc-width);
+  left: 0;
+  width: 1px;
   pointer-events: none;
 }
 .toc-rail > * { pointer-events: auto; }
@@ -189,15 +175,17 @@
 /* 히어로 → 첫 섹션 간격 = 다른 섹션 사이와 같은 --space-section(사용자 지시 2026-10-04). 히어로가 내용 높이만큼만
    차지하므로('자세히 보기'까지) 따로 덜어 낼 빈 곳이 없다 */
 
-/* 제목 위, 리드 아래 — 왼 → 오 → 아래로 시선이 꺾이던 두 단 배치보다 덜 피로하다(사용자 지시 2026-10-05) */
+/* 제목 왼쪽 4열, 리드 오른쪽 8열(--lead-width) — 둘은 세로 가운데로 맞춘다(사용자 지시 2026-10-12).
+   2026-10-05엔 제목 위 · 리드 아래였다. 목차가 왼쪽에서 빠져 본문이 1200 열을 다 쓰게 되면서 다시 나란히 */
 .section-header {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: var(--space-20);
+  display: grid;
+  grid-template-columns: var(--grid-template);
+  column-gap: var(--grid-gap);
+  row-gap: var(--space-20);
+  align-items: center;
 }
-/* 리드는 12열 중 8열(--lead-width) — 위아래 배치에서 1200 끝까지 퍼지지 않게(사용자 지시 2026-10-07) */
-.section-header > :not(:first-child) { max-width: var(--lead-width); }
+.section-header > :first-child { grid-column: span 4; }
+.section-header > :not(:first-child) { grid-column: span 8; }
 
 .group { margin-top: var(--space-group); scroll-margin-top: 48px; }
 .section-header + .group { margin-top: var(--space-after-header); }
@@ -239,9 +227,28 @@
 [data-reveal='pending'] { opacity: 0; transform: translateY(40px); }
 [data-reveal='in'] { opacity: 1; transform: none; }
 
+/* 섹션 제목: 통째로 떠오르지 않고, 줄마다 보이지 않는 틀(overflow: hidden) 안에서 아래에서 위로 올라온다
+   (사용자 지시 2026-10-12, AI in Design Report 2026의 '01 Tools'). 글자는 틀 바로 아래(110%)에서 출발해
+   900ms 동안 빠르게 올라와 길게 멈춘다. 여러 줄이면 줄마다 110ms씩 늦게. 리드는 그 뒤에 원래대로 떠오른다(90ms 지연).
+   틀 아래를 0.12em 넓혀 둬 받침 · 내림 획(ㅂ · g)이 잘리지 않는다 */
+.section-header__title[data-reveal] { opacity: 1; transform: none; transition: none; }
+.rise-line {
+  display: block;
+  overflow: hidden;
+  padding-bottom: 0.12em;
+  margin-bottom: -0.12em;
+}
+.rise-line__text {
+  display: block;
+  transition: transform 900ms var(--ease-reveal) calc(var(--reveal-delay, 0ms) + var(--line, 0) * 110ms);
+}
+.section-header__title[data-reveal='pending'] .rise-line__text { transform: translateY(110%); }
+
 /* ---------- Responsive ---------- */
+/* 태블릿 이하: 제목 위, 리드 아래로 쌓는다 */
 @media (max-width: 900px) {
-  .section-header { gap: var(--space-16); }
+  .section-header { row-gap: var(--space-16); }
+  .section-header > :nth-child(n) { grid-column: 1 / -1; } /* 위 두 규칙보다 뒤 · 같은 무게라 이긴다 */
 }
 /* ---------- 역량 · 태도 / 채용 연계 줄 ----------
    커리큘럼 수업 줄과 같은 모양(사용자 지시 2026-10-04): 선 없는 흰 면, 호버하면 회색 면 + 글이 오른쪽으로 12px
