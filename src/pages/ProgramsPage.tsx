@@ -8,6 +8,7 @@ import { ApplyButton } from '../components/ApplyButton/ApplyButton';
 import { HeroRipple, type RippleControl } from '../components/HeroRipple/HeroRipple';
 import { HeroLogo3D } from '../components/HeroLogo3D/HeroLogo3D';
 import { BackToTop, SiteHeader } from '../components/SiteHeader/SiteHeader';
+import { VersionLog } from '../components/VersionLog/VersionLog';
 import { courseProfiles } from '../data/courseProfiles';
 import { useScrollReveal } from '../hooks/useScrollReveal';
 import { scrollToTarget } from '../smoothScroll';
@@ -439,6 +440,8 @@ export function ProgramsPage() {
         <Text typography="Label" color="tertiary">
           평일 10:00 - 18:00 (점심시간 13:00 - 14:00) · © 2026 Phi Institute of Design · <a href="#system" className="link">Design System</a>
         </Text>
+        {/* 지난 버전 페이지로 — 맨 아래(사용자 지시 2026-10-14) */}
+        <VersionLog />
       </footer>
     </>
   );
