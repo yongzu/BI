@@ -3,7 +3,6 @@ import { Text } from '../components/Text/Text';
 import { Toc, type TocItem } from '../components/Toc/Toc';
 import { AnnualTimeline } from '../components/AnnualTimeline/AnnualTimeline';
 import { CourseExplorer } from '../components/CourseExplorer/CourseExplorer';
-import { PillarStrip, type StripItem } from '../components/PillarStrip/PillarStrip';
 import { BlurReveal } from '../components/BlurReveal/BlurReveal';
 import { ApplyButton } from '../components/ApplyButton/ApplyButton';
 import { HeroRipple, type RippleControl } from '../components/HeroRipple/HeroRipple';
@@ -41,7 +40,7 @@ const toc: TocItem[] = [
 
 /** Blocks that rise in on scroll */
 // 히어로는 첫 화면 순서(흐린 제목 → 맑아짐 → 소개 · 기간)를 따로 가지므로 떠오르는 등장에서 뺀다
-const revealTargets = ['.section-header > *', '.group-label', '.group__lead', '.course-explorer', '.pillar-strip__track', '.pillar-row', '.annual', '.device-card'].join(', ');
+const revealTargets = ['.section-header > *', '.group-label', '.group__lead', '.course-explorer', '.pillar-row', '.annual', '.device-card'].join(', ');
 
 /* ------------------------------------------------------------------ */
 
@@ -171,7 +170,7 @@ function RowList({ items, start = 0, group = items, open, onToggle }: { items: R
   );
 }
 
-const stripItems = (items: Pillar[]): StripItem[] => items.map((p) => ({ id: p.en.replace(/\s+/g, '-').toLowerCase(), title: p.ko, en: p.en, summary: p.summary, body: p.body }));
+const pillarRows = (items: Pillar[]): RowItem[] => items.map((p) => ({ id: p.en.replace(/\s+/g, '-').toLowerCase(), title: p.ko, sub: p.en, body: p.body }));
 
 /**
  * 수업을 관통하는 접근 — 배우는 자리(세션 안에서 · 스스로 돌아보기 · 세션 밖에서)마다 라벨 아래 박스 두 개.
@@ -388,18 +387,16 @@ export function ProgramsPage() {
         <HeroMore />
 
         {/* ---------- 역량과 태도 ---------- */}
-        <section id="pillars" className="section">
-          <div className="container">
-            <SectionHeader title="역량과 태도" lead="어떤 환경에서도 스스로 답을 찾을 수 있는 사고방식을 만들기 위해, Phi는 아래 역량과 태도를 중요시합니다." />
-          </div>
-          {/* 휠(2026-10-12 오전, 컴포넌트는 PillarWheel로 남겨 둠) → 가로 두 줄 상자(사용자 지시 2026-10-12):
-              마우스를 올리면 상자가 넓어지며 전체 설명, 누르면 고정.
-              상자 줄은 1200 열을 벗어나 최대 1440까지 넓게 쓴다(사용자 지시 2026-10-14) — 머리글만 가운데 열 */}
-          <div className="group bleed">
-            <PillarStrip
-              rows={[
-                { id: 'competency', title: '역량', en: 'Competency', items: stripItems(competencies) },
-                { id: 'attitude', title: '태도', en: 'Phi OS', items: stripItems(attitudes) },
+        <section id="pillars" className="section container">
+          <SectionHeader title="역량과 태도" lead="어떤 환경에서도 스스로 답을 찾을 수 있는 사고방식을 만들기 위해, Phi는 아래 역량과 태도를 중요시합니다." />
+          {/* 휠(v2) → 가로 두 줄 상자(v3, 컴포넌트는 PillarStrip으로 남겨 둠) → v1의 두 단 줄 목록으로 되돌림(v4, 사용자 지시 2026-10-14):
+              역량은 왼쪽, 태도는 오른쪽 — 한 줄을 누르면 양쪽 전체가 함께 여닫힌다 */}
+          <div className="group">
+            <RowColumns
+              numbering="restart"
+              columns={[
+                { id: 'pillars-competency', label: '역량 · Competency', items: pillarRows(competencies) },
+                { id: 'pillars-attitude', label: '태도 · Phi OS', items: pillarRows(attitudes) },
               ]}
             />
           </div>

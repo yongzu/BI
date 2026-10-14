@@ -14,15 +14,6 @@
   margin-inline: auto;
   padding-inline: var(--gutter);
 }
-/* 넓은 띠: 가운데 열을 벗어나 최대 --bleed-width(1440)까지 쓴다(역량과 태도 상자 줄, 사용자 지시 2026-10-14).
-   화면이 그보다 좁으면 가장자리는 상단바 · 목차와 같은 32px(좁은 화면에선 --gutter) */
-.bleed {
-  --bleed-pad: min(var(--gutter), var(--space-32));
-  width: 100%;
-  max-width: calc(var(--bleed-width) + 2 * var(--bleed-pad));
-  margin-inline: auto;
-  padding-inline: var(--bleed-pad);
-}
 
 /* ---------- Page shell & TOC rail ----------
    셸은 히어로 다음부터(과정 개요의 위 끝). 레일은 셸 전체 높이의 보이지 않는 띠 — Toc.tsx가 이 띠가 화면에 들어오는지로
@@ -197,8 +188,7 @@
 .section-header > :not(:first-child) { grid-column: span 8; }
 
 .group { margin-top: var(--space-group); scroll-margin-top: 48px; }
-.section-header + .group,
-.container:has(> .section-header:last-child) + .group { margin-top: var(--space-after-header); } /* 머리글만 가운데 열에 두고 그룹은 넓은 띠일 때 */
+.section-header + .group { margin-top: var(--space-after-header); }
 .group + .group { margin-top: var(--space-group-stack); }
 .group__lead { max-width: var(--lead-width); margin-top: var(--space-16); }
 
