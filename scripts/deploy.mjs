@@ -3,11 +3,19 @@
 // The branch is rebuilt from dist/ every time, so anything else published there would be
 // wiped. Folders listed in KEEP are copied over from the live gh-pages first — /gpt/ is the
 // GPT variant another tool deploys under https://yongzu.github.io/BI/gpt/ (2026-09-22).
+//
+// Past versions (public/versions.json entries with a path, e.g. v1/) are frozen builds served
+// under /BI/v1/ … (2026-10-14). They are kept from the live site like /gpt/; one that is not
+// there yet is built once from its git tag (v1, v2, …) with base /BI/<id>/.
+//   npm run deploy -- --rebuild v1   rebuilds v1 from its tag instead of keeping the live copy
 import { execSync } from 'node:child_process';
-import { mkdirSync, rmSync, writeFileSync } from 'node:fs';
-import { dirname, join } from 'node:path';
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, unlinkSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { dirname, join, resolve } from 'node:path';
 
-const KEEP = ['gpt'];
+const snapshots = JSON.parse(readFileSync('public/versions.json', 'utf8')).filter((v) => v.path).map((v) => v.id);
+const rebuild = process.argv.includes('--rebuild') ? process.argv.slice(process.argv.indexOf('--rebuild') + 1) : [];
+const KEEP = ['gpt', ...snapshots.filter((id) => !rebuild.includes(id))];
 
 const git = (args, cwd = 'dist') => execSync(`git ${args}`, { cwd, stdio: 'inherit' });
 const read = (args) => execSync(`git ${args}`).toString().trim();
@@ -26,6 +34,23 @@ for (const dir of KEEP) {
     writeFileSync(out, execSync(`git show "origin/gh-pages:${file}"`, { maxBuffer: 64 * 1024 * 1024 }));
   }
   if (files.length) console.log(`kept ${dir}/ (${files.length} files) from the live site`);
+}
+
+// build the past versions that are not on the live site (or asked to be rebuilt) from their tags
+for (const id of snapshots) {
+  if (existsSync(join('dist', id))) continue;
+  const tree = mkdtempSync(join(tmpdir(), `bi-${id}-`));
+  console.log(`building ${id}/ from tag ${id}`);
+  execSync(`git worktree add -q --detach "${tree}" refs/tags/${id}`, { stdio: 'inherit' });
+  const modules = join(tree, 'node_modules');
+  try {
+    symlinkSync(resolve('node_modules'), modules, 'junction');
+    execSync(`npx vite build --base /BI/${id}/ --outDir "${resolve('dist', id)}" --emptyOutDir --logLevel warn`, { cwd: tree, stdio: 'inherit' });
+  } finally {
+    // drop the link first so removing the worktree can never reach into the real node_modules
+    if (existsSync(modules)) unlinkSync(modules);
+    execSync(`git worktree remove --force "${tree}"`, { stdio: 'inherit' });
+  }
 }
 
 rmSync('dist/.git', { recursive: true, force: true });
