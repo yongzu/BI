@@ -87,10 +87,11 @@ const deviceOutcomes: Record<string, string> = {
 };
 
 /**
- * 줄 목록 — 역량과 태도가 쓴다(사용자 지시 2026-09-30). 줄에는 번호 · 제목 · 보조 문구만 두고, 누르면 설명이
- * 0fr → 1fr로 펼쳐진다. 한 줄을 누르면 묶음 전체(양쪽 단)가 함께 여닫힌다(사용자 지시 2026-10-05) — 열림 상태는
- * RowColumns가 갖는다. 커리큘럼 수업 줄처럼 선 없는 흰 면 — 호버하면 회색 면 + 글이 오른쪽으로 살짝 들어가
- * 누를 수 있음을 알린다(사용자 지시 2026-10-04). 호버만으로는 펼치지 않는다.
+ * 줄 목록 — 역량과 태도가 쓴다(사용자 지시 2026-09-30). 줄에는 번호 · 제목 · 보조 문구만 두고, 설명은
+ * 0fr → 1fr로 펼쳐진다. 줄마다 따로 여닫는다(v5, 사용자 지시 2026-10-14 — v4까진 한 줄을 누르면 양쪽 단 전체가 함께):
+ * 마우스를 올린 줄이 펼쳐지고, 누르면 그 줄이 펼친 채 고정된다(다시 누르면 풀림, 여러 줄을 고정할 수 있다).
+ * 열림 · 고정 상태는 RowColumns가 갖는다. 커리큘럼 수업 줄처럼 선 없는 흰 면 — 호버하면 회색 면 + 글이 오른쪽으로
+ * 살짝 들어가 누를 수 있음을 알린다(사용자 지시 2026-10-04). 고정된 줄은 회색 면이 남는다.
  * `onToggle`이 없으면 드롭다운 없이 설명까지 늘 보이는 정적 목록(채용 연계, 사용자 지시 2026-10-05).
  * `start`는 번호를 이어 매기기 위한 값 — 오른쪽 목록이 왼쪽 목록 다음 번호부터 센다.
  */
@@ -127,13 +128,21 @@ function keepInPlace(target: HTMLElement, ms = 600) {
 const renderBody = (body: ReactNode) => (typeof body === 'string' ? <Text typography="Body" color="secondary">{body}</Text> : body);
 
 /**
- * `group`: 같은 묶음의 모든 줄(양쪽 단 포함). 펼친 칸에 묶음의 설명을 모두 겹쳐 두어 높이를 가장 긴 설명에 맞춘다
+ * `group`: 정적 목록(채용 연계)에서 같은 묶음의 모든 줄(양쪽 단 포함). 펼친 칸에 묶음의 설명을 모두 겹쳐 두어 높이를
+ * 가장 긴 설명에 맞춘다 — 늘 함께 펼쳐 있으므로 양쪽 단의 줄이 어긋나지 않게. 줄마다 여닫는 목록은 제 설명만 둔다
  */
-function RowList({ items, start = 0, group = items, open, onToggle }: { items: RowItem[]; start?: number; group?: RowItem[]; open: boolean; onToggle?: (row: HTMLElement | null) => void }) {
+type RowState = {
+  isOpen: (id: string) => boolean;
+  isPinned?: (id: string) => boolean;
+  onToggle?: (id: string) => void;
+  onHover?: (id: string | null) => void;
+};
+function RowList({ items, start = 0, group, isOpen, isPinned, onToggle, onHover }: { items: RowItem[]; start?: number; group?: RowItem[] } & RowState) {
   return (
     <div className="pillar-list" data-static={!onToggle}>
       {items.map((item, i) => {
         const panelId = `row-${item.id}`;
+        const open = isOpen(item.id);
         const lead = (
           <span className="pillar-row__lead">
             <Text as="span" typography="Label" color="tertiary">{String(start + i + 1).padStart(2, '0')}</Text>
@@ -144,9 +153,17 @@ function RowList({ items, start = 0, group = items, open, onToggle }: { items: R
           </span>
         );
         return (
-          <article key={item.id} className="pillar-row" data-pinned={open}>
+          <article
+            key={item.id}
+            className="pillar-row"
+            data-open={open}
+            data-pinned={isPinned?.(item.id) ?? false}
+            // 호버로 펼치기는 마우스만 — 터치 · 키보드는 누름으로
+            onPointerEnter={(e) => { if (e.pointerType === 'mouse') onHover?.(item.id); }}
+            onPointerLeave={(e) => { if (e.pointerType === 'mouse') onHover?.(null); }}
+          >
             {onToggle ? (
-              <button type="button" className="pillar-row__hit" aria-expanded={open} aria-controls={panelId} onClick={(e) => onToggle(e.currentTarget.closest<HTMLElement>('.pillar-row'))}>
+              <button type="button" className="pillar-row__hit" aria-expanded={open} aria-pressed={isPinned?.(item.id)} aria-controls={panelId} onClick={() => onToggle(item.id)}>
                 {lead}
               </button>
             ) : (
@@ -155,7 +172,7 @@ function RowList({ items, start = 0, group = items, open, onToggle }: { items: R
             <div id={panelId} className="pillar-row__panel" role="region" aria-label={item.title}>
               <div className="pillar-row__clip">
                 <div className="pillar-row__body">
-                  {group.map((o) => (
+                  {(group ?? [item]).map((o) => (
                     <div key={o.id} className="pillar-row__text" data-ghost={o.id !== item.id} aria-hidden={o.id !== item.id}>
                       {renderBody(o.body)}
                     </div>
@@ -253,15 +270,22 @@ const careerRows: RowItem[] = [
  * 번호는 오른쪽이 왼쪽에 이어 세고(continue), 서로 다른 묶음(역량 · 태도)은 각자 01부터(restart).
  */
 function RowColumns({ columns, numbering = 'continue', collapsible = true }: { columns: { id?: string; label?: string; items: RowItem[] }[]; numbering?: 'continue' | 'restart'; collapsible?: boolean }) {
-  const group = columns.flatMap((col) => col.items); // 양쪽 단의 줄 — 펼친 높이를 같게
-  // 한 줄을 누르면 양쪽 단 전체가 함께 여닫힌다(사용자 지시 2026-10-05). 접지 않는 목록은 늘 펼침
-  const [open, setOpen] = useState(!collapsible);
-  const toggle = collapsible
-    ? (row: HTMLElement | null) => {
-      if (row) keepInPlace(row);
-      setOpen((v) => !v);
+  // 줄마다 따로: 마우스를 올린 줄 + 고정한 줄들이 펼쳐진다(v5, 사용자 지시 2026-10-14). 접지 않는 목록은 늘 펼침
+  const [pinned, setPinned] = useState<ReadonlySet<string>>(() => new Set());
+  const [hovered, setHovered] = useState<string | null>(null);
+  const state: RowState = collapsible
+    ? {
+      isOpen: (id) => id === hovered || pinned.has(id),
+      isPinned: (id) => pinned.has(id),
+      onToggle: (id) => setPinned((prev) => {
+        const next = new Set(prev);
+        if (!next.delete(id)) next.add(id);
+        return next;
+      }),
+      onHover: setHovered,
     }
-    : undefined;
+    : { isOpen: () => true };
+  const group = collapsible ? undefined : columns.flatMap((col) => col.items); // 정적 목록만 양쪽 단의 펼친 높이를 같게
   return (
     <div className="pillar-columns">
       {columns.map((col, c) => {
@@ -269,7 +293,7 @@ function RowColumns({ columns, numbering = 'continue', collapsible = true }: { c
         return (
           <div key={col.id ?? c} id={col.id} className="pillar-column">
             {col.label && <GroupLabel>{col.label}</GroupLabel>}
-            <RowList items={col.items} start={from} group={group} open={open} onToggle={toggle} />
+            <RowList items={col.items} start={from} group={group} {...state} />
           </div>
         );
       })}

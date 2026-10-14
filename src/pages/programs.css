@@ -252,7 +252,7 @@
 }
 /* ---------- 역량 · 태도 / 채용 연계 줄 ----------
    커리큘럼 수업 줄과 같은 모양(사용자 지시 2026-10-04): 선 없는 흰 면, 호버하면 회색 면 + 글이 오른쪽으로 12px
-   (살짝 튕기는 곡선) + 아이콘이 진해져 누를 수 있음을 알린다. 누르면 설명이 펼쳐진다(호버만으로는 안 펼침).
+   (살짝 튕기는 곡선) + 아이콘이 진해져 누를 수 있음을 알린다. 역량과 태도는 줄마다 마우스를 올리면 펼치고 누르면 고정(v5).
    회색 면이 글자 바깥으로 깔리도록 목록을 양옆으로 내민다 — 글자는 머리글과 같은 선에 선다 */
 .pillar-list {
   --row-pad-x: 20px;
@@ -288,7 +288,7 @@
   .pillar-row__hit:hover .pillar-row__lead { transform: translateX(12px); }
 }
 /* 펼침: 높이 0fr → 1fr, 글자는 살짝 늦게 떠오른다. 설명 안에 문단이 여럿이면(채용 연계의 각주) 사이를 띄운다.
-   한 묶음(역량 + 태도, 채용 연계 두 줄)의 설명을 모두 한 칸에 겹쳐 두고 제 설명만 보인다 — 펼친 높이가 늘
+   늘 펼친 정적 목록(채용 연계 두 줄)은 묶음의 설명을 모두 한 칸에 겹쳐 두고 제 설명만 보인다 — 펼친 높이가 늘
    가장 긴 설명에 맞춰져 양쪽 단의 줄이 어긋나지 않는다(사용자 지시 2026-10-04) */
 .pillar-row__panel { display: grid; grid-template-rows: 0fr; transition: grid-template-rows 480ms var(--ease-reveal); }
 .pillar-row__clip { min-height: 0; overflow: hidden; }
@@ -300,8 +300,10 @@
   transform: translateY(-6px);
   transition: opacity 240ms var(--ease), transform 480ms var(--ease-reveal);
 }
-.pillar-row[data-pinned='true'] .pillar-row__panel { grid-template-rows: 1fr; }
-.pillar-row[data-pinned='true'] .pillar-row__body { opacity: 1; transform: none; transition-delay: 80ms; }
+.pillar-row[data-open='true'] .pillar-row__panel { grid-template-rows: 1fr; }
+.pillar-row[data-open='true'] .pillar-row__body { opacity: 1; transform: none; transition-delay: 80ms; }
+/* 고정한 줄(누름)은 회색 면이 남아 마우스만 올린 줄과 구분된다(v5, 사용자 지시 2026-10-14) */
+.pillar-row[data-pinned='true'] .pillar-row__hit { background: var(--color-bg-hover); }
 /* 겹쳐 둔 설명: 제 것만 보이고 남의 것은 자리만 */
 .pillar-row__text { grid-area: 1 / 1; display: flex; flex-direction: column; gap: var(--space-8); }
 .pillar-row__text[data-ghost='true'] { visibility: hidden; }
