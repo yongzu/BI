@@ -12,6 +12,14 @@ npm run build
 npm run deploy   # dist → gh-pages 브랜치 (GitHub Pages)
 ```
 
+## 버전 기록
+
+푸터 맨 아래에서 지난 버전 페이지로 건너갈 수 있습니다. 목록은 [public/versions.json](public/versions.json) 하나입니다.
+
+- 최신 버전은 `/BI/`에, 지난 버전은 그때 코드로 고정된 빌드로 `/BI/v1/` · `/BI/v2/`에 둡니다. 각 버전은 같은 이름의 git 태그(`v1` · `v2`)에서 빌드합니다.
+- `npm run deploy`는 지난 버전 폴더를 라이브 사이트에서 그대로 옮기고, 없는 버전만 태그에서 빌드합니다. 다시 빌드하려면 `npm run deploy -- --rebuild v1`을 실행합니다.
+- 새 버전을 올릴 때는 세 단계를 거칩니다. 먼저 지금 버전의 커밋에 태그를 답니다(예: `git tag -a v3`). 다음으로 versions.json에서 그 버전의 `path`를 `"v3/"`로 바꾸고, 새 버전을 `path: ""`로 추가합니다. 마지막으로 `npm run deploy`를 실행합니다.
+
 ## Figma에서 가져온 규칙
 
 | 역할 | 값 |

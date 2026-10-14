@@ -8,6 +8,7 @@
 // under /BI/v1/ … (2026-10-14). They are kept from the live site like /gpt/; one that is not
 // there yet is built once from its git tag (v1, v2, …) with base /BI/<id>/.
 //   npm run deploy -- --rebuild v1   rebuilds v1 from its tag instead of keeping the live copy
+//   npm run deploy -- --dry-run      builds dist/ as it would be published, without pushing
 import { execSync } from 'node:child_process';
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, unlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -52,6 +53,9 @@ for (const id of snapshots) {
     execSync(`git worktree remove --force "${tree}"`, { stdio: 'inherit' });
   }
 }
+
+// npm run deploy -- --dry-run   everything up to here (dist/ as it would be published), no push
+if (process.argv.includes('--dry-run')) process.exit(0);
 
 rmSync('dist/.git', { recursive: true, force: true });
 writeFileSync('dist/.nojekyll', '');
