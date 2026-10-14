@@ -388,11 +388,14 @@ export function ProgramsPage() {
         <HeroMore />
 
         {/* ---------- 역량과 태도 ---------- */}
-        <section id="pillars" className="section container">
-          <SectionHeader title="역량과 태도" lead="어떤 환경에서도 스스로 답을 찾을 수 있는 사고방식을 만들기 위해, Phi는 아래 역량과 태도를 중요시합니다." />
+        <section id="pillars" className="section">
+          <div className="container">
+            <SectionHeader title="역량과 태도" lead="어떤 환경에서도 스스로 답을 찾을 수 있는 사고방식을 만들기 위해, Phi는 아래 역량과 태도를 중요시합니다." />
+          </div>
           {/* 휠(2026-10-12 오전, 컴포넌트는 PillarWheel로 남겨 둠) → 가로 두 줄 상자(사용자 지시 2026-10-12):
-              마우스를 올리면 상자가 넓어지며 전체 설명, 누르면 고정 */}
-          <div className="group">
+              마우스를 올리면 상자가 넓어지며 전체 설명, 누르면 고정.
+              상자 줄은 1200 열을 벗어나 최대 1440까지 넓게 쓴다(사용자 지시 2026-10-14) — 머리글만 가운데 열 */}
+          <div className="group bleed">
             <PillarStrip
               rows={[
                 { id: 'competency', title: '역량', en: 'Competency', items: stripItems(competencies) },

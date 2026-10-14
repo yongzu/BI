@@ -4,10 +4,12 @@
    움직임: 펼치는 상자의 flex-grow 1 → --grow(2.4), 나머지는 그만큼 좁아진다. 같은 640ms · --ease-reveal 곡선으로
    폭이 먼저 열리고, 설명은 높이 0fr → 1fr로 120ms 늦게 따라 내려오며 떠오른다 — 넓어짐 → 길어짐 순서.
    접힐 땐 설명이 먼저 빠르게(160ms) 사라지고 폭이 닫힌다.
-   면: 테두리 없는 회색 면(--color-bg-subtle). 펼친 상자 아래엔 잉크 2px 띠 — 지금 보는 상자(레퍼런스의 주황 띠).
+   면: 테두리 없는 회색 면(--color-bg-subtle). 펼친 상자 아래 잉크 2px 띠는 없앴다(사용자 지시 2026-10-14).
+   폭: 줄은 본문 열보다 넓은 띠(최대 1440, .bleed · programs.css)를 쓴다. 상자 글은 '가장 좁아진 상자' 폭으로 고정해,
+   다른 상자가 펼쳐져 이 상자가 좁아져도 제목 · 설명의 줄바꿈이 바뀌지 않는다(사용자 지시 2026-10-14).
    ========================================================================== */
 
-.pillar-strip { display: flex; flex-direction: column; gap: var(--space-56); }
+.pillar-strip { container: pillar-strip / inline-size; display: flex; flex-direction: column; gap: var(--space-56); }
 .pillar-strip__row { display: flex; flex-direction: column; gap: var(--space-24); }
 
 .pillar-strip__track {
@@ -34,22 +36,6 @@
 }
 .pillar-strip__card[data-open='true'] { flex-grow: var(--grow); }
 
-/* 지금 펼친 상자 아래 띠 — 왼쪽에서 오른쪽으로 그어진다 */
-.pillar-strip__card::after {
-  content: '';
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: 2px;
-  border-radius: 0 0 16px 16px;
-  background: var(--color-text-primary);
-  transform: scaleX(0);
-  transform-origin: left;
-  transition: transform 640ms var(--ease-reveal);
-}
-.pillar-strip__card[data-open='true']::after { transform: none; }
-
 .pillar-strip__hit {
   display: flex;
   flex-direction: column;
@@ -63,9 +49,12 @@
 }
 .pillar-strip__hit:focus-visible { outline: 2px solid var(--color-focus-ring); outline-offset: 2px; border-radius: 16px; }
 
+/* 글 폭 = 좁아진 상자(1몫)의 안쪽 폭 — 상자가 넓든 좁든 같은 자리에서 줄을 바꾼다 */
+.pillar-strip__hit > * { width: calc(var(--unit) - 2 * var(--pad)); }
+
 .pillar-strip__num { font-variant-numeric: tabular-nums; }
 .pillar-strip__titles { display: flex; flex-direction: column; gap: var(--space-4); }
-/* 닫힌 상자는 좁다(1200 열에서 약 170px) — 제목 · 영어 제목은 단어 단위로 줄을 바꾼다 */
+/* 제목 · 영어 제목은 단어 단위로 줄을 바꾼다 */
 .pillar-strip__title { word-break: keep-all; }
 /* 한 줄 설명은 밑에 붙인다 — 상자마다 제목 길이가 달라도 설명 줄이 같은 높이에서 시작 */
 .pillar-strip__summary {
@@ -105,18 +94,42 @@
   .pillar-strip__card:hover { background: color-mix(in srgb, var(--color-bg-subtle), var(--palette-ink) 3%); }
 }
 
-/* 태블릿 이하: 다섯 상자가 한 줄에 들어가지 않아 세로 목록으로. 폭 변화 없이 누른 상자만 아래로 펼친다 */
-@media (max-width: 900px) {
-  .pillar-strip__track { flex-direction: column; align-items: stretch; }
-  .pillar-strip__card,
-  .pillar-strip__card[data-open='true'] { flex: none; }
-  .pillar-strip__hit { min-height: 0; }
-  .pillar-strip__body { width: auto; box-sizing: border-box; }
+/* ---------- 줄 목록: 줄 폭 1200 미만(data-layout, PillarStrip.tsx) ----------
+   상자를 한 줄씩 쌓는다. 줄 안은 번호 · 제목(+영어) · 한 줄 설명을 가로로 — 닫힌 줄도 글이 넉넉한 폭을 얻는다.
+   누른 줄만 아래로 펼치고, 전체 설명은 제목 열에 맞춰 시작한다. 폭은 바뀌지 않는다 */
+.pillar-strip[data-layout='list'] .pillar-strip__track { --num: 48px; flex-direction: column; align-items: stretch; gap: var(--space-8); }
+.pillar-strip[data-layout='list'] .pillar-strip__card,
+.pillar-strip[data-layout='list'] .pillar-strip__card[data-open='true'] { flex: none; }
+.pillar-strip[data-layout='list'] .pillar-strip__hit {
+  display: grid;
+  grid-template-columns: var(--num) minmax(0, 2fr) minmax(0, 3fr);
+  align-items: baseline;
+  column-gap: var(--space-24);
+  min-height: 0;
+}
+.pillar-strip[data-layout='list'] .pillar-strip__hit > * { width: auto; }
+.pillar-strip[data-layout='list'] .pillar-strip__summary { margin-top: 0; }
+.pillar-strip[data-layout='list'] .pillar-strip__body {
+  width: auto;
+  max-width: var(--lead-width);
+  box-sizing: border-box;
+  padding-left: calc(var(--pad) + var(--num) + var(--space-24));
+}
+
+/* 더 좁으면(휴대폰) 한 줄 설명을 제목 아래로 */
+@container pillar-strip (max-width: 639px) {
+  .pillar-strip[data-layout='list'] .pillar-strip__track { --pad: var(--space-20); --num: 32px; }
+  .pillar-strip[data-layout='list'] .pillar-strip__hit {
+    grid-template-columns: var(--num) minmax(0, 1fr);
+    column-gap: var(--space-12);
+    row-gap: var(--space-8);
+  }
+  .pillar-strip[data-layout='list'] .pillar-strip__summary { grid-column: 2; }
+  .pillar-strip[data-layout='list'] .pillar-strip__body { padding-left: calc(var(--pad) + var(--num) + var(--space-12)); }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .pillar-strip__card,
-  .pillar-strip__card::after,
   .pillar-strip__panel,
   .pillar-strip__body,
   .pillar-strip__card[data-open='true'] .pillar-strip__panel,
