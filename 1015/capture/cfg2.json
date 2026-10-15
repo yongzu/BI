@@ -1,0 +1,42 @@
+[
+  { "url": "https://smaller-words-179060.framer.app/26-data%C2%B7ml", "first": 7000, "shots": [
+    { "id": "aiml-01", "y": 0, "wait": 2500 },
+    { "id": "aiml-02", "y": 820, "wait": 4500 },
+    { "id": "aiml-03", "y": 1330, "wait": 4500 },
+    { "id": "aiml-04", "y": 1760, "wait": 4500 },
+    { "id": "aiml-05", "y": 2380, "wait": 4500 },
+    { "id": "aiml-06", "y": 3520, "wait": 4500 },
+    { "id": "aiml-07", "y": 4960, "wait": 6000 },
+    { "id": "aiml-08", "y": 6230, "wait": 6000 },
+    { "id": "aiml-09", "y": 7530, "wait": 5000 },
+    { "id": "aiml-10", "y": 8230, "wait": 5000 },
+    { "id": "aiml-11", "y": 9300, "wait": 5000 }
+  ]},
+  { "url": "https://tossplace.com/recruit", "first": 7000, "shots": [
+    { "id": "place-01", "y": 0, "wait": 2500 },
+    { "id": "place-02", "y": 1000, "wait": 4500 },
+    { "id": "place-03", "y": 1500, "wait": 4500 },
+    { "id": "place-04", "y": 2620, "wait": 4500 },
+    { "id": "place-05", "y": 3050, "wait": 4500 },
+    { "id": "place-06", "y": 3500, "wait": 4500 },
+    { "id": "place-07", "y": 4538, "wait": 4500 },
+    { "id": "place-08", "y": 5600, "wait": 4500 },
+    { "id": "place-09", "y": 5860, "wait": 5000 },
+    { "id": "place-10", "y": 6500, "wait": 5000 },
+    { "id": "place-11", "y": 7330, "wait": 5000 },
+    { "id": "place-12", "y": 8080, "wait": 5000 },
+    { "id": "place-13", "y": 9100, "wait": 5000 }
+  ]},
+  { "url": "https://toss.im/company", "first": 6000, "shots": [
+    { "id": "company-01", "y": 0, "wait": 2500 },
+    { "id": "company-02", "y": 560, "wait": 4500 },
+    { "id": "company-03", "y": 1560, "wait": 4500 },
+    { "id": "company-04", "y": 2600, "wait": 4500 },
+    { "id": "company-05", "y": 3300, "wait": 4500 },
+    { "id": "company-06", "y": 4300, "wait": 4500 },
+    { "id": "company-07", "y": 5950, "wait": 4500 },
+    { "id": "company-08", "y": 6800, "wait": 4500 },
+    { "id": "company-09", "y": 8000, "wait": 4500 },
+    { "id": "company-10", "y": 9000, "wait": 4500 }
+  ]}
+]

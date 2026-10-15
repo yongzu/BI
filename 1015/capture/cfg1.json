@@ -1,0 +1,14 @@
+[
+  { "url": "https://courteous-cues-930542.framer.app/", "first": 7000, "shots": [
+    { "id": "bank-01", "y": 0, "wait": 3000 },
+    { "id": "bank-02", "y": 800, "wait": 4500 },
+    { "id": "bank-03", "y": 1450, "wait": 4500 },
+    { "id": "bank-04", "y": 2620, "wait": 4500 },
+    { "id": "bank-05", "y": 3780, "wait": 5000 },
+    { "id": "bank-06", "y": 4300, "wait": 5500 },
+    { "id": "bank-07", "y": 5000, "wait": 5500 },
+    { "id": "bank-08", "y": 5640, "wait": 5000 },
+    { "id": "bank-09", "y": 6300, "wait": 5000 },
+    { "id": "bank-10", "y": 7400, "wait": 5000 }
+  ]}
+]
