@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Text } from '../Text/Text';
 import type { Course, CourseType } from '../../data/programs';
 import type { CourseProfile } from '../../data/courseProfiles';
+import { keepInPlace } from '../../smoothScroll';
 import './CourseExplorer.css';
 
 /**
@@ -10,14 +11,15 @@ import './CourseExplorer.css';
  * - 타입마다 머리글: 왼쪽 이름 · 진행 방식 · 수업 수, 오른쪽 타입 설명.
  * - 수업 한 줄: 영문 이름(크게) + 전문가 캡슐(이름 오른쪽) / 한글 이름(작게, 아래) / 기르는 역량 태그(오른쪽).
  *   호버하면 회색 면이 깔려 누를 수 있는 줄임을 알린다. 누르면 아래로 상세가 펼쳐진다.
- * - 여러 줄을 함께 펼칠 수 있다. 섹션이 처음 화면에 들어오면 맨 위 수업이 스스로 펼쳐진다
+ * - 펼치는 수업은 하나 — 다른 수업을 누르면 펼쳐 있던 수업이 접힌다(사용자 지시 2026-10-14). 위에 있던 수업이 접혀도
+ *   누른 줄은 화면의 같은 자리에 머문다(keepInPlace). 섹션이 처음 화면에 들어오면 맨 위 수업이 스스로 펼쳐진다
  *   (그 전에 사용자가 먼저 눌렀다면 건드리지 않는다).
  */
 type Props = { types: CourseType[]; profiles: Record<string, CourseProfile> };
 
 export function CourseExplorer({ types, profiles }: Props) {
   const [filter, setFilter] = useState<'all' | CourseType['id']>('all');
-  const [open, setOpen] = useState<Set<string>>(() => new Set());
+  const [open, setOpen] = useState<string | null>(null);
   const touched = useRef(false);
   const rootRef = useRef<HTMLDivElement>(null);
 
@@ -32,7 +34,7 @@ export function CourseExplorer({ types, profiles }: Props) {
       ([entry]) => {
         if (!entry.isIntersecting) return;
         io.disconnect();
-        if (!touched.current) setOpen(new Set([first]));
+        if (!touched.current) setOpen(first);
       },
       { rootMargin: '0px 0px -25% 0px' },
     );
@@ -40,14 +42,10 @@ export function CourseExplorer({ types, profiles }: Props) {
     return () => io.disconnect();
   }, [types]);
 
-  const toggle = (slug: string) => {
+  const toggle = (slug: string, row: HTMLElement | null) => {
     touched.current = true;
-    setOpen((prev) => {
-      const next = new Set(prev);
-      if (next.has(slug)) next.delete(slug);
-      else next.add(slug);
-      return next;
-    });
+    if (row) keepInPlace(row, 700); // 접힘(520ms + 늦춤)이 끝날 때까지
+    setOpen((prev) => (prev === slug ? null : slug));
   };
 
   return (
@@ -85,8 +83,8 @@ export function CourseExplorer({ types, profiles }: Props) {
                 course={course}
                 type={type}
                 profile={profiles[course.slug]}
-                open={open.has(course.slug)}
-                onToggle={() => toggle(course.slug)}
+                open={open === course.slug}
+                onToggle={(row) => toggle(course.slug, row)}
               />
             ))}
           </ul>
@@ -96,13 +94,13 @@ export function CourseExplorer({ types, profiles }: Props) {
   );
 }
 
-type RowProps = { course: Course; type: CourseType; profile: CourseProfile; open: boolean; onToggle: () => void };
+type RowProps = { course: Course; type: CourseType; profile: CourseProfile; open: boolean; onToggle: (row: HTMLElement | null) => void };
 
 function CourseRow({ course, type, profile, open, onToggle }: RowProps) {
   const panelId = `course-detail-${course.slug}`;
   return (
     <li className="course-row" data-open={open}>
-      <button type="button" className="course-row__hit" aria-expanded={open} aria-controls={panelId} onClick={onToggle}>
+      <button type="button" className="course-row__hit" aria-expanded={open} aria-controls={panelId} onClick={(e) => onToggle(e.currentTarget.closest<HTMLElement>('.course-row'))}>
         <span className="course-row__text">
           <span className="course-row__title">
             <span className="course-row__name">{course.en}</span>

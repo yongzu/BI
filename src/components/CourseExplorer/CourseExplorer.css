@@ -35,8 +35,9 @@
 .course-rows { margin: var(--space-24) calc(-1 * var(--ce-row-pad-x)) 0; list-style: none; }
 .course-row + .course-row { margin-top: var(--space-4); }
 /* 펼친 수업은 제목 줄과 상세가 한 회색 박스 — 어느 수업의 상세인지 바로 보인다(사용자 지시 2026-10-05) */
-.course-row { border-radius: 20px; transition: background var(--duration) var(--ease); }
-.course-row[data-open='true'] { background: var(--color-bg-subtle); }
+/* 접을 땐 박스가 다 접힌 뒤에 회색 면이 빠진다 — 면이 먼저 사라지면 상세가 허공에서 줄어드는 것처럼 보였다(사용자 지시 2026-10-14) */
+.course-row { border-radius: 20px; transition: background 240ms var(--ease) 320ms; }
+.course-row[data-open='true'] { background: var(--color-bg-subtle); transition: background var(--duration) var(--ease); }
 /* 펼친 박스는 안쪽 여백을 넓혀(위 16 → 28, 양옆 +12) 박스 안의 제목으로 읽히게 한다 — 닫힌 줄은 그대로(사용자 지시 2026-10-05).
    양옆 +12는 호버 때 글이 들어가는 거리와 같아, 호버 → 클릭으로 펼쳐도 글 자리가 그대로다 */
 .course-row { --ce-open-pad: calc(var(--ce-row-pad-x) + 12px); }
@@ -119,7 +120,9 @@
 .course-row[data-open='true'] .course-row__chevron { border-color: var(--color-text-primary); }
 .course-row[data-open='true'] .course-row__chevron { transform: translateY(2px) rotate(225deg); }
 
-/* 펼침: 높이 0fr → 1fr, 내용은 블러에서 떠오른다(Dropdown과 같은 움직임) */
+/* 펼침: 높이 0fr → 1fr, 내용은 살짝 늦게 떠오른다. 블러는 없앴다(사용자 지시 2026-10-14).
+   접힘도 같은 높이 1fr → 0fr로 — 내용은 보이는 채 아래부터 가려지며 접히고, 끝무렵에야 흐려진다.
+   예전엔 내용이 접히기 전에 먼저 빠르게(240ms) 사라져 그냥 없어지는 것처럼 보였다(사용자 제보 2026-10-14) */
 .course-row__panel {
   display: grid;
   grid-template-rows: 0fr;
@@ -131,15 +134,13 @@
   min-height: 0;
   overflow: hidden;
   opacity: 0;
-  filter: blur(10px);
   transform: translateY(-8px);
-  transition: opacity 240ms var(--ce-ease), filter 240ms var(--ce-ease), transform 400ms var(--ce-ease);
+  transition: opacity 200ms var(--ease) 320ms, transform 520ms var(--ce-ease);
 }
 .course-row[data-open='true'] .course-row__inner {
   opacity: 1;
-  filter: blur(0);
   transform: none;
-  transition: opacity 360ms var(--ce-ease) 120ms, filter 560ms var(--ce-ease) 120ms, transform 520ms var(--ce-ease) 120ms;
+  transition: opacity 360ms var(--ce-ease) 120ms, transform 520ms var(--ce-ease) 120ms;
 }
 
 /* ---------- 상세: 수업 내용 700px | 전문가 · 코스 정보는 나머지(사용자 지시 2026-10-03) ---------- */
@@ -196,6 +197,7 @@
 .course-detail__facts dd { font-size: var(--typo-meta-size); line-height: 1.5; color: var(--color-text-primary); }
 
 @media (prefers-reduced-motion: reduce) {
+  .course-row,
   .course-row__panel,
   .course-row__inner,
   .course-row__chevron,
