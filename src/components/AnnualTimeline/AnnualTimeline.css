@@ -104,7 +104,7 @@
 
 /* ---------- 탭(v10): 섹션 위 네 칸 같은 폭 — 사용자 시안 이미지 ----------
    전체 폭 가는 회색 선 위에 고른 칸만 굵은 잉크 선(칸 사이는 띄움), 아래 이름(굵게) · 짧은 기간. 고르지 않은 칸은 흐리게 */
-.history__tabs { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); margin-bottom: var(--space-48); border-top: 1px solid var(--color-border); }
+.history__tabs { position: relative; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); margin-bottom: var(--space-48); border-top: 1px solid var(--color-border); }
 .history__tab {
   position: relative;
   display: flex;
@@ -115,18 +115,18 @@
   text-align: left;
   cursor: var(--cursor-pointer);
 }
-.history__tab-line {
+/* 고른 칸을 가리키는 막대 하나 — 고른 칸 자리로 미끄러져 간다(자리 · 폭은 AnnualTimeline.tsx가 잰다) */
+.history__indicator {
   position: absolute;
+  z-index: 1;
   top: -2px;
   left: 0;
-  right: var(--space-28);
+  width: 0;
   height: 3px;
   background: var(--color-text-primary);
-  transform: scaleX(0);
-  transform-origin: left;
-  transition: transform 520ms var(--h-ease);
+  pointer-events: none;
+  transition: transform 560ms var(--h-ease), width 560ms var(--h-ease);
 }
-.history__tab[aria-selected='true'] .history__tab-line { transform: none; }
 .history__tab-name { font-size: var(--typo-lead-size); line-height: 1.3; font-weight: var(--font-weight-bold); letter-spacing: var(--tracking-body); color: var(--color-text-tertiary); opacity: 0.6; transition: color var(--duration) var(--ease), opacity var(--duration) var(--ease); }
 .history__tab-period { font-size: var(--typo-body-size); line-height: 1.3; font-variant-numeric: tabular-nums; color: var(--color-text-tertiary); opacity: 0.6; transition: color var(--duration) var(--ease), opacity var(--duration) var(--ease); }
 .history__tab[aria-selected='true'] .history__tab-name { color: var(--color-text-primary); opacity: 1; }
@@ -155,5 +155,5 @@
   .annual__rhythm { padding: var(--space-12); }
 }
 @media (prefers-reduced-motion: reduce) {
-  .history__panel, .history__tab-line, .history__tab-name, .history__tab-period { transition: none; }
+  .history__panel, .history__indicator, .history__tab-name, .history__tab-period { transition: none; }
 }
