@@ -131,3 +131,10 @@
 - 히어로: HeroPortal(포인터 깊이 · 스크롤 포털, 포털 중 RippleControl.setPaused). 제목 · 문장은 일렁임 캔버스가 다시 그려 움직이지 않는 기준면.
 - 배우는 역량: SkillDeck(붙는 무대에서 딜링, 뒤 Φ 고리, 기울기 · 빛, 카드 → 상세 View Transitions). 무대가 붙어 있는 동안 html[data-immersive]로 목차를 걷음.
 - 미리보기 창이 숨으면 rAF가 멈춰 스크린샷이 깨진다 — 헤드리스 캡처로 확인했다(스크래치 스크립트 shoot.mjs, 1015/capture/capture.mjs와 같은 방식).
+
+## 2026-10-19 — v10 (역량 캐러셀 · 연간 구조 위 탭)
+
+- v9 태그(92ac519) → `/BI/v9/`, v10을 `/BI/`에 배포(커밋 ebd2ac0).
+- 히어로 인터랙션 뺌(v8 히어로로). 연간 구조 탭을 섹션 위로(사용자 시안 이미지 — 가는 선 · 굵은 잉크 선 · 이름 · 짧은 기간).
+- 배우는 역량: SkillCarousel = 21st.dev carousel-07(사용자가 코드 제공, Tailwind · shadcn 없이 토큰 CSS로 옮김) + react-bits TiltedCard(원본 소스 복사, 출처 표기). 붙는 무대에서 1 → 5 이너 스크롤, 끌기 · 번호 · 화살표, 기르는 수업은 호버 · 클릭 때만.
+- 의존성 motion 추가.
