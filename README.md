@@ -41,6 +41,7 @@ npm run deploy   # dist → gh-pages 브랜치 (GitHub Pages)
 - **상단 바** (Phi Brain 툴바 스타일): 좌측 워드마크, 우측 About · Programs · Experts · Admissions 알약 링크, 최우측 2기 오픈 알림 신청(검정 박스, 스크롤해도 고정)
 
 - **과정 개요** 드롭다운 (히어로 아래): 스크롤을 내리면 자동으로 펼쳐지고 맨 위로 돌아오면 접힘. 클릭으로도 열고 닫을 수 있음
+- **v11(2026-10-19, 역량: 토스 상품 판매 연출)** — 배우는 역량: 큰 글씨 채움 → 작아짐 → 화면 폭 카드 다섯 장(components/SkillReveal). v10의 캐러셀 · TiltedCard · motion 의존성은 뺐다(v10 태그에 남음)
 - **v10(2026-10-19, 역량 캐러셀 · 연간 구조 위 탭)** — 히어로 인터랙션 뺌. 연간 구조 탭을 섹션 위로. 배우는 역량: carousel-07(21st.dev, shadcnspace) 부채꼴 캐러셀 + react-bits TiltedCard(components/TiltedCard, MIT + Commons Clause), 붙는 무대에서 1 → 5 이너 스크롤(components/SkillCarousel). 의존성 motion 추가
 - **v9(2026-10-19, 히어로 포털 · 스킬 카드 덱)** — 히어로: 포인터 깊이 + 스크롤 포털(components/HeroPortal). 배우는 역량: 붙는 무대 · 카드 딜링 · Φ 고리 · 기울기와 빛 · 카드 → 상세(View Transitions, components/SkillDeck)
 - **v8(2026-10-19)** — 역량과 태도를 나눔: 배우는 역량(카드)은 과정 개요 다음, 태도는 채용 연계 다음 · 마무리 앞 "우리는 이렇게 사고한다"(components/PhiOS)
