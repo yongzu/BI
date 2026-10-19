@@ -11,6 +11,7 @@ import { BackToTop, SiteHeader } from '../components/SiteHeader/SiteHeader';
 import { VersionLog } from '../components/VersionLog/VersionLog';
 import { ValueCards } from '../components/ValueCards/ValueCards';
 import { DeviceMap } from '../components/DeviceMap/DeviceMap';
+import { PhiOS } from '../components/PhiOS/PhiOS';
 import { ChangeChip, ChangeNotes } from '../components/ChangeNotes/ChangeNotes';
 import { courseProfiles } from '../data/courseProfiles';
 import { useScrollReveal } from '../hooks/useScrollReveal';
@@ -32,16 +33,17 @@ const toc: TocItem[] = [
   // 목차는 섹션 다섯 개를 한 층위로 — 역량과 태도의 하위 항목은 없애고, 수업을 관통하는 접근은
   // 커리큘럼 아래에서 빼 같은 층위로(사용자 지시 2026-09-30)
   { id: 'overview', label: '과정 개요' }, // 맨 위(사용자 지시 2026-10-04)
-  { id: 'pillars', label: '역량과 태도' },
+  { id: 'pillars', label: '배우는 역량' }, // v8: 역량과 태도를 나눔 — 역량은 초입, 태도(Phi OS)는 끝
   { id: 'curriculum-annual', label: '연간 구조' },
   { id: 'curriculum', label: '커리큘럼' },
   { id: 'devices', label: '수업을 관통하는 접근' },
   { id: 'career', label: '채용 연계' },
+  { id: 'phi-os', label: 'Phi OS' },
 ];
 
 /** Blocks that rise in on scroll */
 // 히어로는 첫 화면 순서(흐린 제목 → 맑아짐 → 소개 · 기간)를 따로 가지므로 떠오르는 등장에서 뺀다
-const revealTargets = ['.section-header > *', '.group-label', '.group__lead', '.course-explorer', '.career-card', '.fact-tile', '.vc-cards', '.vc-detail', '.history', '.device-map', '.closing__card'].join(', ');
+const revealTargets = ['.section-header > *', '.group-label', '.group__lead', '.course-explorer', '.career-card', '.fact-tile', '.vc-cards', '.vc-detail', '.history', '.device-map', '.phi-os__row', '.closing__card'].join(', ');
 
 /* ------------------------------------------------------------------ */
 
@@ -234,9 +236,9 @@ export function ProgramsPage() {
         {/* ---------- 과정 개요 — 한 화면 높이 가운데, 스크롤해 보이면 펼쳐진다(사용자 지시 2026-10-04) ---------- */}
         <HeroMore />
 
-        {/* ---------- 역량과 태도 ---------- */}
+        {/* ---------- 배우는 역량(v8: 태도와 나눠 초입에 — 이 1년에서 무엇을 얻나에 먼저 답한다) ---------- */}
         <section id="pillars" className="section container">
-          <SectionHeader title="역량과 태도" change="pillars" lead="어떤 환경에서도 스스로 답을 찾을 수 있는 사고방식을 만들기 위해, Phi는 아래 역량과 태도를 중요시합니다." />
+          <SectionHeader title="배우는 역량" change="pillars" lead="어떤 환경에서도 스스로 답을 찾을 수 있는 사고방식을 만들기 위해, Phi는 아래 다섯 가지 역량을 기릅니다. 카드를 고르면 그 역량을 기르는 수업이 보입니다." />
           {/* 휠(v2) → 가로 두 줄 상자(v3) → 두 단 줄 목록(v4 · v5) → Culture 줄(v6) →
               v7: 묶음마다 카드 다섯 장 + 아래 상세 띠. 역량은 띠에서 그 역량을 기르는 수업으로 바로 간다(ValueCards) */}
           <div className="group">
@@ -244,13 +246,12 @@ export function ProgramsPage() {
               courseTypes={courseTypes}
               groups={[
                 { id: 'pillars-competency', name: '역량', en: 'Competency', definition: '수업에서 기르는 다섯 가지 능력. 커리큘럼의 수업마다 태그로 붙는다.', items: competencies, linkCourses: true },
-                { id: 'pillars-attitude', name: '태도', en: 'Phi OS', definition: '배우는 사람이 지니는 다섯 가지 자세.', items: attitudes },
               ]}
             />
           </div>
         </section>
 
-        {/* ---------- 연간 구조 — 역량과 태도 바로 아래 ---------- */}
+        {/* ---------- 연간 구조 — 배우는 역량 바로 아래 ---------- */}
         <section id="curriculum-annual" className="section container">
           <SectionHeader
             title="연간 구조"
@@ -263,7 +264,7 @@ export function ProgramsPage() {
 
         {/* ---------- 커리큘럼 ---------- */}
         <section id="curriculum" className="section container">
-          <SectionHeader title="커리큘럼" change="curriculum" lead="상기된 역량과 태도를 중심으로 설계된 1학기 수업들입니다. 2학기는 1학기의 성취에 따라 학습 효과를 보완, 증폭할 수 있는 방향으로 준비됩니다." />
+          <SectionHeader title="커리큘럼" change="curriculum" lead="상기된 역량을 중심으로 설계된 1학기 수업들입니다. 2학기는 1학기의 성취에 따라 학습 효과를 보완, 증폭할 수 있는 방향으로 준비됩니다." />
 
           {/* 필터 · 수업 목록 · 상세를 한 화면에 — 클릭 없이 전체를 파악한다 */}
           <div id="courses" className="group">
@@ -286,12 +287,24 @@ export function ProgramsPage() {
         </section>
 
         {/* ---------- 채용 연계 ---------- */}
-        <section id="career" className="section section--last container">
+        <section id="career" className="section container">
           <SectionHeader title="채용 연계" change="career" lead="Phi의 1년제 프로그램 졸업자들은 토스의 별도 채용 전형에 지원할 수 있습니다." />
           {/* v7: 카드 두 장 — 시점 · 대상을 크게 */}
           <div className="group">
             <GroupLabel>with Toss</GroupLabel>
             <CareerCards />
+          </div>
+        </section>
+
+        {/* ---------- 태도 · Phi OS — 수업 · 장치 · 채용 연계를 다 본 뒤 "우리는 이렇게 사고한다"로 맺고, 바로 아래 신청으로(v8) ---------- */}
+        <section id="phi-os" className="section section--last container">
+          <SectionHeader
+            title={['우리는 이렇게', '사고한다']}
+            change="phi-os"
+            lead="Phi OS — 어떤 환경에서도 스스로 답을 찾는 사고방식을 위해 Phi가 중요시하는 다섯 가지 태도입니다. 앞에서 본 수업과 장치는 이 태도를 연습하는 자리입니다."
+          />
+          <div className="group">
+            <PhiOS items={attitudes} />
           </div>
         </section>
 

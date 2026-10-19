@@ -118,12 +118,14 @@ export function ChangeNotes() {
                   <dd><ul className="change-list">{c.after.map((t) => <li key={t}>{t}</li>)}</ul></dd>
                   <dt>근거</dt>
                   <dd><ul className="change-list">{c.why.map((t) => <li key={t}>{t}</li>)}</ul></dd>
+                  {c.refs.length > 0 && <>
                   <dt>토스</dt>
                   <dd className="change-refs">
                     {c.refs.map(([label, anchor]) => (
                       <a key={anchor} className="change-ref" href={tossUrl(anchor)} target="_blank" rel="noreferrer">{label} ↗</a>
                     ))}
                   </dd>
+                  </>}
                   {c.todo && (
                     <>
                       <dt>남은 일</dt>
