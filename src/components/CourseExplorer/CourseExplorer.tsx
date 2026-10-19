@@ -1,53 +1,74 @@
-import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, type KeyboardEvent } from 'react';
 import { Text } from '../Text/Text';
 import type { Course, CourseType } from '../../data/programs';
 import type { CourseProfile } from '../../data/courseProfiles';
+import { keepInPlace, scrollToTarget } from '../../smoothScroll';
 import { COURSE_OPEN_EVENT } from './openCourse';
 import './CourseExplorer.css';
 
 /**
- * 커리큘럼(v6, 2026-10-19) — 왼쪽 세로 탭(타입 + 수업 수) · 오른쪽 수업 카드 · 카드를 누르면 옆 패널에 Course Profile.
+ * 커리큘럼 — 왼쪽 세로 탭(타입 + 수업 수) · 오른쪽 v5 형식(타입 머리글 + 펼쳐지는 수업 줄).
  *
- * v5까지는 타입 필터 → 타입 머리글 → 수업 줄, 줄을 누르면 그 아래로 상세(약 1,300px)가 펼쳐져 다른 수업을 화면 밖으로 밀어냈다.
- * v6은 토스 채용 공고(AI · ML · Data 채용, 토스플레이스 채용)의 형식을 따른다:
- * - 세로 탭: 타입 이름 + 수업 수 — 고르기 전에 규모가 보인다. 활성 = 진한 글씨 + 왼쪽 세로 막대. ↑/↓로도 옮긴다.
- * - 카드 2열: 영문 · 한글 이름, 첫 문장, 전문가 · 기르는 역량. 카드 전체가 상세로 가는 버튼.
- * - 상세는 목록을 밀어내지 않는 옆 패널(논모달) — 목록이 그대로 보여, 다른 카드를 누르면 패널 내용만 바뀐다.
- *   패널 안 ←/→ 버튼(과 키)으로 12개 수업을 차례로, Esc나 닫기로 닫는다. 좁은 화면에선 전체 화면 시트.
- * - 섹션이 보일 때 첫 수업을 저절로 펼치던 동작은 없앴다 — 사용자가 요청할 때만 바뀐다.
+ * 탭(v6부터): 타입 이름 + 수업 수 — 고르기 전에 규모가 보인다. ↑/↓로도 옮긴다.
+ *   고른 칸을 가리키는 막대는 하나이고, 연간 구조 탭처럼 고른 칸 자리로 미끄러져 간다(사용자 지시 2026-10-19).
+ * 오른쪽(사용자 지시 2026-10-19: v6 카드 · 옆 패널 → v5로 되돌림):
+ * - 타입 머리글: 이름 · 진행 방식 · 수업 수, 아래 타입 설명.
+ * - 수업 한 줄: 영문 이름 + 전문가 캡슐 / 한글 이름 / 기르는 역량 태그. 누르면 아래로 상세가 펼쳐진다.
+ * - 펼치는 수업은 하나 — 다른 수업을 누르면 펼쳐 있던 수업이 접히고, 누른 줄은 화면의 같은 자리에 머문다(keepInPlace).
  */
 type Props = { types: CourseType[]; profiles: Record<string, CourseProfile> };
 
 export function CourseExplorer({ types, profiles }: Props) {
   const [tab, setTab] = useState(0);
   const [open, setOpen] = useState<string | null>(null);
-  const [shownSlug, setShownSlug] = useState<string | null>(null); // 닫혀 가는 동안에도 패널에 남는 마지막 수업
   const tabRefs = useRef<(HTMLButtonElement | null)[]>([]);
-  const lastCard = useRef<HTMLElement | null>(null);
-
-  const all = types.flatMap((t) => t.courses.map((c) => ({ course: c, type: t })));
-  const index = all.findIndex((x) => x.course.slug === shownSlug);
-  const shown = index >= 0 ? all[index] : null;
-  // 지금 수업은 ref로도 — 빠르게 연달아 ←/→를 눌러도 렌더 전의 값이 아니라 마지막으로 넘긴 수업에서 센다
-  const slugRef = useRef<string | null>(null);
-  const show = (slug: string) => { slugRef.current = slug; setOpen(slug); setShownSlug(slug); };
+  const tabsRef = useRef<HTMLDivElement>(null);
+  const barRef = useRef<HTMLSpanElement>(null);
+  const scrollTo = useRef<string | null>(null); // 역량 카드에서 연 수업 — 렌더 뒤 그 줄로 스크롤
   const type = types[tab];
+  const total = types.reduce((n, t) => n + t.courses.length, 0);
 
-  // 다른 섹션(역량 카드)에서 수업을 열면: 그 타입 탭을 고르고 옆 패널을 연다
+  // 고른 탭 자리로 막대를 옮긴다 — 넓은 화면은 왼쪽 세로 막대, 좁은 화면(탭이 가로 줄)은 아래 가로 막대
+  useLayoutEffect(() => {
+    const list = tabsRef.current;
+    const bar = barRef.current;
+    if (!list || !bar) return;
+    const place = () => {
+      const el = tabRefs.current[tab];
+      if (!el) return;
+      const row = getComputedStyle(list).flexDirection === 'row';
+      const inset = row ? 16 : 8;
+      bar.style.setProperty('--x', `${row ? el.offsetLeft + inset : -1}px`);
+      bar.style.setProperty('--y', `${row ? el.offsetTop + el.offsetHeight - 1 : el.offsetTop + inset}px`);
+      bar.style.setProperty('--w', `${row ? el.offsetWidth - inset * 2 : 2}px`);
+      bar.style.setProperty('--h', `${row ? 2 : el.offsetHeight - inset * 2}px`);
+    };
+    place();
+    const ro = new ResizeObserver(place);
+    ro.observe(list);
+    return () => ro.disconnect();
+  }, [tab]);
+
+  // 다른 섹션(역량 카드)에서 수업을 열면: 그 타입 탭을 고르고 그 수업을 펼쳐 그 줄로 간다
   useEffect(() => {
     const onOpen = (e: Event) => {
       const slug = (e as CustomEvent<string>).detail;
       const t = types.findIndex((x) => x.courses.some((c) => c.slug === slug));
       if (t < 0) return;
-      lastCard.current = document.activeElement as HTMLElement | null;
-      slugRef.current = slug;
-      setOpen(slug);
-      setShownSlug(slug);
+      scrollTo.current = slug;
       setTab(t);
+      setOpen(slug);
     };
     window.addEventListener(COURSE_OPEN_EVENT, onOpen);
     return () => window.removeEventListener(COURSE_OPEN_EVENT, onOpen);
   }, [types]);
+  useEffect(() => {
+    const slug = scrollTo.current;
+    if (!slug) return;
+    scrollTo.current = null;
+    const row = document.getElementById(`course-row-${slug}`);
+    if (row) scrollToTarget(row);
+  }, [open, tab]);
 
   const onTabKey = (e: KeyboardEvent) => {
     const step = e.key === 'ArrowDown' ? 1 : e.key === 'ArrowUp' ? -1 : 0;
@@ -58,22 +79,16 @@ export function CourseExplorer({ types, profiles }: Props) {
     tabRefs.current[next]?.focus();
   };
 
-  const close = () => {
-    setOpen(null);
-    lastCard.current?.focus({ preventScroll: true });
-  };
-  // 패널에서 이웃 수업으로 넘어가면 왼쪽 탭도 그 수업의 타입으로 — 목록과 패널이 같은 수업을 가리킨다
-  const go = (step: number) => {
-    const at = all.findIndex((x) => x.course.slug === slugRef.current);
-    const next = all[(at + step + all.length) % all.length];
-    show(next.course.slug);
-    setTab(types.indexOf(next.type));
+  const toggle = (slug: string, row: HTMLElement | null) => {
+    if (row) keepInPlace(row, 700); // 접힘(520ms + 늦춤)이 끝날 때까지
+    setOpen((prev) => (prev === slug ? null : slug));
   };
 
   return (
     <div className="course-explorer">
       <div className="course-layout">
-        <div className="course-tabs" role="tablist" aria-orientation="vertical" aria-label="수업 유형" onKeyDown={onTabKey}>
+        <div ref={tabsRef} className="course-tabs" role="tablist" aria-orientation="vertical" aria-label="수업 유형" onKeyDown={onTabKey}>
+          <span ref={barRef} className="course-tabs__indicator" aria-hidden="true" />
           {types.map((t, i) => (
             <button
               key={t.id}
@@ -91,131 +106,66 @@ export function CourseExplorer({ types, profiles }: Props) {
               <span className="course-tab__count">{t.courses.length}</span>
             </button>
           ))}
-          <Text as="p" typography="Caption" color="tertiary" className="course-tabs__total">1학기 수업 {all.length}개</Text>
+          <Text as="p" typography="Caption" color="tertiary" className="course-tabs__total">1학기 수업 {total}개</Text>
         </div>
 
         <section key={type.id} id={`course-panel-${type.id}`} role="tabpanel" aria-labelledby={`course-tab-${type.id}`} className="course-tabpanel">
-          <header className="course-type">
-            <Text as="p" typography="Meta" className="course-type__cadence">{type.cadence}</Text>
-            <Text typography="Body" color="secondary" className="course-type__body">{type.body}</Text>
+          <header className="course-group__head">
+            <div className="course-group__title">
+              <h4 className="course-group__name">{type.name}</h4>
+              <span className="course-group__meta">{type.cadence} · {type.courses.length}개 수업</span>
+            </div>
+            <Text typography="Body" color="secondary" className="course-group__body">{type.body}</Text>
           </header>
-          <ul className="course-cards">
-            {type.courses.map((course, i) => (
-              <li key={course.slug} style={{ '--i': i } as React.CSSProperties}>
-                <CourseCard
-                  course={course}
-                  profile={profiles[course.slug]}
-                  active={open === course.slug}
-                  onOpen={(el) => { lastCard.current = el; show(course.slug); }}
-                />
-              </li>
+
+          <ul className="course-rows">
+            {type.courses.map((course) => (
+              <CourseRow
+                key={course.slug}
+                course={course}
+                type={type}
+                profile={profiles[course.slug]}
+                open={open === course.slug}
+                onToggle={(row) => toggle(course.slug, row)}
+              />
             ))}
           </ul>
         </section>
       </div>
-
-      <CoursePanel
-        isOpen={open !== null}
-        shown={shown}
-        profile={shown ? profiles[shown.course.slug] : null}
-        position={index + 1}
-        total={all.length}
-        onPrev={() => go(-1)}
-        onNext={() => go(1)}
-        onClose={close}
-      />
     </div>
   );
 }
 
-function CourseCard({ course, profile, active, onOpen }: { course: Course; profile: CourseProfile; active: boolean; onOpen: (el: HTMLElement) => void }) {
+type RowProps = { course: Course; type: CourseType; profile: CourseProfile; open: boolean; onToggle: (row: HTMLElement | null) => void };
+
+function CourseRow({ course, type, profile, open, onToggle }: RowProps) {
+  const panelId = `course-detail-${course.slug}`;
   return (
-    <button type="button" className="course-card" data-active={active} aria-haspopup="dialog" aria-controls="course-panel" onClick={(e) => onOpen(e.currentTarget)}>
-      <span className="course-card__names">
-        <span className="course-card__en">{course.en}</span>
-        <span className="course-card__ko">{course.ko}</span>
-      </span>
-      <span className="course-card__lead">{course.lead}</span>
-      {/* v7: 끝나면 할 수 있는 것 — 학습 목표 After 첫 줄을 카드에서 먼저(설명보다 결과를 보여 준다) */}
-      {profile.after[0] && (
-        <span className="course-card__after">
-          <span className="course-card__after-label">After</span>
-          {profile.after[0]}
+    <li id={`course-row-${course.slug}`} className="course-row" data-open={open}>
+      <button type="button" className="course-row__hit" aria-expanded={open} aria-controls={panelId} onClick={(e) => onToggle(e.currentTarget.closest<HTMLElement>('.course-row'))}>
+        <span className="course-row__text">
+          <span className="course-row__title">
+            <span className="course-row__name">{course.en}</span>
+            {profile.experts.map((ex) => (
+              <span key={ex.name} className="course-row__tag">{ex.name}</span>
+            ))}
+          </span>
+          <span className="course-row__meta">{course.ko}</span>
         </span>
-      )}
-      <span className="course-card__foot">
-        <span className="course-card__experts">{profile.experts.map((ex) => ex.name).join(' · ')}</span>
-        <span className="course-card__tags">
-          {course.tags.map((tag) => <span key={tag} className="course-card__tag">{tag}</span>)}
+        <span className="course-row__tags">
+          {course.tags.map((tag) => (
+            <span key={tag} className="course-row__tag">{tag}</span>
+          ))}
         </span>
-      </span>
-      <span className="course-card__arrow" aria-hidden="true" />
-    </button>
-  );
-}
+        <span className="course-row__chevron" aria-hidden="true" />
+      </button>
 
-type PanelProps = {
-  isOpen: boolean;
-  shown: { course: Course; type: CourseType } | null;
-  profile: CourseProfile | null;
-  position: number;
-  total: number;
-  onPrev: () => void;
-  onNext: () => void;
-  onClose: () => void;
-};
-
-/**
- * 옆 패널(논모달). 닫혀도 DOM에 남아 미끄러져 나가고(그동안 마지막 수업이 보인다), 닫힌 동안은 inert.
- * 열리면 닫기 버튼으로 초점, 수업이 바뀌면 맨 위부터. Esc로 닫고, 패널 안에서 ←/→로 이웃 수업
- */
-function CoursePanel({ isOpen, shown, profile, position, total, onPrev, onNext, onClose }: PanelProps) {
-  const closeRef = useRef<HTMLButtonElement>(null);
-  const scrollRef = useRef<HTMLDivElement>(null);
-  const slug = shown?.course.slug;
-
-  useEffect(() => {
-    if (isOpen) closeRef.current?.focus({ preventScroll: true });
-  }, [isOpen]);
-  useEffect(() => {
-    scrollRef.current?.scrollTo({ top: 0 });
-  }, [slug]);
-  useEffect(() => {
-    if (!isOpen) return;
-    const onKey = (e: globalThis.KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
-    document.addEventListener('keydown', onKey);
-    return () => document.removeEventListener('keydown', onKey);
-  }, [isOpen, onClose]);
-
-  const onKey = (e: KeyboardEvent) => {
-    if ((e.target as HTMLElement).closest('a, input, textarea')) return;
-    if (e.key === 'ArrowLeft') { e.preventDefault(); onPrev(); }
-    if (e.key === 'ArrowRight') { e.preventDefault(); onNext(); }
-  };
-
-  return (
-    <div id="course-panel" className="course-panel" data-open={isOpen} role="dialog" aria-modal="false" aria-labelledby="course-panel-title" inert={!isOpen} onKeyDown={onKey}>
-      <div className="course-panel__bar">
-        <Text as="span" typography="Caption" color="tertiary">{position} / {total}</Text>
-        <span className="course-panel__nav">
-          <button type="button" className="course-panel__btn" onClick={onPrev} aria-label="이전 수업">←</button>
-          <button type="button" className="course-panel__btn" onClick={onNext} aria-label="다음 수업">→</button>
-          <button ref={closeRef} type="button" className="course-panel__btn" onClick={onClose} aria-label="닫기">×</button>
-        </span>
+      <div id={panelId} className="course-row__panel" role="region" aria-label={course.en} aria-hidden={!open} inert={!open}>
+        <div className="course-row__inner">
+          <CourseDetail course={course} type={type} profile={profile} />
+        </div>
       </div>
-      <div ref={scrollRef} className="course-panel__scroll" data-lenis-prevent>
-        {shown && profile && (
-          <>
-            <header className="course-panel__head">
-              <Text as="p" typography="Meta" color="tertiary">{shown.type.name} · {shown.type.cadence}</Text>
-              <Text as="h3" id="course-panel-title" typography="Title">{shown.course.en}</Text>
-              <Text as="p" typography="Body" color="secondary">{shown.course.ko}</Text>
-            </header>
-            <CourseDetail course={shown.course} type={shown.type} profile={profile} />
-          </>
-        )}
-      </div>
-    </div>
+    </li>
   );
 }
 
@@ -227,13 +177,13 @@ function CourseDetail({ course, type, profile }: { course: Course; type: CourseT
     <article className="course-detail">
       <div className="course-detail__main">
         <section className="course-detail__section">
-          <h4 className="course-detail__heading">수업 목표</h4>
+          <h5 className="course-detail__heading">수업 목표</h5>
           <Text typography="Body" color="secondary">{course.lead} {course.body}</Text>
         </section>
 
         {overview.length > 0 && (
           <section className="course-detail__section">
-            <h4 className="course-detail__heading">수업 개요</h4>
+            <h5 className="course-detail__heading">수업 개요</h5>
             {overview.map((p, i) => (
               <Text key={i} typography="Body" color="secondary">{p}</Text>
             ))}
@@ -241,7 +191,7 @@ function CourseDetail({ course, type, profile }: { course: Course; type: CourseT
         )}
 
         <section className="course-detail__section">
-          <h4 className="course-detail__heading">학습 목표</h4>
+          <h5 className="course-detail__heading">학습 목표</h5>
           <div className="course-goals" role="table" aria-label="학습 전후 비교">
             <div className="course-goals__row course-goals__row--head" role="row">
               <span role="columnheader">Before</span>
@@ -260,7 +210,7 @@ function CourseDetail({ course, type, profile }: { course: Course; type: CourseT
       <aside className="course-detail__side">
         {profile.experts.map((ex) => (
           <section key={ex.name} className="course-detail__expert">
-            <h4 className="course-detail__heading">{ex.name}</h4>
+            <h5 className="course-detail__heading">{ex.name}</h5>
             <p className="course-detail__bio">{ex.bio}</p>
           </section>
         ))}

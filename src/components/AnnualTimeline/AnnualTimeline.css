@@ -1,33 +1,37 @@
 /* 연간 구조(v7) — 위 시기 패널 · 아래 진행 바(toss.im/company History). Tokens only. */
 .history { --h-ease: cubic-bezier(0.22, 1, 0.36, 1); }
 
-/* ---------- 시기 패널: 네 시기를 한 칸에 겹쳐 고른 것만 ---------- */
+/* ---------- 시기 패널: 네 시기가 가로 트랙에 나란히, 고른 시기로 트랙이 미끄러진다 ----------
+   제자리에서 56px 비켜 페이드하던 방식은 뚝뚝 끊겨 보였다(사용자 지시 2026-10-19) — 옆 시기가 실제로 옆에 있고
+   지금 내용이 통째로 밀려 나가며 옆 내용이 들어온다. 칸 사이(--h-gap)를 안쪽 여백의 두 배로 두어 옆 시기는 회색 면 밖에 숨는다 */
 .history__panels {
-  display: grid;
-  overflow: clip; /* 좌우로 비켜 선 패널이 가로 스크롤을 만들지 않게 */
-  padding: var(--space-48) var(--space-48) var(--space-56);
+  --h-pad: var(--space-48);
+  overflow: clip; /* 옆 시기는 회색 면 밖 — 가로 스크롤도 만들지 않는다 */
+  padding: var(--space-48) var(--h-pad) var(--space-56);
   border-radius: 32px;
   background: var(--color-bg-subtle);
 }
+.history__track {
+  --h-gap: calc(var(--h-pad) * 2);
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 100%;
+  column-gap: var(--h-gap);
+  align-items: start;
+  transform: translateX(calc(var(--sel, 0) * -1 * (100% + var(--h-gap))));
+  transition: transform 760ms cubic-bezier(0.65, 0, 0.35, 1);
+}
 .history__panel {
-  grid-area: 1 / 1;
   display: grid;
   grid-template-columns: var(--grid-template);
   column-gap: var(--grid-gap);
   align-items: start;
-  /* 탭을 옮기면 내용이 좌우로 페이드 — 고른 시기보다 앞(--pos −1)은 왼쪽, 뒤(+1)는 오른쪽에 비켜 있다(사용자 지시 2026-10-19).
-     오른쪽 탭으로 가면 지금 내용은 왼쪽으로 나가며 흐려지고, 새 내용은 오른쪽에서 들어오며 또렷해진다. 왼쪽 탭이면 반대 */
-  opacity: 0;
-  visibility: hidden;
-  transform: translateX(calc(var(--pos, 1) * 56px));
-  transition: opacity 320ms var(--ease), transform 420ms var(--h-ease), visibility 0s linear 420ms;
+  min-width: 0;
+  /* 밀려 나가는 시기는 조금 흐려지고, 들어오는 시기는 또렷해진다 — 움직임은 트랙이 맡는다 */
+  opacity: 0.25;
+  transition: opacity 560ms var(--ease);
 }
-.history__panel[data-active='true'] {
-  opacity: 1;
-  visibility: visible;
-  transform: none;
-  transition: opacity 480ms var(--h-ease) 140ms, transform 640ms var(--h-ease) 140ms, visibility 0s;
-}
+.history__panel[data-active='true'] { opacity: 1; }
 
 /* 왼쪽: 순서 · 질문 · 기간과 핵심 사실 */
 .history__side { grid-column: span 4; display: flex; flex-direction: column; gap: var(--space-20); }
@@ -138,7 +142,7 @@
 .history__tab:focus-visible { outline: 2px solid var(--color-text-primary); outline-offset: 4px; border-radius: 6px; }
 
 @media (max-width: 900px) {
-  .history__panels { padding: var(--space-32) var(--space-24) var(--space-40); border-radius: 24px; }
+  .history__panels { --h-pad: var(--space-24); padding: var(--space-32) var(--h-pad) var(--space-40); border-radius: 24px; }
   .history__panel { row-gap: var(--space-28); }
   .history__side, .history__main { grid-column: 1 / -1; }
   .history__question { max-width: none; }
@@ -146,7 +150,7 @@
 /* 휴대폰: 패널이 한 화면보다 길어 아래 바까지 내려가야 시기를 바꿀 수 있다 — 바를 패널 위로 올린다 */
 @media (max-width: 720px) {
   .history { display: flex; flex-direction: column; }
-  .history__panels { padding: var(--space-28) var(--space-20) var(--space-32); }
+  .history__panels { --h-pad: var(--space-20); padding: var(--space-28) var(--h-pad) var(--space-32); }
   /* 2 × 2로 접히면 아랫줄도 가는 선 위에 선다 */
   .history__tabs { grid-template-columns: repeat(2, minmax(0, 1fr)); row-gap: var(--space-8); margin-bottom: var(--space-28); border-top: 0; }
   .history__tab { border-top: 1px solid var(--color-border); }
@@ -156,5 +160,5 @@
   .annual__rhythm { padding: var(--space-12); }
 }
 @media (prefers-reduced-motion: reduce) {
-  .history__panel, .history__indicator, .history__tab-name, .history__tab-period { transition: none; }
+  .history__track, .history__panel, .history__indicator, .history__tab-name, .history__tab-period { transition: none; }
 }

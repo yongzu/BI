@@ -47,7 +47,7 @@ npm run deploy   # dist → gh-pages 브랜치 (GitHub Pages)
 - **v10(2026-10-19, 역량 캐러셀 · 연간 구조 위 탭)** — 히어로 인터랙션 뺌. 연간 구조 탭을 섹션 위로. 배우는 역량: carousel-07(21st.dev, shadcnspace) 부채꼴 캐러셀 + react-bits TiltedCard(components/TiltedCard, MIT + Commons Clause), 붙는 무대에서 1 → 5 이너 스크롤(components/SkillCarousel). 의존성 motion 추가
 - **v9(2026-10-19, 히어로 포털 · 스킬 카드 덱)** — 히어로: 포인터 깊이 + 스크롤 포털(components/HeroPortal). 배우는 역량: 붙는 무대 · 카드 딜링 · Φ 고리 · 기울기와 빛 · 카드 → 상세(View Transitions, components/SkillDeck)
 - **v8(2026-10-19)** — 역량과 태도를 나눔: 배우는 역량(카드)은 과정 개요 다음, 태도는 채용 연계 다음 · 마무리 앞 "우리는 이렇게 사고한다"(components/PhiOS)
-- **v7(2026-10-19, 카드 · 진행 바 · 고정 지도)** — v6(토스 레퍼런스 적용 시안) 위에 컴포넌트 · 인터랙션을 바꿨다. 근거는 페이지 왼쪽 아래 "바뀐 점"(src/data/changes.ts)
+- **v7(2026-10-19, 카드 · 진행 바 · 고정 지도)** — v6(토스 레퍼런스 적용 시안) 위에 컴포넌트 · 인터랙션을 바꿨다. 근거 패널 "바뀐 점"은 2026-10-19 사용자 지시로 삭제했다
   - **과정 개요**: 숫자 타일 다섯 장(1년 · 1,000+ · 월–금 · 60명 · 8.24)
   - **역량과 태도**: 묶음마다 카드 다섯 장 + 아래 상세 띠(처음엔 첫 카드). 역량 띠의 수업 칩을 누르면 커리큘럼 상세 패널이 열린다 (components/ValueCards)
   - **연간 구조**: toss.im/company History 형식 — 위 시기 패널(질문 · 기간 · 사실 / 이름 · 설명 · 내용), 아래 진행 바(칸 길이 = 기간, 칸이 탭, ←/→). 위 탭 없음

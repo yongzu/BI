@@ -9,7 +9,8 @@ import './AnnualTimeline.css';
  *   섹션 맨 위에 두어 "무엇을 고를 수 있는지"가 먼저 보이고, 고른 결과는 바로 아래에 나온다(위 → 아래 읽는 순서와 같다).
  * 아래: 시기 패널(v7 History 형식 그대로) — 왼쪽 순서 · 시기의 질문 · 기간과 사실, 오른쪽 이름 · 설명 · 내용.
  * ←/→ 키로 탭을 옮긴다. 자동으로 넘어가지 않는다(WCAG 2.2.2).
- * 네 시기의 패널을 한 칸에 겹쳐 두어 높이가 가장 긴 시기에 맞춰진다 — 시기를 바꿔도 아래 섹션이 흔들리지 않는다.
+ * 네 시기의 패널은 가로 한 줄(트랙)로 나란히 서고, 시기를 바꾸면 트랙이 좌우로 미끄러져 옆 시기로 넘어간다
+ * (사용자 지시 2026-10-19 — 제자리 페이드는 뚝뚝 끊겨 보였다). 줄 높이는 가장 긴 시기에 맞춰져 아래 섹션이 흔들리지 않는다.
  * v7 · v9의 아래 진행 바(칸 길이 = 기간, 월 눈금, ←/→ 버튼)는 v10에서 이 탭으로 바뀌었다.
  */
 export type StageItem = { name: string; label: string; body: string };
@@ -98,8 +99,9 @@ export function AnnualTimeline({ stages }: Props) {
         ))}
       </div>
 
-      {/* ---------- 시기 패널 ---------- */}
+      {/* ---------- 시기 패널: 가로 트랙 — 고른 시기 칸만큼 옆으로 민다 ---------- */}
       <div className="history__panels">
+        <div className="history__track" style={{ '--sel': selected } as React.CSSProperties}>
         {stages.map((s, i) => (
           <section
             key={s.name}
@@ -108,8 +110,6 @@ export function AnnualTimeline({ stages }: Props) {
             aria-labelledby={`annual-tab-${i}`}
             className="history__panel"
             data-active={selected === i}
-            // 고른 시기보다 앞(왼쪽)은 −1, 뒤(오른쪽)는 +1 — 나가는 내용은 진행 반대쪽으로, 들어오는 내용은 진행 쪽에서
-            style={{ '--pos': Math.sign(i - selected) } as React.CSSProperties}
             inert={selected !== i}
           >
             <div className="history__side">
@@ -151,6 +151,7 @@ export function AnnualTimeline({ stages }: Props) {
             </div>
           </section>
         ))}
+        </div>
       </div>
 
     </div>

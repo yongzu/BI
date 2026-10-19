@@ -12,7 +12,6 @@ import { VersionLog } from '../components/VersionLog/VersionLog';
 import { SkillReveal } from '../components/SkillReveal/SkillReveal';
 import { DeviceMap } from '../components/DeviceMap/DeviceMap';
 import { PhiOS } from '../components/PhiOS/PhiOS';
-import { ChangeChip, ChangeNotes } from '../components/ChangeNotes/ChangeNotes';
 import { courseProfiles } from '../data/courseProfiles';
 import { useScrollReveal } from '../hooks/useScrollReveal';
 import {
@@ -51,7 +50,7 @@ const revealTargets = ['.section-header > *', '.group-label', '.group__lead', '.
  * 제목은 줄마다 보이지 않는 틀 안에서 아래에서 위로 올라온다(사용자 지시 2026-10-12, AI in Design Report 2026의 '01 Tools').
  * 여러 줄이면 배열로 — 줄마다 틀이 따로라 한 줄씩 차례로(Text 아래 .rise-line, programs.css).
  */
-function SectionHeader({ title, lead, change }: { title: string | string[]; lead?: ReactNode; change?: string }) {
+function SectionHeader({ title, lead }: { title: string | string[]; lead?: ReactNode }) {
   const lines = typeof title === 'string' ? [title] : title;
   return (
     <header className="section-header">
@@ -63,8 +62,6 @@ function SectionHeader({ title, lead, change }: { title: string | string[]; lead
         ))}
       </Text>
       {lead && <Text typography="Lead" color="secondary">{lead}</Text>}
-      {/* v6 시안: 이 섹션이 바뀐 점 · 근거를 여는 작은 버튼(ChangeNotes) */}
-      {change && <ChangeChip id={change} />}
     </header>
   );
 }
@@ -158,10 +155,7 @@ function HeroMore() {
             ))}
           </div>
           <div className="hero-more__facts">
-            <div className="hero-more__head hero-more__head--row">
-              <Text as="p" typography="Label">과정 개요</Text>
-              <ChangeChip id="overview" />
-            </div>
+            <Text as="p" typography="Label" className="hero-more__head">과정 개요</Text>
             {/* v7: 숫자 타일 — 크게 쓴 핵심 숫자 + 보조 설명. 읽기 프로그램엔 원문(value) */}
             <dl className="fact-tiles">
               {facts.map((f) => (
@@ -194,7 +188,6 @@ export function ProgramsPage() {
     <>
       <SiteHeader />
       <BackToTop />
-      <ChangeNotes />
       <main className="page">
         {/* ---------- Hero ---------- (v9의 포인터 깊이 · 스크롤 포털은 v10에서 뺐다 — 사용자 지시 2026-10-19) */}
         <section className="hero container" aria-labelledby="hero-title" data-intro={introDone ? 'done' : INTRO_STYLE === 'together' ? 'rise' : 'blur'} data-intro-style={INTRO_STYLE}>
@@ -241,7 +234,6 @@ export function ProgramsPage() {
           <SkillReveal
             title="배우는 역량"
             lead="어떤 환경에서도 스스로 답을 찾을 수 있는 사고방식을 만들기 위해, Phi는 아래 다섯 가지 역량을 기릅니다. 카드에 마우스를 올리거나 누르면 그 역량을 기르는 수업이 보입니다."
-            chip={<ChangeChip id="pillars" />}
             items={competencies}
             courseTypes={courseTypes}
           />
@@ -251,7 +243,6 @@ export function ProgramsPage() {
         <section id="curriculum-annual" className="section container">
           <SectionHeader
             title="연간 구조"
-            change="annual"
             lead="2026년 8월 개강부터 2027년 8월 졸업까지, 두 학기와 방학 캠프, 졸업 프로젝트로 이어지는 1년입니다."
           />
           {/* v7: 위 시기 패널 · 아래 진행 바(toss.im/company History). v6의 안내 표 문구는 시기마다 왼쪽 사실로 옮겼다 */}
@@ -260,7 +251,7 @@ export function ProgramsPage() {
 
         {/* ---------- 커리큘럼 ---------- */}
         <section id="curriculum" className="section container">
-          <SectionHeader title="커리큘럼" change="curriculum" lead="상기된 역량을 중심으로 설계된 1학기 수업들입니다. 2학기는 1학기의 성취에 따라 학습 효과를 보완, 증폭할 수 있는 방향으로 준비됩니다." />
+          <SectionHeader title="커리큘럼" lead="상기된 역량을 중심으로 설계된 1학기 수업들입니다. 2학기는 1학기의 성취에 따라 학습 효과를 보완, 증폭할 수 있는 방향으로 준비됩니다." />
 
           {/* 필터 · 수업 목록 · 상세를 한 화면에 — 클릭 없이 전체를 파악한다 */}
           <div id="courses" className="group">
@@ -272,7 +263,6 @@ export function ProgramsPage() {
         <section id="devices" className="section container">
           <SectionHeader
             title={['수업을', '관통하는 접근']}
-            change="devices"
             lead={<>Phi의 교육은 인지적 도제(Cognitive Apprenticeship)를 토대로 설계되었습니다.<br />전문가의 사고 과정을 학습자가 능동적으로 관찰할 수 있도록 다양한 장치가 준비되어있습니다.</>}
           />
           {/* 두 단 목록을 시험해 본 뒤 박스로 되돌림(사용자 지시 2026-09-30) */}
@@ -284,7 +274,7 @@ export function ProgramsPage() {
 
         {/* ---------- 채용 연계 ---------- */}
         <section id="career" className="section container">
-          <SectionHeader title="채용 연계" change="career" lead="Phi의 1년제 프로그램 졸업자들은 토스의 별도 채용 전형에 지원할 수 있습니다." />
+          <SectionHeader title="채용 연계" lead="Phi의 1년제 프로그램 졸업자들은 토스의 별도 채용 전형에 지원할 수 있습니다." />
           {/* v7: 카드 두 장 — 시점 · 대상을 크게 */}
           <div className="group">
             <GroupLabel>with Toss</GroupLabel>
@@ -296,7 +286,6 @@ export function ProgramsPage() {
         <section id="phi-os" className="section section--last container">
           <SectionHeader
             title={['우리는 이렇게', '사고한다']}
-            change="phi-os"
             lead="Phi OS — 어떤 환경에서도 스스로 답을 찾는 사고방식을 위해 Phi가 중요시하는 다섯 가지 태도입니다. 앞에서 본 수업과 장치는 이 태도를 연습하는 자리입니다."
           />
           <div className="group">

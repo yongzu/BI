@@ -302,10 +302,3 @@
 
 /* ---------- 수업을 관통하는 접근: components/DeviceMap(v7) ---------- */
 
-
-/* v6 시안: 섹션 머리글의 "바뀐 점" 버튼 — 리드 아래, 리드와 같은 열에서 시작 */
-.section-header > .change-chip { grid-column: 5 / span 8; justify-self: start; }
-.hero-more__head--row { display: flex; align-items: center; justify-content: space-between; gap: var(--space-12); }
-@media (max-width: 900px) {
-  .section-header > .change-chip { grid-column: 1 / -1; }
-}
