@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { useRef, useState, type ReactNode } from 'react';
 import { Text } from '../components/Text/Text';
 import { Toc, type TocItem } from '../components/Toc/Toc';
 import { AnnualTimeline } from '../components/AnnualTimeline/AnnualTimeline';
@@ -12,6 +12,7 @@ import { VersionLog } from '../components/VersionLog/VersionLog';
 import { SkillReveal } from '../components/SkillReveal/SkillReveal';
 import { DeviceMap } from '../components/DeviceMap/DeviceMap';
 import { PhiOS } from '../components/PhiOS/PhiOS';
+import { OverviewReveal } from '../components/OverviewReveal/OverviewReveal';
 import { courseProfiles } from '../data/courseProfiles';
 import { useScrollReveal } from '../hooks/useScrollReveal';
 import {
@@ -41,7 +42,7 @@ const toc: TocItem[] = [
 
 /** Blocks that rise in on scroll */
 // 히어로는 첫 화면 순서(흐린 제목 → 맑아짐 → 소개 · 기간)를 따로 가지므로 떠오르는 등장에서 뺀다
-const revealTargets = ['.section-header > *', '.group-label', '.group__lead', '.course-explorer', '.career-card', '.fact-tile', '.history', '.device-map', '.phi-os__row', '.closing__card'].join(', ');
+const revealTargets = ['.section-header > *', '.group-label', '.group__lead', '.course-explorer', '.career-card', '.history', '.device-map', '.phi-os__row', '.closing__card'].join(', ');
 
 /* ------------------------------------------------------------------ */
 
@@ -121,60 +122,6 @@ function CareerCards() {
  */
 const INTRO_STYLE: 'together' | 'sequence' = 'together';
 
-/**
- * 과정 개요(히어로 다음, 목차 맨 위): 왼쪽 소개 글 두 문단, 오른쪽 과정 개요.
- * 한 화면 높이를 차지하고 내용은 세로 가운데 — 가운데 두면 위아래 다른 섹션이 보이지 않는다(사용자 지시 2026-10-04).
- * 버튼 없이, 내용 자리(블록 가운데)가 화면 아래 15% 선 위로 올라오면 높이 0fr → 1fr로 한 번 펼쳐진다.
- * 움직임 줄이기면 처음부터 펼침
- */
-function HeroMore() {
-  const [open, setOpen] = useState(() => window.matchMedia('(prefers-reduced-motion: reduce)').matches);
-  const panel = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    const el = panel.current;
-    if (!el || open) return;
-    const io = new IntersectionObserver(
-      ([entry]) => {
-        if (!entry.isIntersecting) return;
-        io.disconnect();
-        setOpen(true);
-      },
-      { rootMargin: '0px 0px -15% 0px' },
-    );
-    io.observe(el);
-    return () => io.disconnect();
-  }, [open]);
-  return (
-    <section id="overview" className="hero-more container" data-open={open} aria-label="과정 개요">
-      <div ref={panel} className="hero-more__panel">
-        <div className="hero-more__inner">
-          <div className="hero-more__text">
-            <Text as="p" typography="Label" className="hero-more__head">1 Year Programs</Text>
-            {heroMore.map((p) => (
-              <Text key={p.slice(0, 12)} typography="Body" color="secondary" className="hero-more__para">{p}</Text>
-            ))}
-          </div>
-          <div className="hero-more__facts">
-            <Text as="p" typography="Label" className="hero-more__head">과정 개요</Text>
-            {/* v7: 숫자 타일 — 크게 쓴 핵심 숫자 + 보조 설명. 읽기 프로그램엔 원문(value) */}
-            <dl className="fact-tiles">
-              {facts.map((f) => (
-                <div key={f.label} className="fact-tile">
-                  <Text as="dt" typography="Caption" color="tertiary">{f.label}</Text>
-                  <dd aria-label={f.value}>
-                    <span className="fact-tile__big" aria-hidden="true">{f.big}</span>
-                    <span className="fact-tile__note" aria-hidden="true">{f.note}</span>
-                  </dd>
-                </div>
-              ))}
-            </dl>
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-}
-
 /* ------------------------------------------------------------------ */
 
 export function ProgramsPage() {
@@ -225,8 +172,9 @@ export function ProgramsPage() {
           <Toc items={toc} />
         </div>
 
-        {/* ---------- 과정 개요 — 한 화면 높이 가운데, 스크롤해 보이면 펼쳐진다(사용자 지시 2026-10-04) ---------- */}
-        <HeroMore />
+        {/* ---------- 과정 개요 — 화면 폭 네 칸, 스크롤에 맞춰 차례로 떠오른다(vectrfl.com, 사용자 지시 2026-10-19).
+            왼쪽 두 칸 소개 글 · 오른쪽 두 칸 과정 개요 다섯 줄 ---------- */}
+        <OverviewReveal id="overview" title="1 Year Programs" paragraphs={heroMore} factsTitle="과정 개요" facts={facts} />
 
         {/* ---------- 배우는 역량(v8: 태도와 나눠 초입에 — 이 1년에서 무엇을 얻나에 먼저 답한다) ---------- */}
         <section id="pillars" className="section container">

@@ -33,7 +33,7 @@
    .hero__atf = 첫 화면: 한 화면 높이를 채우고 제목 → 지원하기를 세로 가운데에 둔다. 크롬 상단바 · 작업 표시줄로
    보이는 높이가 달라져도 위아래 여백 비율이 같다. 100svh = 주소창이 보이는 상태의 실제 높이.
    min-height라 내용이 한 화면보다 길면(작은 화면) 잘리지 않고 늘어난다. 투명한 상단바 때문에 위 64px은 늘 비운다.
-   다음은 한 화면 높이의 과정 개요(.hero-more) — 펼쳐져도 첫 화면(제목)은 움직이지 않는다 */
+   다음은 과정 개요(components/OverviewReveal) */
 .hero {
   display: flex;
   flex-direction: column;
@@ -104,73 +104,6 @@
 .hero[data-intro-style='together'] .apply-button { transition-delay: 0s, 0.1s, 0.1s; }
 /* 'together' 첫 화면: 캔버스가 뜨기 전(글꼴 로딩)엔 글을 투명하게 — 자리는 그대로라 캔버스가 같은 자리에 옮겨 그린다 */
 .hero[data-intro='rise'] :is(.hero__title, .hero__intro, .hero__period) { opacity: 0; }
-
-/* ---------- 과정 개요(사용자 지시 2026-10-04) ----------
-   히어로 바로 다음, 목차 맨 위. 왼쪽 소개 글 · 오른쪽 과정 개요. 한 화면 높이를 차지하고 내용은 세로 가운데 —
-   가운데 두면 위(히어로) · 아래(역량과 태도)가 보이지 않는다(아래는 섹션 윗여백 뒤에 시작).
-   스크롤해 보이면 높이 0fr → 1fr로 펼쳐지고 글은 흐림에서 떠오른다(Dropdown과 같은 곡선, 펼치기는 ProgramsPage HeroMore) */
-.hero-more {
-  --hm-ease: cubic-bezier(0.65, 0, 0.35, 1);
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  min-height: 100vh;
-  min-height: 100svh;
-  padding-block: var(--space-96); /* 위아래 같게(정가운데). 위는 고정된 상단바 아래 — 내용이 길어도 상단바에 가리지 않게 */
-}
-.hero-more__panel {
-  display: grid;
-  grid-template-rows: 0fr;
-  transition: grid-template-rows 520ms var(--hm-ease);
-}
-.hero-more[data-open='true'] .hero-more__panel { grid-template-rows: 1fr; }
-.hero-more__inner {
-  min-height: 0;
-  overflow: hidden;
-  display: grid;
-  grid-template-columns: var(--grid-template); /* 12열: 소개 글 6 + 과정 개요 6(사용자 지시 2026-10-07, 1fr + 420 · 최대 1040 → 다른 섹션과 같은 1200 기둥) */
-  column-gap: var(--grid-gap);
-  text-align: left;
-  opacity: 0;
-  filter: blur(10px);
-  transform: translateY(-8px);
-  transition: opacity 240ms var(--hm-ease), filter 240ms var(--hm-ease), transform 400ms var(--hm-ease);
-}
-.hero-more[data-open='true'] .hero-more__inner {
-  opacity: 1;
-  filter: blur(0);
-  transform: none;
-  transition: opacity 360ms var(--hm-ease) 120ms, filter 560ms var(--hm-ease) 120ms, transform 520ms var(--hm-ease) 120ms;
-}
-/* 펼친 글 위아래 여백은 안쪽에 둬야 접혔을 때 0이 된다 */
-.hero-more__text,
-.hero-more__facts { grid-column: span 6; padding-bottom: var(--space-8); }
-/* 두 칸 제목('1 Year Programs' · '과정 개요') — 아래 가는 선까지 같은 모양 */
-.hero-more__head { padding-bottom: var(--space-12); border-bottom: 1px solid var(--color-border); }
-.hero-more__facts .hero-more__head { border-bottom: 0; padding-bottom: 0; }
-.hero-more__para { margin-top: var(--space-16); line-height: 1.75; }
-/* 숫자 타일(v7): 2열, 마지막 타일은 한 줄 전체. 핵심 숫자는 Heading 크기, 보조 설명은 작게 */
-.fact-tiles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-8); margin-top: var(--space-16); }
-.fact-tile {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-12);
-  min-height: 136px;
-  padding: var(--space-20) var(--space-24);
-  border-radius: 20px;
-  background: var(--color-bg-subtle);
-}
-.fact-tile:last-child:nth-child(odd) { grid-column: 1 / -1; }
-.fact-tile dd { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--space-4) var(--space-12); margin-top: auto; }
-.fact-tile__big { font-size: var(--typo-heading-size); line-height: 1; font-weight: var(--font-weight-bold); letter-spacing: var(--tracking-heading); font-variant-numeric: tabular-nums; color: var(--color-text-primary); }
-.fact-tile__note { font-size: var(--typo-meta-size); color: var(--color-text-secondary); }
-@media (max-width: 900px) {
-  .hero-more__text, .hero-more__facts { grid-column: 1 / -1; }
-  .hero-more__facts { padding-top: var(--space-24); }
-}
-@media (prefers-reduced-motion: reduce) {
-  .hero-more__panel, .hero-more__inner { transition: none; }
-}
 
 /* ---------- Sections ---------- */
 .section {

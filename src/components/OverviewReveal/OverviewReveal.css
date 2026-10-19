@@ -1,0 +1,71 @@
+/* 과정 개요(2026-10-19) — vectrfl.com 기능 구간처럼 화면 폭 네 칸 + 스크롤에 맞춰 차례로 떠오름.
+   값은 OverviewReveal.tsx가 단계마다 --in(0 → 1)으로 준다. Tokens only. */
+.overview-reveal {
+  --ov-side: max(24px, 3vw); /* 배우는 역량 카드 줄과 같은 양옆 여백 */
+  position: relative;
+  /* 섹션 가운데 열을 벗어나 화면 폭 전체(가로 스크롤은 .page가 자른다) */
+  width: 100vw;
+  margin-left: calc(50% - 50vw);
+}
+/* 붙는 무대(넓은 화면): 이만큼 스크롤하는 동안 칸의 내용이 차례로 떠오른다 */
+.overview-reveal[data-pin] { height: calc(100svh + 180svh); }
+.overview-reveal__stage {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-96);
+  padding: var(--space-144) var(--ov-side) var(--space-96);
+}
+.overview-reveal[data-pin] .overview-reveal__stage {
+  position: sticky;
+  top: 0;
+  height: 100svh;
+  justify-content: center;
+  gap: clamp(48px, 9svh, 96px);
+  padding-block: 64px 4svh; /* 위 64px은 고정 상단바 */
+}
+
+.overview-reveal__title {
+  font-size: var(--typo-heading-size);
+  line-height: 1.2;
+  font-weight: var(--font-weight-bold);
+  letter-spacing: var(--tracking-heading);
+  color: var(--color-text-primary);
+}
+
+/* ---------- 네 칸: 칸마다 왼쪽 가는 세로선(처음부터 보인다), 과정 개요는 오른쪽 두 칸을 함께 ---------- */
+.overview-reveal__grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.ov-col { min-width: 0; padding: 0 var(--space-24); border-left: 1px solid var(--color-border); }
+.ov-col--facts { grid-column: span 2; padding-right: 0; }
+
+.ov-para { max-width: 34em; font-size: var(--typo-body-size); line-height: 1.75; letter-spacing: var(--tracking-body); color: var(--color-text-secondary); }
+
+/* 과정 개요: 제목 + 다섯 줄, 줄 사이 가는 선(v5) */
+.ov-facts__head { padding-bottom: var(--space-12); font-size: var(--typo-label-size); line-height: 1.2; font-weight: var(--font-weight-medium); letter-spacing: var(--tracking-body); color: var(--color-text-primary); }
+.ov-row {
+  display: grid;
+  grid-template-columns: 120px minmax(0, 1fr);
+  gap: var(--space-16);
+  padding: var(--space-16) 0;
+  border-top: 1px solid var(--color-border);
+}
+.ov-row dt { align-self: center; font-size: var(--typo-meta-size); font-weight: var(--font-weight-medium); color: var(--color-text-tertiary); }
+.ov-row dd { font-size: var(--typo-body-size); line-height: 1.5; letter-spacing: var(--tracking-body); color: var(--color-text-primary); }
+
+/* 떠오름: 80px 아래 · 투명 → 제자리 · 또렷(vectrfl과 같은 거리). 붙는 무대에서만 */
+.overview-reveal[data-pin] .ov-step {
+  opacity: var(--in, 1);
+  transform: translateY(calc((1 - var(--in, 1)) * 80px));
+  will-change: opacity, transform;
+}
+
+/* 좁은 화면: 붙는 무대 없이 두 칸 → 한 칸으로 쌓는다 */
+@media (max-width: 1100px) {
+  .overview-reveal__stage { gap: var(--space-48); padding: var(--space-96) var(--gutter) var(--space-48); }
+  .overview-reveal__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); row-gap: var(--space-48); }
+  .ov-col--facts { grid-column: 1 / -1; }
+}
+@media (max-width: 720px) {
+  .overview-reveal__grid { grid-template-columns: minmax(0, 1fr); row-gap: var(--space-32); }
+  .ov-col { padding: 0 0 0 var(--space-16); }
+  .ov-row { grid-template-columns: 96px minmax(0, 1fr); }
+}

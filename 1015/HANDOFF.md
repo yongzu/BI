@@ -165,3 +165,12 @@
   오른쪽은 v5 형식(타입 머리글 + 펼쳐지는 수업 줄, 한 번에 하나 · keepInPlace — 38a6943 기준). v6 카드 · 옆 패널은 삭제.
   역량 카드의 수업 버튼은 그 탭으로 바꾸고 그 줄을 펼쳐 스크롤한다.
 - 검증: 앱 내 브라우저는 창보다 큰 뷰포트를 흉내 내면 requestAnimationFrame이 멈춰 붙는 무대가 안 돈다 — 헤드리스 Chrome(CDP)으로 확인했다.
+
+## 2026-10-19 — 과정 개요 개편(새 버전 없이)
+
+- 사용자 지시: 과정 개요 섹션을 화면 폭 전체 네 칸(vectrfl.com "Designed for today's operations" 구간)으로, 스크롤에 따라 차례로 나오게.
+  왼쪽 두 칸 = 소개 글 두 문단, 오른쪽 두 칸 = 과정 개요 다섯 줄 + 구분선(v5 형식, facts의 value).
+- components/OverviewReveal: 큰 제목 "1 Year Programs" + 네 칸(칸 왼쪽 세로선은 처음부터). 붙는 무대(100svh + 180svh)에서
+  첫 문단 → 둘째 문단 → 과정 개요 제목 → 다섯 줄이 80px 아래에서 떠오른다(vectrfl과 같은 거리, 스크롤에 묶임).
+  1100px 이하 · 움직임 줄이기는 붙지 않고 모두 보인 채 2칸 → 1칸으로 쌓인다.
+- 예전 HeroMore(숫자 타일, 보이면 펼쳐짐)와 .hero-more · .fact-tile CSS는 삭제. data/programs.ts facts의 big · note는 이제 쓰지 않는다.
