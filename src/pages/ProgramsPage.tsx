@@ -9,14 +9,15 @@ import { HeroRipple, type RippleControl } from '../components/HeroRipple/HeroRip
 import { HeroLogo3D } from '../components/HeroLogo3D/HeroLogo3D';
 import { BackToTop, SiteHeader } from '../components/SiteHeader/SiteHeader';
 import { VersionLog } from '../components/VersionLog/VersionLog';
+import { ValueList } from '../components/ValueList/ValueList';
+import { ChangeChip, ChangeNotes } from '../components/ChangeNotes/ChangeNotes';
 import { courseProfiles } from '../data/courseProfiles';
 import { useScrollReveal } from '../hooks/useScrollReveal';
-import { keepInPlace } from '../smoothScroll';
-import type { Pillar } from '../data/programs';
 import {
   attitudes,
   competencies,
   courseTypes,
+  annualGuide,
   applyPeriod,
   devices,
   facts,
@@ -40,7 +41,7 @@ const toc: TocItem[] = [
 
 /** Blocks that rise in on scroll */
 // 히어로는 첫 화면 순서(흐린 제목 → 맑아짐 → 소개 · 기간)를 따로 가지므로 떠오르는 등장에서 뺀다
-const revealTargets = ['.section-header > *', '.group-label', '.group__lead', '.course-explorer', '.pillar-row', '.annual', '.device-card'].join(', ');
+const revealTargets = ['.section-header > *', '.group-label', '.group__lead', '.course-explorer', '.pillar-row', '.value-group__label', '.value-row', '.annual-guide', '.annual', '.device-row', '.closing__card'].join(', ');
 
 /* ------------------------------------------------------------------ */
 
@@ -49,7 +50,7 @@ const revealTargets = ['.section-header > *', '.group-label', '.group__lead', '.
  * 제목은 줄마다 보이지 않는 틀 안에서 아래에서 위로 올라온다(사용자 지시 2026-10-12, AI in Design Report 2026의 '01 Tools').
  * 여러 줄이면 배열로 — 줄마다 틀이 따로라 한 줄씩 차례로(Text 아래 .rise-line, programs.css).
  */
-function SectionHeader({ title, lead }: { title: string | string[]; lead?: ReactNode }) {
+function SectionHeader({ title, lead, change }: { title: string | string[]; lead?: ReactNode; change?: string }) {
   const lines = typeof title === 'string' ? [title] : title;
   return (
     <header className="section-header">
@@ -61,6 +62,8 @@ function SectionHeader({ title, lead }: { title: string | string[]; lead?: React
         ))}
       </Text>
       {lead && <Text typography="Lead" color="secondary">{lead}</Text>}
+      {/* v6 시안: 이 섹션이 바뀐 점 · 근거를 여는 작은 버튼(ChangeNotes) */}
+      {change && <ChangeChip id={change} />}
     </header>
   );
 }
@@ -160,61 +163,33 @@ function RowList({ items, start = 0, group, isOpen, isPinned, onToggle, onHover 
   );
 }
 
-const pillarRows = (items: Pillar[]): RowItem[] => items.map((p) => ({ id: p.en.replace(/\s+/g, '-').toLowerCase(), title: p.ko, sub: p.en, body: p.body }));
 
 /**
- * 수업을 관통하는 접근 — 배우는 자리(세션 안에서 · 스스로 돌아보기 · 세션 밖에서)마다 라벨 아래 박스 두 개.
- * 라벨은 역량과 태도의 '역량 · Competency'와 같은 크기 · 간격(사용자 지시 2026-10-05: 관찰 · 성찰 · 확장 머리글과 설명은
- * 볼륨이 너무 커서 걷어 내고 간단히 묶기만). 박스마다 붙던 태그는 라벨로 옮겼다. 박스에는 번호 · 장치 이름 · 결과 한 줄만
- * 보이고, 누르면 설명이 펼쳐진다(0fr → 1fr, 한 번 누르면 전체가 함께). 닫힌 박스는 작게, 펼친 박스는 설명이 가장 긴
- * 박스 크기로 모두 같다. 열린 설명을 눌러도 닫힌다 — 역량과 태도 목록과 같은 조작.
- * 회색 면 없는 흰 박스, 호버하면 회색 면 + 글이 오른쪽으로 살짝(사용자 지시 2026-10-04).
+ * 수업을 관통하는 접근(v6, 2026-10-19) — 배우는 자리(세션 안에서 · 스스로 돌아보기 · 세션 밖에서)마다 라벨 아래 줄 두 개.
+ * 줄 = 왼쪽 번호 · 장치 이름 · 결과 한 줄 / 오른쪽 설명, 모두 펼쳐 둔다(AI · ML · Data 채용의 혜택 3행).
+ * v5까지는 박스 하나를 누르면 여섯이 함께 열리고(누른 것과 바뀌는 것이 달랐다), 펼친 높이를 가장 긴 설명에 맞춰 짧은 박스가 비어 보였다.
+ * 설명이 짧고(2–4문장) 여섯 모두 읽어야 방법론이 보이므로 숨기지 않는다 — 누를 것이 없어졌다.
  */
-function DeviceGrid({ items }: { items: { name: string; tag: string; body: string }[] }) {
+function DeviceRows({ items }: { items: { name: string; tag: string; body: string }[] }) {
   const groups = [...new Set(items.map((d) => d.tag))]; // 데이터 순서대로
-  // 한 박스를 누르면 여섯 박스가 함께 여닫힌다(사용자 지시 2026-10-05)
-  const [open, setOpen] = useState(false);
-  const toggle = (card: HTMLElement | null) => {
-    if (card) keepInPlace(card);
-    setOpen((v) => !v);
-  };
   return (
     <div className="device-groups">
       {groups.map((tag) => (
         <section key={tag} className="device-group" aria-label={tag}>
-          {/* 분류 표시: 박스 이름(Title)과 같은 크기라 구분이 애매해 작은 회색 글씨 + 오른쪽 가는 선으로 낮췄다(사용자 지시 2026-10-05) */}
           <div className="device-group__label">
             <Text as="h3" typography="Label" color="secondary">{tag}</Text>
           </div>
-          <div className="grid-devices">
-      {items.map((d, i) => {
-        if (d.tag !== tag) return null;
-        const panelId = `device-panel-${i}`;
-        return (
-          <article key={d.name} className="device-card" data-pinned={open}>
-            <button type="button" className="device-card__hit" aria-expanded={open} aria-controls={panelId} onClick={(e) => toggle(e.currentTarget.closest<HTMLElement>('.device-card'))}>
-              {/* 호버하면 글 묶음(.device-card__lead)이 오른쪽으로 살짝 들어간다 */}
-              <span className="device-card__lead">
-                <span className="device-card__topline">
+          <div className="device-rows">
+            {items.map((d, i) => d.tag === tag && (
+              <article key={d.name} className="device-row">
+                <div className="device-row__lead">
                   <Text as="span" typography="Label" color="inherit" className="device-card__badge">{String(i + 1).padStart(2, '0')}</Text>
-                </span>
-                <Text as="h4" typography="Title" className="device-card__name">{d.name}</Text>
-                {deviceOutcomes[d.name] && <Text as="span" typography="Label" color="tertiary">{deviceOutcomes[d.name]}</Text>}
-              </span>
-            </button>
-            <div id={panelId} className="device-card__panel" role="region" aria-label={d.name} onClick={(e) => toggle(e.currentTarget.closest<HTMLElement>('.device-card'))}>
-              <div className="device-card__clip">
-                {/* 여섯 설명을 한 칸에 겹쳐 두고 자기 설명만 보인다 — 펼친 높이가 늘 가장 긴 설명에 맞춰진다 */}
-                <div className="device-card__body">
-                  {items.map((o) => (
-                    <Text key={o.name} typography="Body" color="secondary" className="device-card__text" data-ghost={o !== d} aria-hidden={o !== d}>{o.body}</Text>
-                  ))}
+                  <Text as="h4" typography="Title">{d.name}</Text>
+                  {deviceOutcomes[d.name] && <Text as="p" typography="Label" color="tertiary">{deviceOutcomes[d.name]}</Text>}
                 </div>
-              </div>
-            </div>
-          </article>
-        );
-      })}
+                <Text typography="Body" color="secondary" className="device-row__body">{d.body}</Text>
+              </article>
+            ))}
           </div>
         </section>
       ))}
@@ -346,6 +321,7 @@ export function ProgramsPage() {
     <>
       <SiteHeader />
       <BackToTop />
+      <ChangeNotes />
       <main className="page">
         {/* ---------- Hero ---------- */}
         <section className="hero container" aria-labelledby="hero-title" data-intro={introDone ? 'done' : INTRO_STYLE === 'together' ? 'rise' : 'blur'} data-intro-style={INTRO_STYLE}>
@@ -363,9 +339,12 @@ export function ProgramsPage() {
             </BlurReveal>
 
             {/* 과정 개요 대신 지원 기간 + 지원하기 — 토스뱅크 디자인 채용 히어로를 따름(사용자 지시 2026-10-03) */}
+            {/* v6: 기간 옆에 모집 상태를 글자로(파동이 기간 줄을 캔버스로 다시 그리므로 배지 면 대신 흐린 글자) */}
             <div className="hero__apply">
-              <Text typography="Label" className="hero__period">{applyPeriod.label}</Text>
-              <ApplyButton href={applyPeriod.href}>지원하기</ApplyButton>
+              <Text typography="Label" className="hero__period">
+                {applyPeriod.label}<span className="hero__status"> · {applyPeriod.status}</span>
+              </Text>
+              <ApplyButton href={applyPeriod.href}>{applyPeriod.cta}</ApplyButton>
             </div>
           </div>
 
@@ -385,15 +364,14 @@ export function ProgramsPage() {
 
         {/* ---------- 역량과 태도 ---------- */}
         <section id="pillars" className="section container">
-          <SectionHeader title="역량과 태도" lead="어떤 환경에서도 스스로 답을 찾을 수 있는 사고방식을 만들기 위해, Phi는 아래 역량과 태도를 중요시합니다." />
-          {/* 휠(v2) → 가로 두 줄 상자(v3, 컴포넌트는 PillarStrip으로 남겨 둠) → v1의 두 단 줄 목록으로 되돌림(v4, 사용자 지시 2026-10-14):
-              역량은 왼쪽, 태도는 오른쪽 — 한 줄을 누르면 양쪽 전체가 함께 여닫힌다 */}
+          <SectionHeader title="역량과 태도" change="pillars" lead="어떤 환경에서도 스스로 답을 찾을 수 있는 사고방식을 만들기 위해, Phi는 아래 역량과 태도를 중요시합니다." />
+          {/* 휠(v2) → 가로 두 줄 상자(v3, PillarStrip) → 두 단 줄 목록(v4 · v5, RowColumns) →
+              v6: 묶음을 위아래로, 왼쪽 라벨 · 오른쪽 줄(번호 · 이름 · 늘 보이는 요약, 누르면 전문) — toss.im/company Culture */}
           <div className="group">
-            <RowColumns
-              numbering="restart"
-              columns={[
-                { id: 'pillars-competency', label: '역량 · Competency', items: pillarRows(competencies) },
-                { id: 'pillars-attitude', label: '태도 · Phi OS', items: pillarRows(attitudes) },
+            <ValueList
+              groups={[
+                { id: 'pillars-competency', name: '역량', en: 'Competency', definition: '수업에서 기르는 다섯 가지 능력. 커리큘럼의 수업마다 태그로 붙는다.', items: competencies },
+                { id: 'pillars-attitude', name: '태도', en: 'Phi OS', definition: '배우는 사람이 지니는 다섯 가지 자세.', items: attitudes },
               ]}
             />
           </div>
@@ -403,14 +381,27 @@ export function ProgramsPage() {
         <section id="curriculum-annual" className="section container">
           <SectionHeader
             title="연간 구조"
+            change="annual"
             lead="2026년 8월 개강부터 2027년 8월 졸업까지, 두 학기와 방학 캠프, 졸업 프로젝트로 이어지는 1년입니다."
           />
+          {/* v6: 늘 보이는 안내 표 — 한 주 리듬 · 방학 · 수료 · 졸업 조건을 시간축 위로 꺼냈다(토스 채용 이벤트의 지원 안내 표) */}
+          <dl className="annual-guide">
+            {annualGuide.map((g) => (
+              <div key={g.label} className="annual-guide__row">
+                <Text as="dt" typography="Label" color="tertiary">{g.label}</Text>
+                <dd>
+                  <Text as="span" typography="Body">{g.value}</Text>
+                  {g.note && <Text as="span" typography="Meta" color="tertiary" className="annual-guide__note">{g.note}</Text>}
+                </dd>
+              </div>
+            ))}
+          </dl>
           <AnnualTimeline stages={stages} months={months} />
         </section>
 
         {/* ---------- 커리큘럼 ---------- */}
         <section id="curriculum" className="section container">
-          <SectionHeader title="커리큘럼" lead="상기된 역량과 태도를 중심으로 설계된 1학기 수업들입니다. 2학기는 1학기의 성취에 따라 학습 효과를 보완, 증폭할 수 있는 방향으로 준비됩니다." />
+          <SectionHeader title="커리큘럼" change="curriculum" lead="상기된 역량과 태도를 중심으로 설계된 1학기 수업들입니다. 2학기는 1학기의 성취에 따라 학습 효과를 보완, 증폭할 수 있는 방향으로 준비됩니다." />
 
           {/* 필터 · 수업 목록 · 상세를 한 화면에 — 클릭 없이 전체를 파악한다 */}
           <div id="courses" className="group">
@@ -422,12 +413,13 @@ export function ProgramsPage() {
         <section id="devices" className="section container">
           <SectionHeader
             title={['수업을', '관통하는 접근']}
+            change="devices"
             lead={<>Phi의 교육은 인지적 도제(Cognitive Apprenticeship)를 토대로 설계되었습니다.<br />전문가의 사고 과정을 학습자가 능동적으로 관찰할 수 있도록 다양한 장치가 준비되어있습니다.</>}
           />
           {/* 두 단 목록을 시험해 본 뒤 박스로 되돌림(사용자 지시 2026-09-30) */}
           <div className="group">
             {/* '핵심 수업 장치' 라벨은 배우는 자리 라벨 셋이 대신한다(2026-10-05) */}
-            <DeviceGrid items={devices} />
+            <DeviceRows items={devices} />
           </div>
         </section>
 
@@ -438,6 +430,22 @@ export function ProgramsPage() {
           <div className="group">
             <GroupLabel>with Toss</GroupLabel>
             <RowColumns collapsible={false} columns={[{ items: careerRows.slice(0, 1) }, { items: careerRows.slice(1) }]} />
+          </div>
+        </section>
+
+        {/* ---------- 마무리 — 히어로의 문장 · 기간 · 버튼을 한 번 더(v6, 토스 채용 이벤트 세 곳의 마무리 CTA) ----------
+            다 읽은 사람이 맨 위로 돌아가지 않고 바로 신청한다. 연출은 히어로에만 두므로 여기는 정적인 면 하나 */}
+        <section className="closing container" aria-labelledby="closing-title">
+          <div id="closing" className="closing__card">
+            <ChangeChip id="closing" />
+            <Text as="p" typography="Label" color="tertiary">1 Year Programs</Text>
+            <Text as="h2" id="closing-title" typography="Heading" className="closing__title">
+              {heroStatement.lines.map((line) => <span key={line}>{line}</span>)}
+            </Text>
+            <Text as="p" typography="Label" className="closing__period">
+              {applyPeriod.label}<span className="hero__status"> · {applyPeriod.status}</span>
+            </Text>
+            <ApplyButton href={applyPeriod.href}>{applyPeriod.cta}</ApplyButton>
           </div>
         </section>
         </div>

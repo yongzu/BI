@@ -87,6 +87,7 @@
     transform 900ms cubic-bezier(0.22, 1, 0.36, 1) 900ms;
 }
 .hero[data-intro='blur'] .hero__period { opacity: 0; filter: blur(15px); transform: translateY(10px); }
+.hero__status { color: var(--color-text-tertiary); }
 .hero .apply-button {
   padding: max(13px, 16 * var(--fs)) max(28px, 35 * var(--fs));
   border-radius: max(20px, 24 * var(--fs));
@@ -204,10 +205,53 @@
 
 .annual { margin-top: var(--space-48); }
 /* 연간 구조는 자기 섹션의 머리글 아래 — 다른 섹션의 첫 그룹과 같은 간격으로 */
-.section-header + .annual { margin-top: var(--space-after-header); }
+.section-header + .annual,
+.section-header + .annual-guide { margin-top: var(--space-after-header); }
+.annual-guide + .annual { margin-top: var(--space-64); }
+
+/* 연간 구조 안내 표(v6): 12열 — 항목 이름 2열 · 내용 10열, 가로줄만. 보조 설명은 내용 아래 흐리게 */
+.annual-guide { border-top: 1px solid var(--color-text-primary); }
+.annual-guide__row {
+  display: grid;
+  grid-template-columns: var(--grid-template);
+  column-gap: var(--grid-gap);
+  align-items: baseline;
+  padding: var(--space-20) 0;
+  border-bottom: 1px solid var(--color-border);
+}
+.annual-guide__row dt { grid-column: span 2; }
+.annual-guide__row dd { grid-column: span 10; display: flex; flex-wrap: wrap; align-items: baseline; column-gap: var(--space-16); row-gap: var(--space-4); }
+.annual-guide__row dd > :first-child { color: var(--color-text-primary); }
+@media (max-width: 720px) {
+  .annual-guide__row { row-gap: var(--space-4); }
+  .annual-guide__row :is(dt, dd) { grid-column: 1 / -1; }
+  .annual-guide__row dd { flex-direction: column; }
+}
 
 /* ---------- Courses: 필터 · 목록 · 상세는 components/CourseExplorer ---------- */
 
+
+/* ---------- 마무리(v6) — 히어로의 문장 · 기간 · 버튼을 회색 면 하나에 다시. 채용 연계 다음, 푸터 위 ----------
+   채용 연계가 마지막 섹션이라 그 아래 여백(--space-section) 대신 이 블록이 페이지를 닫는다 */
+.section--last:has(+ .closing) { padding-bottom: 0; }
+.closing { padding-block: var(--space-section) var(--space-160); }
+.closing__card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-24);
+  padding: var(--space-112) var(--space-40);
+  border-radius: 32px;
+  background: var(--color-bg-subtle);
+  text-align: center;
+}
+.closing__title { display: flex; flex-direction: column; color: var(--color-text-primary); }
+.closing__period { margin-top: var(--space-16); color: var(--color-text-primary); }
+.closing .apply-button { margin-top: var(--space-8); }
+@media (max-width: 720px) {
+  .closing { padding-bottom: var(--space-96); }
+  .closing__card { padding: var(--space-64) var(--space-24); border-radius: 24px; }
+}
 
 /* ---------- Footer ---------- */
 .footer {
@@ -314,11 +358,7 @@
 .pillar-list[data-static='true'] .pillar-row__panel,
 .pillar-list[data-static='true'] .pillar-row__body { transition: none; }
 
-/* ---------- Teaching devices: 한 줄에 2개 ----------
-   닫힌 박스는 작게, 펼친 박스는 모두 같은 크기(사용자 지시 2026-09-29).
-   align-items: start — 한 박스가 펼쳐져도 옆 박스는 작은 채로 남는다.
-   회색 면 없는 흰 박스(사용자 지시 2026-10-04) — 호버하면 회색 면 + 글 묶음이 오른쪽으로 12px + 아이콘이 진해진다.
-   누르면 설명이 펼쳐진다(호버만으로는 안 펼침) */
+/* ---------- 수업을 관통하는 접근 ---------- */
 /* 배우는 자리 묶음: 라벨(역량 · Competency와 같은 Title) 아래 45px에 박스 — 역량과 태도 목록과 같은 간격(사용자 지시 2026-10-05).
    묶음 사이는 그룹 사이 간격. 박스를 양옆으로 24px 내밀어 박스 안 글자가 라벨과 같은 선에 선다 */
 .device-group + .device-group { margin-top: var(--space-group-stack); }
@@ -327,68 +367,32 @@
 .device-group__label { display: flex; align-items: center; gap: var(--space-16); }
 .device-group__label > * { flex: none; font-size: var(--typo-meta-size); }
 .device-group__label::after { content: ''; flex: 1; height: 1px; background: var(--color-border); }
-/* 12열 6 + 6(사용자 지시 2026-10-07). 그리드를 통째로 내밀던 것(-24px) 대신 박스마다 양옆 20px을 내민다 —
-   박스 안 글자는 열 선(라벨 · 역량과 태도 목록과 같은 선)에 서고, 내민 20 + 20 = 열 간격 40이라 이웃 박스와 겹치지 않는다.
-   역량과 태도 줄(--row-pad-x 20)과 같은 내밀기 */
-.grid-devices { display: grid; grid-template-columns: var(--grid-template); align-items: start; gap: var(--space-20) var(--grid-gap); margin-top: var(--space-16); }
-.device-card {
-  grid-column: span 6;
-  margin-inline: calc(-1 * var(--space-20));
-  border-radius: 20px;
-  transition: background var(--duration) var(--ease);
+/* 줄(v6): 12열 — 왼쪽 4열 번호 · 이름 · 결과 한 줄, 오른쪽 8열 설명. 모두 펼쳐 둔다. 줄 사이는 가는 선 */
+.device-rows { margin-top: var(--space-8); }
+.device-row {
+  display: grid;
+  grid-template-columns: var(--grid-template);
+  column-gap: var(--grid-gap);
+  align-items: start;
+  padding: var(--space-28) 0;
 }
-.device-card__hit {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: var(--space-16);
-  width: 100%;
-  padding: var(--space-24) var(--space-20) var(--space-28);
-  border-radius: 20px;
-  text-align: left;
-  cursor: var(--cursor-pointer);
-}
-.device-card__lead {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-8);
-  min-width: 0;
-  transition: transform 600ms cubic-bezier(0.34, 1.32, 0.64, 1);
-}
-.device-card__hit:focus-visible { outline: 2px solid var(--color-text-primary); outline-offset: 2px; }
-.device-card__topline { display: flex; align-items: center; }
-/* 설명: 높이 0fr → 1fr로 부드럽게 펼치고, 글자는 살짝 늦게 떠오른다 */
-.device-card__panel { display: grid; grid-template-rows: 0fr; cursor: var(--cursor-pointer); transition: grid-template-rows 480ms var(--ease-reveal); }
-.device-card__clip { min-height: 0; overflow: hidden; }
-.device-card__body { display: grid; padding: 0 var(--space-20) var(--space-28); opacity: 0; transform: translateY(-6px); transition: opacity 240ms var(--ease), transform 480ms var(--ease-reveal); }
-/* 모든 설명이 같은 칸에 겹친다 → 펼친 높이 = 가장 긴 설명. 남의 설명은 자리만 차지한다 */
-.device-card__text { grid-area: 1 / 1; }
-.device-card__text[data-ghost='true'] { visibility: hidden; }
-.device-card[data-pinned='true'] .device-card__panel { grid-template-rows: 1fr; }
-.device-card[data-pinned='true'] .device-card__body { opacity: 1; transform: none; transition-delay: 80ms; }
-@media (hover: hover) {
-  .device-card:hover { background: var(--color-bg-hover); }
-  .device-card:hover .device-card__lead { transform: translateX(12px); }
-  /* 회색 면이 깔리면 번호 알약은 흰색으로 뒤집어 묻히지 않게(커리큘럼 태그와 같은 규칙) */
-  .device-card:hover .device-card__badge { background: var(--color-bg-default); }
-}
-/* 번호 알약 — 흰 박스 위에선 회색, 호버로 회색 면이 깔리면 흰색 */
+.device-row + .device-row { border-top: 1px solid var(--color-border); }
+.device-row__lead { grid-column: span 4; display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-8); }
+.device-row__body { grid-column: span 8; max-width: 640px; }
+/* 번호 알약 */
 .device-card__badge {
-  align-self: flex-start;
   padding: var(--space-4) var(--space-8);
   border-radius: 20px;
   corner-shape: squircle;
   background: var(--color-bg-subtle);
-  transition: background var(--duration) var(--ease);
   color: var(--color-text-primary);
   font-size: var(--typo-caption-size);
   line-height: 1.3;
   font-weight: var(--font-weight-bold);
 }
-.device-card__name { margin-top: var(--space-8); }
-@media (max-width: 900px) { .device-card { grid-column: 1 / -1; } }
-@media (max-width: 720px) {
-  .device-card { margin-inline: 0; }
+@media (max-width: 900px) {
+  .device-row { row-gap: var(--space-12); }
+  .device-row__lead, .device-row__body { grid-column: 1 / -1; }
 }
 
 
@@ -396,4 +400,11 @@
   .pillar-list { --row-pad-x: 12px; }
   .pillar-row__lead { grid-template-columns: 36px minmax(0, 1fr); gap: var(--space-12); }
   .pillar-row__body { padding: var(--space-4) var(--space-40) var(--space-24) calc(36px + var(--space-12) + var(--row-pad-x)); }
+}
+
+/* v6 시안: 섹션 머리글의 "바뀐 점" 버튼 — 리드 아래, 리드와 같은 열에서 시작 */
+.section-header > .change-chip { grid-column: 5 / span 8; justify-self: start; }
+.closing__card > .change-chip { margin-bottom: var(--space-8); }
+@media (max-width: 900px) {
+  .section-header > .change-chip { grid-column: 1 / -1; }
 }

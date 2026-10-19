@@ -1,23 +1,18 @@
-import { useEffect, useRef, useState, type CSSProperties } from 'react';
+import { useState } from 'react';
 import { Text } from '../Text/Text';
 import './AnnualTimeline.css';
 
 /**
- * Annual structure as a zoomable timeline.
- * - Overview: all stages sit side by side on one row, placed on a month axis
- *   (상단 필터 칩을 없애고 4줄 → 1줄, 사용자 지시 2026-09-29).
- * - Filter on top (전체 + each stage): the same controls as the bars.
- * - Click a stage (bar or filter): the axis zooms a little toward that stage's months and the bar
- *   grows into a detail card. Click it again, click another stage, choose "전체", or click anywhere
- *   outside the timeline to return to the overview. 호버만으로 미리 펼치던 동작은 없앴다 — 막대 위를
- *   훑기만 해도 축 전체가 확대되며 시각을 자극했다(사용자 지시 2026-10-05). 호버는 막대 테두리만.
- * - 움직임을 줄였다(2026-10-05): 확대는 최대 1.2배, 짧은 단계는 축 대신 카드만 읽을 수 있는 폭까지 넓어진다.
- * - Opening a stage doesn't scroll the page — 카드가 보이게 위로 옮기던 자동 스크롤은 방해된다고 해 없앴다
- *   (사용자 지시 2026-10-05).
- * - Stages with `items` (방학 + 캠프 · 수료 & 졸업) stack those as boxes inside the open card
- *   — the two stages replace their old sections (사용자 지시 2026-09-30).
- * Everything is positioned in % of the current view window, so a single state
- * change animates bars, month labels and grid lines together via CSS transitions.
+ * 연간 구조 — 월 축 위의 네 막대 + 축 아래 고정 상세 칸(v6, 2026-10-19).
+ *
+ * v5까지는 막대를 누르면 축이 확대되고(최대 1.2배) 그 막대가 상세 카드로 넓어졌다. 짧은 단계(2개월)가 긴 단계(4개월)보다
+ * 넓게 그려져 "길이 = 기간"이라는 시간축의 약속이 깨졌고, 바깥을 누르면 닫혀 글을 고르다 사라졌다.
+ * v6은 toss.im/company History(기간 탭을 고르면 아래 칸의 내용이 바뀜)를 따른다:
+ * - 축은 움직이지 않는다. 막대 길이는 늘 기간 그대로.
+ * - 위 세그먼트와 막대는 같은 하나의 선택. 고르면 축 아래 상세 칸의 내용만 바뀐다. 처음엔 1학기가 골라져 있어
+ *   누르기 전에도 "여기에 무엇이 나오는지" 보인다. '전체'는 없앴다 — 전체는 축 자체가 보여 준다.
+ * - 바깥을 눌러도 닫히지 않는다(본문이지 팝오버가 아니다).
+ * - 네 단계의 상세를 한 칸에 겹쳐 두고 고른 것만 보인다 — 칸 높이가 가장 긴 상세에 맞춰져, 단계를 바꿔도 아래 섹션이 흔들리지 않는다.
  */
 export type StageItem = { name: string; label: string; body: string };
 /** 한 주의 수업 리듬 — 요일마다 오전 · 오후 수업 이름(null = 없음)과 각 시간대 */
@@ -33,157 +28,79 @@ export type Stage = { name: string; period: string; marker?: string; start: numb
 
 type Props = { stages: Stage[]; months: number[] };
 
-/*
- * Zoom (줌을 줄임, 사용자 지시 2026-09-30 · 2026-10-05): the view stays at least ZOOM_FLOOR of the year
- * (max 1.2×) and leaves the stage breathing room. The axis no longer zooms further to make a short stage's
- * card readable — instead the open card alone widens to CARD_MIN px (sliding left if it would overflow),
- * overlapping its muted neighbours. On a phone the card takes 90% of the chart.
- */
-const ZOOM_FLOOR = 1 / 1.2; // the view never shows less than 83% of the year (max 1.2×)
-const ZOOM_ROOM = 1.4; // view ≥ (stage + 1 month on each side) × 1.4
-const CARD_MIN = 320; // px — the open card is never narrower than this (if the chart is wide enough)
-// Stages with boxes (방학 + 캠프 · 수료 & 졸업) open wider so the boxes read comfortably
-// (사용자 지시 2026-09-30); on a narrow chart the card takes 90% of it
-const CARD_MIN_WITH_ITEMS = 600;
-
 export function AnnualTimeline({ stages, months }: Props) {
-  const [pinned, setPinned] = useState<number | null>(null);
-  const [chartWidth, setChartWidth] = useState(0);
-  const root = useRef<HTMLDivElement>(null);
-
-  const selected = pinned;
-  const total = months.length; // axis spans [0, total]
-
-  // Track the chart's width so the zoom can keep the open card readable: measured on every
-  // click (always fresh) and kept current while a stage is open and the window resizes
-  const measure = () => { if (root.current) setChartWidth(root.current.clientWidth); };
-  useEffect(() => {
-    const el = root.current;
-    if (!el) return;
-    const ro = new ResizeObserver(([entry]) => setChartWidth(entry.contentRect.width));
-    ro.observe(el);
-    return () => ro.disconnect();
-  }, []);
-
+  const [selected, setSelected] = useState(0);
+  const total = months.length; // axis spans [0, total] — 눈금 13개, 마지막 단계는 13에서 끝난다
+  const pct = (x: number) => `${(x / total) * 100}%`;
   const barEnd = (i: number) => stages[i + 1]?.start ?? stages[i].end;
-  const view = (() => {
-    if (selected === null) return { from: 0, to: total };
-    const start = stages[selected].start;
-    const length = barEnd(selected) - start;
-    const size = Math.min(total, Math.max(total * ZOOM_FLOOR, (length + 2) * ZOOM_ROOM));
-    // Centre the stage, but stay inside the year so no empty axis shows at either end
-    const from = Math.min(Math.max(start + length / 2 - size / 2, 0), total - size);
-    return { from, to: from + size };
-  })();
-  const span = view.to - view.from;
-  const pct = (x: number) => `${((x - view.from) / span) * 100}%`;
-  const len = (d: number) => `${(d / span) * 100}%`;
-  const inFocus = (m: number) => selected !== null && m >= Math.floor(stages[selected].start) && m < Math.ceil(stages[selected].end);
-
-  const pin = (i: number | null) => {
-    const next = i === null || pinned === i ? null : i;
-    measure();
-    setPinned(next);
-  };
-
-  // Clicking anywhere outside the timeline returns a pinned view to the overview
-  useEffect(() => {
-    if (pinned === null) return;
-    const onDown = (e: PointerEvent) => {
-      if (root.current && !root.current.contains(e.target as Node)) {
-        setPinned(null);
-      }
-    };
-    document.addEventListener('pointerdown', onDown);
-    return () => document.removeEventListener('pointerdown', onDown);
-  }, [pinned]);
+  const inFocus = (m: number) => m >= Math.floor(stages[selected].start) && m < Math.ceil(stages[selected].end);
 
   return (
-    <div ref={root} className="annual" data-zoomed={selected !== null}>
-      {/* 상단 필터(다시 추가, 사용자 지시 2026-09-30): 누르면 펼치고, '전체'는 개요로 */}
-      <div className="segmented annual__filter" role="group" aria-label="연간 구조 보기">
-        <button type="button" className="segmented__tab" aria-pressed={selected === null} onClick={() => pin(null)}>
-          전체
-        </button>
+    <div className="annual">
+      <div className="segmented annual__filter" role="group" aria-label="연간 구조 단계">
         {stages.map((s, i) => (
-          <button
-            key={s.name}
-            type="button"
-            className="segmented__tab"
-            aria-pressed={selected === i}
-            onClick={() => pin(i)}
-          >
+          <button key={s.name} type="button" className="segmented__tab" aria-pressed={selected === i} aria-controls="annual-panel" onClick={() => setSelected(i)}>
             {s.name}
           </button>
         ))}
       </div>
 
       <div className="annual__chart">
-        {/* Month axis + grid lines share the same scale as the bars */}
         <div className="annual__axis" aria-hidden="true">
           {months.map((m, i) => (
-            // 맨 왼쪽 눈금(차트 왼쪽 끝)의 월 글자는 가운데 정렬이면 반이 잘린다 — 오른쪽으로 붙인다(사용자 제보 2026-10-05)
-            <span key={i} className="annual__tick" data-focus={inFocus(i)} data-edge={i - view.from <= 0.001 && i - view.from >= -0.001} style={{ left: pct(i) }}>
+            <span key={i} className="annual__tick" data-focus={inFocus(i)} data-edge={i === 0} style={{ left: pct(i) }}>
               <span className="annual__month">{m}</span>
             </span>
           ))}
         </div>
-
         <ol className="annual__rows">
-          {stages.map((s, i) => {
-            const isSelected = selected === i;
-            // 캡슐 모양은 그대로, 캡슐 사이 간격만 없앤다(사용자 지시 2026-09-29): 각 막대가 다음 단계 시작점까지 이어진다
-            let style: CSSProperties = { marginLeft: pct(s.start), width: len(barEnd(i) - s.start) };
-            // 펼친 카드는 축을 더 확대하는 대신 저만 읽을 수 있는 폭까지 넓어지고, 넘치면 왼쪽으로 비켜 선다
-            if (isSelected && chartWidth > 0) {
-              const cardMin = Math.min(s.items ? CARD_MIN_WITH_ITEMS : CARD_MIN, chartWidth * 0.9);
-              const left = ((s.start - view.from) / span) * chartWidth;
-              const width = Math.max(((barEnd(i) - s.start) / span) * chartWidth, cardMin);
-              const x = Math.max(0, Math.min(left, chartWidth - width));
-              style = { marginLeft: `${(x / chartWidth) * 100}%`, width: `${(width / chartWidth) * 100}%` };
-            }
-            return (
-              <li key={s.name} className="annual__row">
-                {/* 막대 전체가 누르는 영역이고, 키보드 · 보조기기용 버튼은 이름 줄이다 — 펼친 카드 안에
-                    링크(1학기 일정)를 둘 수 있도록 막대를 버튼에서 영역으로 바꿨다(2026-09-30) */}
-                <div
-                  className="annual__bar"
-                  data-state={isSelected ? 'selected' : selected === null ? 'idle' : 'muted'}
-                  data-pinned={pinned === i}
-                  style={style}
-                  onClick={() => pin(i)}
-                >
-                  <button type="button" className="annual__bar-head" aria-expanded={isSelected} aria-pressed={pinned === i} aria-controls={`annual-detail-${i}`}>
-                    <span className="annual__bar-name">{s.name}</span>
-                  </button>
-                  <div id={`annual-detail-${i}`} className="annual__detail" inert={!isSelected}>
-                    <div className="annual__detail-inner">
-                      <span className="annual__meta">
-                        <Text as="span" typography="Label" color="inherit">{s.period}</Text>
-                        {s.marker && <span className="annual__badge">{s.marker}</span>}
-                      </span>
-                      <Text as="span" typography="Body" color="inherit" className="annual__body">{s.body}</Text>
-                      {/* 캠프 · 수료와 졸업: 박스를 세로로 쌓는다 */}
-                      {s.items && (
-                        <span className="annual__items">
-                          {s.items.map((item) => (
-                            <span key={item.name} className="annual__item">
-                              <span className="annual__item-name">{item.name}</span>
-                              <span className="annual__item-label">{item.label}</span>
-                              <span className="annual__item-body">{item.body}</span>
-                            </span>
-                          ))}
-                        </span>
-                      )}
-                      {/* 주간 리듬: 예전 '주간 시간표' 섹션을 이 단계 안으로(사용자 지시 2026-09-30) */}
-                      {s.rhythm && <WeekRhythm rhythm={s.rhythm} />}
-                    </div>
-                  </div>
-                </div>
-              </li>
-            );
-          })}
+          {stages.map((s, i) => (
+            <li key={s.name} className="annual__row">
+              {/* 막대 = 세그먼트와 같은 선택. 길이는 기간 그대로(다음 단계 시작점까지) */}
+              <button
+                type="button"
+                className="annual__bar"
+                data-state={selected === i ? 'selected' : 'idle'}
+                aria-pressed={selected === i}
+                aria-controls="annual-panel"
+                style={{ marginLeft: pct(s.start), width: pct(barEnd(i) - s.start) }}
+                onClick={() => setSelected(i)}
+              >
+                <span className="annual__bar-name">{s.name}</span>
+              </button>
+            </li>
+          ))}
         </ol>
+      </div>
+
+      {/* 고정 상세 칸: 네 상세를 겹쳐 두고 고른 것만 보인다 */}
+      <div id="annual-panel" className="annual__panel" role="region" aria-live="polite" aria-label={`${stages[selected].name} 상세`}>
+        {stages.map((s, i) => (
+          <div key={s.name} className="annual__stage" data-active={selected === i} aria-hidden={selected !== i} inert={selected !== i}>
+            <div className="annual__stage-head">
+              <Text as="h3" typography="Title">{s.name}</Text>
+              <span className="annual__meta">
+                <Text as="span" typography="Meta" color="secondary">{s.period}</Text>
+                {s.marker && <span className="annual__badge">{s.marker}</span>}
+              </span>
+            </div>
+            <div className="annual__stage-body">
+              <Text typography="Body" color="secondary" className="annual__body">{s.body}</Text>
+              {s.items && (
+                <span className="annual__items">
+                  {s.items.map((item) => (
+                    <span key={item.name} className="annual__item">
+                      <span className="annual__item-name">{item.name}</span>
+                      <span className="annual__item-label">{item.label}</span>
+                      <span className="annual__item-body">{item.body}</span>
+                    </span>
+                  ))}
+                </span>
+              )}
+              {s.rhythm && <WeekRhythm rhythm={s.rhythm} />}
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   );
@@ -191,7 +108,7 @@ export function AnnualTimeline({ stages, months }: Props) {
 
 /**
  * 주간 리듬 박스: 요일 다섯 칸 × 오전 · 점심 · 오후. 세션 칸은 세로로 크게, 칸마다 시간과 세션 이름을
- * 적고 점심시간은 한 줄로 가로지른다(예전 주간 시간표처럼, 사용자 지시 2026-09-30). 카드 폭은 그대로.
+ * 적고 점심시간은 한 줄로 가로지른다(예전 주간 시간표처럼, 사용자 지시 2026-09-30).
  * 칸이 좁아지면(휴대폰) 시간은 칸에서 빠져 각 줄 위의 머리글로 올라간다.
  */
 function WeekRhythm({ rhythm }: { rhythm: StageRhythm }) {
@@ -235,8 +152,7 @@ function WeekRhythm({ rhythm }: { rhythm: StageRhythm }) {
         {sessionRow('pm')}
       </span>
       <span className="annual__item-body">{rhythm.body}</span>
-      {/* 막대를 누르면 카드가 닫히므로, 링크를 누를 때는 그 클릭이 막대로 올라가지 않게 한다 */}
-      <a className="annual__link" href={rhythm.link.href} target="_blank" rel="noreferrer" onClick={(e) => e.stopPropagation()}>
+      <a className="annual__link" href={rhythm.link.href} target="_blank" rel="noreferrer">
         {rhythm.link.label}
       </a>
     </span>

@@ -1,21 +1,14 @@
-/* Rounded, monotone take on the zooming annual timeline. Tokens only. */
+/* 연간 구조(v6) — 움직이지 않는 월 축 + 네 막대 + 축 아래 고정 상세 칸. Tokens only. */
 .annual {
-  /* 빠르게 출발해 길게 감속 — 앞뒤가 모두 급한 곡선(0.65, 0, 0.35, 1)은 툭 튀어나왔다 툭 멈춰 자극적이었다(사용자 지시 2026-10-05) */
   --tl-ease: cubic-bezier(0.22, 1, 0.36, 1);
-  --tl-duration: 480ms; /* 640 → 360(2026-09-22) → 480: 감속이 길어진 만큼 */
-  --tl-bar-height: 36px;
+  --tl-bar-height: 40px;
 }
 
 /* ---------- Filter (모양은 styles/segmented.css) ---------- */
 .annual__filter { margin-bottom: var(--space-24); }
 
-/* ---------- Chart ---------- */
-.annual__chart {
-  position: relative;
-  padding-top: var(--space-40); /* room for month labels */
-  overflow: hidden;
-}
-
+/* ---------- Chart: 축은 고정, 막대 길이 = 기간 ---------- */
+.annual__chart { position: relative; padding-top: var(--space-40); }
 .annual__axis { position: absolute; inset: 0; pointer-events: none; }
 .annual__tick {
   position: absolute;
@@ -23,7 +16,7 @@
   bottom: 0;
   width: 0;
   border-left: 1px dashed var(--color-border);
-  transition: left var(--tl-duration) var(--tl-ease), border-color var(--tl-duration) var(--tl-ease);
+  transition: border-color 360ms var(--tl-ease);
 }
 .annual__month {
   position: absolute;
@@ -36,71 +29,29 @@
   line-height: 1;
   font-weight: var(--font-weight-medium);
   color: var(--color-text-tertiary);
-  transition: color var(--tl-duration) var(--tl-ease);
+  transition: color 360ms var(--tl-ease);
 }
 .annual__tick[data-edge='true'] .annual__month { transform: none; padding-left: var(--space-8); }
 .annual__tick[data-focus='true'] { border-left-color: var(--color-text-tertiary); }
 .annual__tick[data-focus='true'] .annual__month { color: var(--color-text-primary); font-weight: var(--font-weight-bold); }
 
-/* ---------- Row & bars ---------- */
-/* One row: every stage shares the same grid cell, so the row is as tall as the tallest
-   bar (the open card) while margin-left/width keep placing each bar on the month axis.
-   The full-width <li>s overlap, so only the bars themselves take the pointer. */
-.annual__rows { position: relative; display: grid; align-items: start; padding-bottom: var(--space-24); }
+/* 네 막대가 한 줄 — 같은 격자 칸에 겹쳐 margin-left · width로 축 위에 선다 */
+.annual__rows { position: relative; display: grid; padding-bottom: var(--space-24); }
 .annual__row { grid-area: 1 / 1; pointer-events: none; }
-.annual__row > .annual__bar { pointer-events: auto; }
-.annual__row:has(.annual__bar[data-state='selected']) { z-index: 1; }
-
 .annual__bar {
-  position: relative;
-  display: block;
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
   min-height: var(--tl-bar-height);
-  border-radius: 18px;
-  text-align: left;
-  cursor: var(--cursor-pointer);
+  padding: 0 var(--space-16);
+  border-radius: 20px;
   background: var(--color-bg-default);
   box-shadow: inset 0 0 0 1px var(--color-border);
-  color: var(--color-text-primary);
-  white-space: normal;
-  transition:
-    margin-left var(--tl-duration) var(--tl-ease),
-    width var(--tl-duration) var(--tl-ease),
-    background var(--tl-duration) var(--tl-ease),
-    color var(--tl-duration) var(--tl-ease),
-    border-radius var(--tl-duration) var(--tl-ease),
-    box-shadow var(--duration) var(--ease);
-}
-/* 닫힌 막대는 흰 면 + 테두리, 호버하면 다른 줄처럼 회색 면 + 이름이 오른쪽으로 12px(살짝 튕김) — 누를 수 있음을
-   알린다(사용자 지시 2026-10-05). 호버만으로는 펼치지 않는다 */
-@media (hover: hover) {
-  .annual__bar:not([data-state='selected']):hover { background: var(--color-bg-hover); box-shadow: inset 0 0 0 1px transparent; }
-  .annual__bar:not([data-state='selected']):hover .annual__bar-name { transform: translateX(12px); }
-}
-/* 펼친 카드는 커리큘럼처럼 회색 면 + 진한 글씨(검정 카드로 뒤집히던 명암 대비를 없앰, 2026-10-05).
-   다른 막대는 흰 면 + 테두리로 물러나 회색 카드가 구분된다 */
-.annual__bar[data-state='selected'] {
-  border-radius: 24px;
-  background: var(--color-bg-subtle);
-  box-shadow: inset 0 0 0 1px transparent;
-  color: var(--color-text-primary);
-}
-.annual__bar[data-state='muted'] { color: var(--color-text-tertiary); }
-
-/* The stage name never switches layout mode (align stays flex-end); only height and padding
-   change, on the same curve as the bar. 글자 크기는 펼쳐도 그대로 15px — 크기를 움직이면 글자가
-   미세하게 떨려 보였다(사용자 지시 2026-10-05) */
-.annual__bar-head {
-  display: flex;
-  align-items: flex-end;
-  width: 100%;
-  border-radius: inherit;
+  color: var(--color-text-secondary);
   text-align: left;
-  min-height: var(--tl-bar-height);
-  padding: var(--space-8) var(--space-16);
   overflow: hidden;
-  transition:
-    min-height var(--tl-duration) var(--tl-ease),
-    padding var(--tl-duration) var(--tl-ease);
+  cursor: var(--cursor-pointer);
+  transition: background var(--duration) var(--ease), color var(--duration) var(--ease), box-shadow var(--duration) var(--ease);
 }
 .annual__bar-name {
   font-size: var(--typo-meta-size);
@@ -108,35 +59,36 @@
   font-weight: var(--font-weight-bold);
   letter-spacing: var(--tracking-body);
   white-space: nowrap;
-  transition: transform 600ms cubic-bezier(0.34, 1.32, 0.64, 1); /* 다른 줄의 호버 들여쓰기와 같은 튕김 */
+  transition: transform 600ms cubic-bezier(0.34, 1.32, 0.64, 1);
 }
-.annual__bar[data-state='selected'] .annual__bar-head { min-height: 56px; padding: var(--space-20) var(--space-28) 0; }
+@media (hover: hover) {
+  .annual__bar[data-state='idle']:hover { background: var(--color-bg-hover); box-shadow: inset 0 0 0 1px transparent; color: var(--color-text-primary); }
+  .annual__bar[data-state='idle']:hover .annual__bar-name { transform: translateX(8px); }
+}
+/* 고른 막대 = 세그먼트의 고른 칸과 같은 잉크 — 위아래 두 조작이 하나의 선택임을 보인다 */
+.annual__bar[data-state='selected'] { background: var(--color-text-primary); box-shadow: none; color: var(--color-bg-default); }
+.annual__bar:focus-visible { outline: 2px solid var(--color-text-primary); outline-offset: 2px; }
 
-/* Detail: grid-rows 0fr → 1fr so the card's height animates to its content */
-.annual__detail {
+/* ---------- 고정 상세 칸: 네 상세를 겹쳐 두고 고른 것만 ---------- */
+.annual__panel {
   display: grid;
-  grid-template-rows: 0fr;
+  margin-top: var(--space-16);
+  border-radius: 24px;
+  background: var(--color-bg-subtle);
+}
+.annual__stage {
+  grid-area: 1 / 1;
+  display: grid;
+  grid-template-columns: var(--grid-template);
+  column-gap: var(--grid-gap);
+  padding: var(--space-40);
   opacity: 0;
-  filter: blur(5px); /* 12 → 5px: 흐림이 세면 눈이 초점을 다시 맞춘다(2026-10-05) */
-  transition: grid-template-rows var(--tl-duration) var(--tl-ease), opacity 200ms var(--tl-ease), filter 200ms var(--tl-ease);
+  visibility: hidden;
+  transition: opacity 240ms var(--ease), visibility 0s linear 240ms;
 }
-/* Details surface from a blur once the card has started to grow */
-.annual__bar[data-state='selected'] .annual__detail {
-  grid-template-rows: 1fr;
-  opacity: 1;
-  filter: blur(0);
-  transition: grid-template-rows var(--tl-duration) var(--tl-ease), opacity 360ms var(--tl-ease) 100ms, filter 420ms var(--tl-ease) 100ms;
-}
-.annual__detail-inner {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-12);
-  min-height: 0;
-  overflow: hidden;
-  padding: 0 var(--space-28);
-  transition: padding var(--tl-duration) var(--tl-ease);
-}
-.annual__bar[data-state='selected'] .annual__detail-inner { padding-block: var(--space-8) var(--space-24); }
+.annual__stage[data-active='true'] { opacity: 1; visibility: visible; transition: opacity 360ms var(--tl-ease) 60ms, visibility 0s; }
+.annual__stage-head { grid-column: span 4; display: flex; flex-direction: column; gap: var(--space-12); }
+.annual__stage-body { grid-column: span 8; display: flex; flex-direction: column; gap: var(--space-16); }
 .annual__meta { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-8); }
 .annual__badge {
   padding: var(--space-4) var(--space-8);
@@ -144,18 +96,17 @@
   background: var(--color-bg-default);
   font-size: var(--typo-caption-size);
   font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
 }
-.annual__bar[data-state='selected'] .annual__meta { color: var(--color-text-secondary); }
-.annual__bar[data-state='selected'] .annual__body { color: var(--color-text-secondary); max-width: 520px; }
-.annual__badge { color: var(--color-text-primary); }
+.annual__body { max-width: 640px; }
 
-/* 캠프 · 수료와 졸업 박스 — 열린 카드(회색 면) 안에서 흰 박스로 세로로 쌓인다 */
-.annual__items { display: flex; flex-direction: column; gap: var(--space-8); margin-top: var(--space-8); }
+/* 캠프 · 수료와 졸업 박스 — 회색 칸 안에서 흰 박스로 */
+.annual__items { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: var(--space-8); }
 .annual__item {
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
-  padding: var(--space-16) var(--space-16) var(--space-16);
+  padding: var(--space-16);
   border-radius: 16px;
   background: var(--color-bg-default);
 }
@@ -163,9 +114,8 @@
 .annual__item-label { font-size: var(--typo-caption-size); line-height: 1.3; font-weight: var(--font-weight-medium); color: var(--color-text-tertiary); }
 .annual__item-body { margin-top: var(--space-8); font-size: var(--typo-meta-size); line-height: 1.6; letter-spacing: var(--tracking-body); color: var(--color-text-secondary); }
 
-/* 주간 리듬: 요일 다섯 칸 × 오전 · 점심 · 오후. 세션 칸은 세로로 크게(3시간 = 92px),
-   칸마다 시간과 세션 이름, 점심시간은 한 줄로 가로지른다 */
-.annual__rhythm { margin-top: var(--space-8); }
+/* 주간 리듬: 요일 다섯 칸 × 오전 · 점심 · 오후 */
+.annual__rhythm { margin-top: 0; }
 .annual__week { container-type: inline-size; display: flex; flex-direction: column; gap: var(--space-4); margin-top: var(--space-16); }
 .annual__week-row { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: var(--space-4); }
 .annual__week-day { padding-bottom: var(--space-4); text-align: center; font-size: var(--typo-caption-size); font-weight: var(--font-weight-bold); color: var(--color-text-secondary); }
@@ -174,11 +124,11 @@
   flex-direction: column;
   gap: var(--space-4);
   min-height: 92px;
-  padding: var(--space-8) var(--space-8);
+  padding: var(--space-8);
   border-radius: 8px;
   box-shadow: inset 0 0 0 1px var(--color-border);
 }
-.annual__week-cell[data-on='true'] { background: var(--color-bg-subtle); box-shadow: none; } /* 흰 리듬 박스 안에서 수업 칸은 회색 면, 빈 칸은 테두리만 */
+.annual__week-cell[data-on='true'] { background: var(--color-bg-subtle); box-shadow: none; }
 .annual__week-time { font-size: var(--typo-caption-size); line-height: 1.3; font-weight: var(--font-weight-medium); letter-spacing: var(--tracking-body); color: var(--color-text-tertiary); }
 .annual__week-name { font-size: var(--typo-meta-size); line-height: 1.3; font-weight: var(--font-weight-bold); letter-spacing: var(--tracking-body); color: var(--color-text-primary); }
 .annual__week-lunch {
@@ -196,12 +146,10 @@
 }
 .annual__week-lunch-time { color: var(--color-text-tertiary); }
 .annual__week-caption { display: none; }
-
-/* 칸이 좁을 때(휴대폰): 시간은 줄 머리글로 올리고, 칸에는 세션 이름만 */
 @container (max-width: 400px) {
   .annual__week-caption { display: block; margin-top: var(--space-8); font-size: var(--typo-caption-size); font-weight: var(--font-weight-medium); color: var(--color-text-secondary); }
   .annual__week-time { display: none; }
-  .annual__week-cell { min-height: 72px; padding: var(--space-8) var(--space-8); }
+  .annual__week-cell { min-height: 72px; }
   .annual__week-name { font-size: var(--typo-caption-size); }
 }
 .annual__link {
@@ -213,7 +161,16 @@
 }
 .annual__link:hover { text-decoration: underline; text-underline-offset: 4px; }
 
+@media (max-width: 900px) {
+  .annual__stage { padding: var(--space-28); row-gap: var(--space-20); }
+  .annual__stage-head, .annual__stage-body { grid-column: 1 / -1; }
+}
+/* 휴대폰: 막대가 좁아 이름을 작게 — 잘리는 이름은 위 세그먼트가 대신 말한다 */
 @media (max-width: 720px) {
-  .annual__bar[data-state='selected'] .annual__bar-head { padding: var(--space-16) var(--space-20) 0; }
-  .annual__detail-inner { padding: 0 var(--space-20); }
+  .annual__bar { padding: 0 var(--space-8); }
+  .annual__bar-name { font-size: var(--typo-caption-size); }
+  .annual__stage { padding: var(--space-24) var(--space-20); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .annual__stage, .annual__bar, .annual__tick, .annual__month { transition: none; }
 }
