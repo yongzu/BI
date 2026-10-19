@@ -33,8 +33,7 @@ import './HeroRipple.css';
  * 창을 끄는 동안에도 다시 그리기는 프레임당 한 번뿐이다.
  */
 
-/** setPaused(true): 지금 파동을 멈추고 HTML 글자로 돌아간 뒤 다음 파동을 보내지 않는다 — 스크롤 포털이 글자를 움직이는 동안(v9) */
-export type RippleControl = { ripple: () => void; setPaused: (paused: boolean) => void };
+export type RippleControl = { ripple: () => void };
 
 const SOURCES = ['.hero__title', '.hero__intro', '.hero__period'];
 const INTRO_SOURCES = ['.hero__title'];
@@ -317,12 +316,11 @@ export function HeroRipple({ onIntroEnd, introStyle = 'together', controlRef }: 
       raf = requestAnimationFrame(frame);
     };
     let external = false; // 바깥 박자를 따르는 중
-    let paused = false; // 포털이 도는 중 — 캔버스가 옮겨 그린 자리와 움직이는 글자가 어긋나지 않게
     let ready = false; // 첫 화면이 끝나 주기 파동을 보낼 수 있음
     const run = () => {
       if (external) return;
       timer = window.setTimeout(run, PERIOD_MS);
-      if (!visible || document.hidden || paused) return;
+      if (!visible || document.hidden) return;
       play(false, () => {});
     };
     // 글꼴이 다 들어온 뒤 첫 화면을 시작한다(글자를 캔버스에 옮겨 그리므로). 그전까지 제목은 투명(HeroRipple.css)
@@ -351,14 +349,8 @@ export function HeroRipple({ onIntroEnd, introStyle = 'together', controlRef }: 
       control.current = {
         ripple: () => {
           if (!external) { external = true; window.clearTimeout(timer); }
-          if (!ready || !visible || document.hidden || paused) return;
+          if (!ready || !visible || document.hidden) return;
           play(false, () => {});
-        },
-        setPaused: (p: boolean) => {
-          if (p === paused) return;
-          paused = p;
-          // 첫 화면(떠오르기) 중이면 건드리지 않는다 — 끝나면 다음 파동부터 멈춘다
-          if (p && ready) stop();
         },
       };
     }

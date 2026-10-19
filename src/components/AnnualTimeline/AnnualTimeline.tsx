@@ -3,13 +3,14 @@ import { Text } from '../Text/Text';
 import './AnnualTimeline.css';
 
 /**
- * 연간 구조(v7, 2026-10-19) — toss.im/company History 형식.
+ * 연간 구조 — v10(2026-10-19): 위 탭 · 아래 내용.
  *
- * 위: 시기 패널. 왼쪽에 순서(01 / 04) · 그 시기의 질문(따옴표) · 기간 · 핵심 사실, 오른쪽에 설명과 내용(주간 리듬 · 캠프 · 수료와 졸업).
- * 아래: 1년을 한 줄로 그린 진행 바. 칸 길이 = 기간이고, 칸을 누르면(또는 ←/→) 위 패널이 바뀐다.
- *   History의 "가로 진행 막대형 기간 탭"처럼 지난 시기는 잉크, 고른 시기는 굵은 잉크, 다음 시기는 흐리게 — 1년 중 어디쯤인지가 한눈에.
- * v6의 위 세그먼트 탭은 없앴다(사용자 지시 2026-10-19) — 바 자체가 탭이다. 자동으로 넘어가지 않는다(WCAG 2.2.2).
+ * 위: 네 시기 탭(같은 폭). 전체 폭 가는 선 위에 고른 칸만 굵은 잉크 선, 아래 이름 · 짧은 기간(사용자 시안 이미지).
+ *   섹션 맨 위에 두어 "무엇을 고를 수 있는지"가 먼저 보이고, 고른 결과는 바로 아래에 나온다(위 → 아래 읽는 순서와 같다).
+ * 아래: 시기 패널(v7 History 형식 그대로) — 왼쪽 순서 · 시기의 질문 · 기간과 사실, 오른쪽 이름 · 설명 · 내용.
+ * ←/→ 키로 탭을 옮긴다. 자동으로 넘어가지 않는다(WCAG 2.2.2).
  * 네 시기의 패널을 한 칸에 겹쳐 두어 높이가 가장 긴 시기에 맞춰진다 — 시기를 바꿔도 아래 섹션이 흔들리지 않는다.
+ * v7 · v9의 아래 진행 바(칸 길이 = 기간, 월 눈금, ←/→ 버튼)는 v10에서 이 탭으로 바뀌었다.
  */
 export type StageItem = { name: string; label: string; body: string };
 /** 한 주의 수업 리듬 — 요일마다 오전 · 오후 수업 이름(null = 없음)과 각 시간대 */
@@ -23,6 +24,8 @@ export type StageRhythm = {
 };
 export type Stage = {
   name: string;
+  /** 탭에 쓰는 짧은 기간 — '2026.08 – 12' */
+  tab: string;
   period: string;
   marker?: string;
   start: number;
@@ -34,14 +37,11 @@ export type Stage = {
   rhythm?: StageRhythm;
 };
 
-type Props = { stages: Stage[]; months: number[] };
+type Props = { stages: Stage[] };
 
-export function AnnualTimeline({ stages, months }: Props) {
+export function AnnualTimeline({ stages }: Props) {
   const [selected, setSelected] = useState(0);
   const [dir, setDir] = useState(1);
-  const total = months.length; // 바는 [0, 13] — 눈금 13개, 마지막 시기는 13에서 끝난다
-  const pct = (x: number) => `${(x / total) * 100}%`;
-  const barEnd = (i: number) => stages[i + 1]?.start ?? stages[i].end;
   const pick = (i: number) => {
     const next = (i + stages.length) % stages.length;
     setDir(next >= selected ? 1 : -1);
@@ -58,6 +58,29 @@ export function AnnualTimeline({ stages, months }: Props) {
 
   return (
     <div className="history" style={{ '--dir': dir } as React.CSSProperties}>
+      {/* ---------- 탭: 섹션 위, 네 칸 같은 폭(v10, 사용자 시안 이미지) ----------
+          가로로 긴 가는 선 위에 고른 칸만 굵은 잉크 선, 아래에 이름 · 짧은 기간. 고르지 않은 칸은 흐리게.
+          칸 = 시기라 순서가 곧 시간 — 길이로 기간을 그리던 v7 · v9의 바는 내용(패널 왼쪽 기간)에 맡긴다 */}
+      <div className="history__tabs" role="tablist" aria-label="연간 구조 시기" onKeyDown={onKey}>
+        {stages.map((s, i) => (
+          <button
+            key={s.name}
+            id={`annual-tab-${i}`}
+            type="button"
+            role="tab"
+            aria-selected={selected === i}
+            aria-controls={`annual-panel-${i}`}
+            tabIndex={selected === i ? 0 : -1}
+            className="history__tab"
+            onClick={() => pick(i)}
+          >
+            <span className="history__tab-line" aria-hidden="true" />
+            <span className="history__tab-name">{s.name}</span>
+            <span className="history__tab-period">{s.tab}</span>
+          </button>
+        ))}
+      </div>
+
       {/* ---------- 시기 패널 ---------- */}
       <div className="history__panels">
         {stages.map((s, i) => (
@@ -111,40 +134,6 @@ export function AnnualTimeline({ stages, months }: Props) {
         ))}
       </div>
 
-      {/* ---------- 진행 바 = 탭 ---------- */}
-      <div className="history__nav">
-        <div className="history__track-wrap">
-          <div className="history__tabs" role="tablist" aria-label="연간 구조 시기" onKeyDown={onKey}>
-            {stages.map((s, i) => (
-              <button
-                key={s.name}
-                id={`annual-tab-${i}`}
-                type="button"
-                role="tab"
-                aria-selected={selected === i}
-                aria-controls={`annual-panel-${i}`}
-                tabIndex={selected === i ? 0 : -1}
-                className="history__tab"
-                data-state={i < selected ? 'past' : i === selected ? 'current' : 'next'}
-                style={{ left: pct(s.start), width: pct(barEnd(i) - s.start) }}
-                onClick={() => pick(i)}
-              >
-                <span className="history__tab-name">{s.name}</span>
-                <span className="history__tab-line" aria-hidden="true"><span className="history__tab-fill" /></span>
-              </button>
-            ))}
-          </div>
-          <div className="history__months" aria-hidden="true">
-            {months.map((m, i) => (
-              <span key={i} className="history__month" style={{ left: pct(i) }}>{m}</span>
-            ))}
-          </div>
-        </div>
-        <div className="history__arrows">
-          <button type="button" className="history__arrow" onClick={() => pick(selected - 1)} disabled={selected === 0} aria-label="이전 시기">←</button>
-          <button type="button" className="history__arrow" onClick={() => pick(selected + 1)} disabled={selected === stages.length - 1} aria-label="다음 시기">→</button>
-        </div>
-      </div>
     </div>
   );
 }

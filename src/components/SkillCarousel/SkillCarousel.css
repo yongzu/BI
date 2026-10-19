@@ -1,0 +1,177 @@
+/* 배우는 역량(v10) — carousel-07 부채꼴 캐러셀 + TiltedCard. 자리 · 기울기 · 크기는 motion이 style로, 여기선 모양만. Tokens only. */
+.skill-carousel {
+  --sc-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --sc-card-h: calc(var(--sc-card-w) * 1.42);
+  --card-ink: var(--color-text-primary);
+  --card-deep: color-mix(in srgb, var(--color-text-primary), black 45%);
+  position: relative;
+}
+/* 옆 카드가 화면 밖으로 나가 가로 스크롤이 생기지 않게 섹션 단위로 자른다(carousel-07의 overflow-hidden 자리).
+   clip은 스크롤 상자가 아니라 무대의 sticky는 그대로 붙는다 */
+.section:has(> .skill-carousel) { overflow-x: clip; }
+/* 붙는 무대(넓은 화면): 이만큼 스크롤하는 동안 1번 → 5번 */
+.skill-carousel[data-pin] { height: calc(100svh + 220svh); }
+.skill-carousel__stage {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: var(--space-48);
+  padding-block: var(--space-48);
+}
+.skill-carousel[data-pin] .skill-carousel__stage { position: sticky; top: 0; min-height: 100svh; }
+
+/* ---------- 카드 자리: 가운데 한 점에 겹쳐 놓고 motion이 옮긴다. 세로 끌기는 페이지 스크롤로 ---------- */
+.skill-carousel__track {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: calc(var(--sc-card-h) + 80px);
+  touch-action: pan-y;
+  cursor: grab;
+  user-select: none;
+}
+.skill-carousel__track:active { cursor: grabbing; }
+.skill-slot {
+  position: absolute;
+  width: var(--sc-card-w);
+  height: var(--sc-card-h);
+}
+.skill-slot[data-active='false'] { cursor: var(--cursor-pointer); }
+
+/* ---------- 카드 면(TiltedCard 앞면 안) ---------- */
+.skill-tilt .tilted-card__face { background: var(--card-deep); }
+.skill-tilt .tilted-card__shadow { --tc-shadow-color: rgba(0, 0, 0, 0.45); }
+.skill-face__bg { inset: -24px; background: linear-gradient(160deg, var(--card-ink), var(--card-deep)); }
+.skill-face__top { display: flex; align-items: flex-start; justify-content: space-between; padding: var(--space-24); pointer-events: none; }
+.skill-face__num { font-size: var(--typo-heading-size); line-height: 1; font-weight: var(--font-weight-bold); letter-spacing: var(--tracking-heading); font-variant-numeric: tabular-nums; color: var(--color-bg-default); opacity: 0.3; }
+/* carousel-07의 오른쪽 위 배지 자리 — 영문 이름 */
+.skill-face__badge {
+  padding: var(--space-4) var(--space-8);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.92);
+  font-size: var(--typo-caption-size);
+  line-height: 1.3;
+  font-weight: var(--font-weight-bold);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-text-primary);
+}
+.skill-face__text { display: flex; flex-direction: column; justify-content: flex-end; padding: var(--space-24) var(--space-24) var(--space-64); pointer-events: none; }
+.skill-face__copy { display: flex; flex-direction: column; gap: var(--space-8); color: var(--color-bg-default); }
+.skill-face__ko { font-size: var(--typo-title-size); line-height: 1.2; font-weight: var(--font-weight-bold); letter-spacing: var(--tracking-heading); }
+.skill-face__summary { font-size: var(--typo-body-size); line-height: 1.45; font-weight: var(--font-weight-medium); opacity: 0.9; }
+.skill-face__body { display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; font-size: var(--typo-meta-size); line-height: 1.6; opacity: 0.62; }
+.skill-face__count { display: flex; flex-direction: column; gap: var(--space-8); margin-top: var(--space-8); padding-top: var(--space-12); border-top: 1px solid rgba(255, 255, 255, 0.14); font-size: var(--typo-caption-size); font-weight: var(--font-weight-bold); opacity: 0.75; }
+.skill-face__dim { position: absolute; inset: 0; z-index: 3; background: #000; pointer-events: none; }
+
+/* 12칸 점 — 1학기 수업 12개 중 이 역량을 기르는 수업 수만큼 */
+.skill-dots { display: grid; grid-template-columns: repeat(12, 1fr); gap: 3px; max-width: 156px; }
+.skill-dots > span { aspect-ratio: 1; border-radius: 50%; background: currentColor; opacity: 0.2; }
+.skill-dots > span[data-on='true'] { opacity: 1; }
+
+/* ---------- 이 역량을 기르는 수업: 마우스 올림 · 누름 전엔 숨김, 아래에서 올라온다 ---------- */
+.skill-courses {
+  position: absolute;
+  inset: auto 0 0;
+  z-index: 4;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-12);
+  padding: var(--space-20) var(--space-20) var(--space-64);
+  background: var(--color-bg-default);
+  color: var(--color-text-primary);
+  max-height: 100%;
+  overflow-y: auto; /* 수업이 많은 역량(언어화 8개)은 카드 안에서 스크롤 */
+  overscroll-behavior: contain;
+  transform: translateY(100%);
+  transition: transform 520ms var(--sc-ease);
+}
+.skill-courses[data-shown='true'] { transform: none; }
+.skill-courses__label { font-size: var(--typo-caption-size); font-weight: var(--font-weight-bold); color: var(--color-text-tertiary); }
+.skill-courses ul { display: flex; flex-wrap: wrap; gap: var(--space-4); }
+.skill-course {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--space-4);
+  padding: var(--space-4) var(--space-12);
+  border-radius: 999px;
+  background: var(--color-bg-subtle);
+  font-size: var(--typo-meta-size);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+  cursor: var(--cursor-pointer);
+  transition: background var(--duration) var(--ease), color var(--duration) var(--ease);
+}
+.skill-course::after { content: '→'; opacity: 0.5; }
+.skill-course__type { font-size: var(--typo-caption-size); font-weight: var(--font-weight-medium); color: var(--color-text-tertiary); }
+.skill-course:hover { background: var(--color-text-primary); color: var(--color-bg-default); }
+.skill-course:hover .skill-course__type { color: inherit; opacity: 0.6; }
+
+/* 가운데 카드 아래쪽 버튼 — 수업을 여닫는다(키보드 · 터치의 길, 마우스엔 신호) */
+.skill-courses__toggle {
+  position: absolute;
+  z-index: 200;
+  left: 50%;
+  bottom: var(--space-16);
+  translate: -50% 0;
+  padding: var(--space-8) var(--space-16);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.14);
+  backdrop-filter: blur(8px);
+  font-size: var(--typo-caption-size);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-bg-default);
+  white-space: nowrap;
+  cursor: var(--cursor-pointer);
+  transition: background var(--duration) var(--ease), color var(--duration) var(--ease);
+}
+.skill-courses__toggle[aria-expanded='true'] { background: var(--color-text-primary); }
+.skill-courses__toggle:focus-visible { outline: 2px solid var(--color-bg-default); outline-offset: 2px; }
+
+/* ---------- 아래: ← 번호 · 이름 → ---------- */
+.skill-carousel__nav { display: flex; align-items: center; justify-content: center; gap: var(--space-16); }
+.skill-carousel__dots { display: flex; gap: var(--space-4); }
+.skill-carousel__dots button {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-8);
+  min-height: 40px;
+  padding: 0 var(--space-12);
+  border-radius: 999px;
+  font-size: var(--typo-meta-size);
+  color: var(--color-text-tertiary);
+  cursor: var(--cursor-pointer);
+  transition: background var(--duration) var(--ease), color var(--duration) var(--ease);
+}
+.skill-carousel__dot-num { font-size: var(--typo-caption-size); font-weight: var(--font-weight-bold); font-variant-numeric: tabular-nums; }
+.skill-carousel__dot-name { font-weight: var(--font-weight-bold); }
+.skill-carousel__dots button:hover { color: var(--color-text-primary); }
+.skill-carousel__dots button[aria-current='true'] { background: var(--color-text-primary); color: var(--color-bg-default); }
+.skill-carousel__arrow {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 1px var(--color-border);
+  color: var(--color-text-primary);
+  cursor: var(--cursor-pointer);
+}
+.skill-carousel__arrow:disabled { color: var(--color-text-tertiary); cursor: default; }
+.skill-carousel__arrow:hover:not(:disabled) { background: var(--color-text-primary); color: var(--color-bg-default); box-shadow: none; }
+
+/* 몰입 구간(무대가 붙어 있는 동안): 목차를 잠시 걷는다 */
+html[data-immersive] .toc { opacity: 0 !important; visibility: hidden !important; transition: opacity 300ms var(--ease), visibility 0s linear 300ms !important; }
+
+@media (max-width: 900px) {
+  .skill-carousel__dot-name { display: none; }
+}
+@media (max-width: 640px) {
+  .skill-carousel__stage { gap: var(--space-28); }
+  .skill-course { font-size: var(--typo-caption-size); }
+  .skill-face__body { -webkit-line-clamp: 3; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .skill-courses { transition: none; }
+}

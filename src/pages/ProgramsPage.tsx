@@ -9,10 +9,9 @@ import { HeroRipple, type RippleControl } from '../components/HeroRipple/HeroRip
 import { HeroLogo3D } from '../components/HeroLogo3D/HeroLogo3D';
 import { BackToTop, SiteHeader } from '../components/SiteHeader/SiteHeader';
 import { VersionLog } from '../components/VersionLog/VersionLog';
-import { SkillDeck } from '../components/SkillDeck/SkillDeck';
+import { SkillCarousel } from '../components/SkillCarousel/SkillCarousel';
 import { DeviceMap } from '../components/DeviceMap/DeviceMap';
 import { PhiOS } from '../components/PhiOS/PhiOS';
-import { HeroPortal, PhiRings } from '../components/HeroPortal/HeroPortal';
 import { ChangeChip, ChangeNotes } from '../components/ChangeNotes/ChangeNotes';
 import { courseProfiles } from '../data/courseProfiles';
 import { useScrollReveal } from '../hooks/useScrollReveal';
@@ -25,7 +24,6 @@ import {
   facts,
   heroMore,
   heroStatement,
-  months,
   stages,
 } from '../data/programs';
 import './programs.css';
@@ -198,8 +196,7 @@ export function ProgramsPage() {
       <BackToTop />
       <ChangeNotes />
       <main className="page">
-        {/* ---------- Hero — v9: 포인터 깊이 + 스크롤 포털(HeroPortal) ---------- */}
-        <HeroPortal rippleCtl={rippleCtl}>
+        {/* ---------- Hero ---------- (v9의 포인터 깊이 · 스크롤 포털은 v10에서 뺐다 — 사용자 지시 2026-10-19) */}
         <section className="hero container" aria-labelledby="hero-title" data-intro={introDone ? 'done' : INTRO_STYLE === 'together' ? 'rise' : 'blur'} data-intro-style={INTRO_STYLE}>
           {/* 첫 화면(한 화면 높이, 내용 세로 가운데) — '자세히 보기'는 그 아래 200px(사용자 지시 2026-10-04) */}
           <div className="hero__atf">
@@ -226,12 +223,7 @@ export function ProgramsPage() {
 
           {/* 6초마다 파동이 글자를 일렁이게 한다 — 토스뱅크 디자인 채용 히어로를 따름(사용자 지시 2026-10-03) */}
           <HeroRipple introStyle={INTRO_STYLE} onIntroEnd={() => setIntroDone(true)} controlRef={rippleCtl} />
-          {/* 뒤 층: Φ 고리(H1 먼 층 · H3 포털에서 화면 밖까지 커짐) */}
-          <PhiRings className="hero__rings" />
-          {/* 포털 고리(H3): 로고에서 이어받아 화면 밖까지 커진다 */}
-          <PhiRings className="hero__portal-rings" />
         </section>
-        </HeroPortal>
 
         {/* 목차는 히어로 다음, '역량과 태도'부터 나온다(사용자 지시 2026-10-04) — 히어로는 화면 정가운데.
             레일이 섹션들과 함께 시작해 읽는 동안 붙어 있다가 푸터 앞에서 놓아준다 */}
@@ -245,11 +237,11 @@ export function ProgramsPage() {
 
         {/* ---------- 배우는 역량(v8: 태도와 나눠 초입에 — 이 1년에서 무엇을 얻나에 먼저 답한다) ---------- */}
         <section id="pillars" className="section container">
-          {/* v9: 스킬 카드 덱 — 붙는 무대에서 덱이 펼쳐지고(C1), 뒤에 히어로와 같은 Φ 고리(이음 A), 기울기 · 빛(C2), 카드 → 상세(C4) */}
-          <SkillDeck
+          {/* v10: carousel-07 부채꼴 캐러셀 + TiltedCard 깊이. 붙는 무대에서 스크롤하는 동안 1번 → 5번(이너 스크롤) */}
+          <SkillCarousel
             items={competencies}
             courseTypes={courseTypes}
-            header={<SectionHeader title="배우는 역량" change="pillars" lead="어떤 환경에서도 스스로 답을 찾을 수 있는 사고방식을 만들기 위해, Phi는 아래 다섯 가지 역량을 기릅니다. 카드를 고르면 그 역량을 기르는 수업이 보입니다." />}
+            header={<SectionHeader title="배우는 역량" change="pillars" lead="어떤 환경에서도 스스로 답을 찾을 수 있는 사고방식을 만들기 위해, Phi는 아래 다섯 가지 역량을 기릅니다. 가운데 카드에 마우스를 올리거나 누르면 그 역량을 기르는 수업이 보입니다." />}
           />
         </section>
 
@@ -261,7 +253,7 @@ export function ProgramsPage() {
             lead="2026년 8월 개강부터 2027년 8월 졸업까지, 두 학기와 방학 캠프, 졸업 프로젝트로 이어지는 1년입니다."
           />
           {/* v7: 위 시기 패널 · 아래 진행 바(toss.im/company History). v6의 안내 표 문구는 시기마다 왼쪽 사실로 옮겼다 */}
-          <AnnualTimeline stages={stages} months={months} />
+          <AnnualTimeline stages={stages} />
         </section>
 
         {/* ---------- 커리큘럼 ---------- */}
