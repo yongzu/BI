@@ -9,7 +9,7 @@ import { HeroRipple, type RippleControl } from '../components/HeroRipple/HeroRip
 import { HeroLogo3D } from '../components/HeroLogo3D/HeroLogo3D';
 import { BackToTop, SiteHeader } from '../components/SiteHeader/SiteHeader';
 import { VersionLog } from '../components/VersionLog/VersionLog';
-import { SkillReveal } from '../components/SkillReveal/SkillReveal';
+import { SkillScroll } from '../components/SkillScroll/SkillScroll';
 import { DeviceMap } from '../components/DeviceMap/DeviceMap';
 import { PhiOS } from '../components/PhiOS/PhiOS';
 import { ChangeChip, ChangeNotes } from '../components/ChangeNotes/ChangeNotes';
@@ -237,9 +237,10 @@ export function ProgramsPage() {
 
         {/* ---------- 배우는 역량(v8: 태도와 나눠 초입에 — 이 1년에서 무엇을 얻나에 먼저 답한다) ---------- */}
         <section id="pillars" className="section container">
-          {/* v11: toss.im "상품 판매와 정산" 연출 — 큰 옅은 글씨가 검정으로 채워지고, 작아지며 위로, 화면 폭 카드 다섯 장이 올라온다 */}
-          <SkillReveal
-            title="배우는 역량"
+          {/* v12: toss.im "광고 노출 전략도 다르게" 연출 — 붙는 무대에서 세로 스크롤이 카드 줄의 가로 이동이 된다 */}
+          <SkillScroll
+            lines={['배우는 역량']}
+            badge="Competency"
             lead="어떤 환경에서도 스스로 답을 찾을 수 있는 사고방식을 만들기 위해, Phi는 아래 다섯 가지 역량을 기릅니다. 카드에 마우스를 올리거나 누르면 그 역량을 기르는 수업이 보입니다."
             chip={<ChangeChip id="pillars" />}
             items={competencies}

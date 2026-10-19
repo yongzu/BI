@@ -18,6 +18,7 @@ npm run deploy   # dist → gh-pages 브랜치 (GitHub Pages)
 
 - 최신 버전은 `/BI/`에, 지난 버전은 그때 코드로 고정된 빌드로 `/BI/v1/` · `/BI/v2/`에 둡니다. 각 버전은 같은 이름의 git 태그(`v1` · `v2`)에서 빌드합니다.
 - `npm run deploy`는 지난 버전 폴더를 라이브 사이트에서 그대로 옮기고, 없는 버전만 태그에서 빌드합니다. 다시 빌드하려면 `npm run deploy -- --rebuild v1`을 실행합니다.
+- 지난 버전을 태그에서 처음 빌드할 땐 그 버전의 의존성이 node_modules에 있어야 합니다(예: v10은 motion — 빠졌다면 `npm install --no-save motion@12`). 한 번 올라간 뒤로는 라이브에서 그대로 옮깁니다.
 - 새 버전을 올릴 때는 세 단계를 거칩니다. 먼저 지금 버전의 커밋에 태그를 답니다(예: `git tag -a v3`). 다음으로 versions.json에서 그 버전의 `path`를 `"v3/"`로 바꾸고, 새 버전을 `path: ""`로 추가합니다. 마지막으로 `npm run deploy`를 실행합니다.
 
 ## Figma에서 가져온 규칙
@@ -41,6 +42,7 @@ npm run deploy   # dist → gh-pages 브랜치 (GitHub Pages)
 - **상단 바** (Phi Brain 툴바 스타일): 좌측 워드마크, 우측 About · Programs · Experts · Admissions 알약 링크, 최우측 2기 오픈 알림 신청(검정 박스, 스크롤해도 고정)
 
 - **과정 개요** 드롭다운 (히어로 아래): 스크롤을 내리면 자동으로 펼쳐지고 맨 위로 돌아오면 접힘. 클릭으로도 열고 닫을 수 있음
+- **v12(2026-10-19, 역량: 토스 광고 카드 줄 연출)** — 배우는 역량: 붙는 무대에서 세로 스크롤 → 카드 줄 가로 이동(components/SkillScroll). v11의 SkillReveal은 v11 태그에 남음
 - **v11(2026-10-19, 역량: 토스 상품 판매 연출)** — 배우는 역량: 큰 글씨 채움 → 작아짐 → 화면 폭 카드 다섯 장(components/SkillReveal). v10의 캐러셀 · TiltedCard · motion 의존성은 뺐다(v10 태그에 남음)
 - **v10(2026-10-19, 역량 캐러셀 · 연간 구조 위 탭)** — 히어로 인터랙션 뺌. 연간 구조 탭을 섹션 위로. 배우는 역량: carousel-07(21st.dev, shadcnspace) 부채꼴 캐러셀 + react-bits TiltedCard(components/TiltedCard, MIT + Commons Clause), 붙는 무대에서 1 → 5 이너 스크롤(components/SkillCarousel). 의존성 motion 추가
 - **v9(2026-10-19, 히어로 포털 · 스킬 카드 덱)** — 히어로: 포인터 깊이 + 스크롤 포털(components/HeroPortal). 배우는 역량: 붙는 무대 · 카드 딜링 · Φ 고리 · 기울기와 빛 · 카드 → 상세(View Transitions, components/SkillDeck)
