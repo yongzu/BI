@@ -32,9 +32,9 @@ const toc: TocItem[] = [
   // 목차는 섹션 다섯 개를 한 층위로 — 역량과 태도의 하위 항목은 없애고, 수업을 관통하는 접근은
   // 커리큘럼 아래에서 빼 같은 층위로(사용자 지시 2026-09-30)
   { id: 'overview', label: '과정 개요' }, // 맨 위(사용자 지시 2026-10-04)
-  { id: 'pillars', label: '배우는 역량' }, // v8: 역량과 태도를 나눔 — 역량은 초입, 태도(Phi OS)는 끝
-  { id: 'curriculum-annual', label: '연간 구조' },
+  { id: 'curriculum-annual', label: '연간 구조' }, // 과정 개요 바로 아래(사용자 지시 2026-10-19)
   { id: 'curriculum', label: '커리큘럼' },
+  { id: 'pillars', label: '배우는 역량' }, // 커리큘럼 아래(사용자 지시 2026-10-19)
   { id: 'devices', label: '수업을 관통하는 접근' },
   { id: 'phi-os', label: 'Phi OS' },
   { id: 'career', label: '채용 연계' }, // 맨 아래(사용자 지시 2026-10-19)
@@ -176,19 +176,8 @@ export function ProgramsPage() {
             왼쪽 두 칸 소개 글 · 오른쪽 두 칸 과정 개요 다섯 줄 ---------- */}
         <OverviewReveal id="overview" title="1 Year Programs" paragraphs={heroMore} factsTitle="과정 개요" facts={facts} />
 
-        {/* ---------- 배우는 역량(v8: 태도와 나눠 초입에 — 이 1년에서 무엇을 얻나에 먼저 답한다) ---------- */}
-        <section id="pillars" className="section container">
-          {/* v11: toss.im "상품 판매와 정산" 연출 — 큰 옅은 글씨가 검정으로 채워지고, 작아지며 위로, 화면 폭 카드 다섯 장이 올라온다 */}
-          <SkillReveal
-            title="배우는 역량"
-            lead="어떤 환경에서도 스스로 답을 찾을 수 있는 사고방식을 만들기 위해, Phi는 아래 다섯 가지 역량을 기릅니다. 카드에 마우스를 올리거나 누르면 그 역량을 기르는 수업이 보입니다."
-            items={competencies}
-            courseTypes={courseTypes}
-          />
-        </section>
-
-        {/* ---------- 연간 구조 — 배우는 역량 바로 아래 ---------- */}
-        <section id="curriculum-annual" className="section container">
+        {/* ---------- 연간 구조 — 과정 개요 바로 아래, 화면 폭 전체(사용자 지시 2026-10-19) ---------- */}
+        <section id="curriculum-annual" className="section section--wide">
           <SectionHeader
             title="연간 구조"
             lead="2026년 8월 개강부터 2027년 8월 졸업까지, 두 학기와 방학 캠프, 졸업 프로젝트로 이어지는 1년입니다."
@@ -205,6 +194,17 @@ export function ProgramsPage() {
           <div id="courses" className="group">
             <CourseExplorer types={courseTypes} profiles={courseProfiles} />
           </div>
+        </section>
+
+        {/* ---------- 배우는 역량 — 커리큘럼 아래(사용자 지시 2026-10-19) ---------- */}
+        <section id="pillars" className="section container">
+          {/* v11: toss.im "상품 판매와 정산" 연출 — 큰 옅은 글씨가 검정으로 채워지고, 작아지며 위로, 화면 폭 카드 다섯 장이 올라온다 */}
+          <SkillReveal
+            title="배우는 역량"
+            lead="어떤 환경에서도 스스로 답을 찾을 수 있는 사고방식을 만들기 위해, Phi는 아래 다섯 가지 역량을 기릅니다. 카드에 마우스를 올리거나 누르면 그 역량을 기르는 수업이 보입니다."
+            items={competencies}
+            courseTypes={courseTypes}
+          />
         </section>
 
         {/* ---------- 수업을 관통하는 접근 ---------- */}

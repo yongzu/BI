@@ -57,8 +57,18 @@
 .course-tabs__total { padding: var(--space-16) var(--space-20) 0; }
 
 /* ---------- 탭 패널: 타입을 바꾸면 한 번 짧게 떠오른다 ---------- */
-.course-tabpanel { grid-column: span 9; min-width: 0; animation: course-in 420ms var(--ce-slide); }
-@keyframes course-in { from { opacity: 0; transform: translateY(8px); } }
+/* 수업 줄: 네 타입의 패널을 세로 트랙에 쌓고, 탭을 바꾸면 트랙이 위아래로 미끄러진다(연간 구조와 같은 방식, 2026-10-19).
+   창(.course-stage)은 고른 패널 높이만큼만 보이고 위아래를 자른다 — 줄의 회색 면이 양옆으로 내민 만큼은 자르지 않게 세로만.
+   자리 · 높이는 CourseExplorer.tsx가 잰다. 움직임은 탭을 바꾸는 동안(data-moving)만 — 수업을 여닫을 땐 창이 바로 따라간다 */
+.course-stage { grid-column: span 9; min-width: 0; overflow: visible clip; }
+.course-track { display: flex; flex-direction: column; gap: var(--space-96); }
+.course-stage[data-moving] { transition: height 760ms cubic-bezier(0.65, 0, 0.35, 1); }
+.course-stage[data-moving] .course-track { transition: transform 760ms cubic-bezier(0.65, 0, 0.35, 1); }
+.course-tabpanel { min-width: 0; opacity: 0.25; transition: opacity 560ms var(--ease); }
+.course-tabpanel[data-active='true'] { opacity: 1; }
+/* 머리글은 탭을 바꾼 방향에서 들어온다 — 아래 탭이면 아래에서, 위 탭이면 위에서 */
+@keyframes course-in { from { opacity: 0; transform: translateY(calc(var(--dir, 1) * 24px)); } }
+.course-group__head[data-dir='-1'] { --dir: -1; }
 /* 역량 카드에서 수업을 열면 그 줄로 스크롤 — 위 고정 바에 가리지 않게 */
 .course-row { scroll-margin-top: 112px; }
 
@@ -256,7 +266,8 @@
 .course-detail__facts dd { font-size: var(--typo-meta-size); line-height: 1.5; color: var(--color-text-primary); }
 
 @media (prefers-reduced-motion: reduce) {
-  .course-tabpanel { animation: none; }
+  .course-group__head { animation: none; }
+  .course-stage, .course-track { transition: none !important; }
   .course-tabs__indicator,
   .course-row,
   .course-row__panel,
@@ -289,7 +300,7 @@
   .course-tab { flex: none; padding: var(--space-12) var(--space-16); }
   .course-tab__name { font-size: var(--typo-body-size); letter-spacing: var(--tracking-body); }
   .course-tabs__total { display: none; }
-  .course-tabpanel { grid-column: 1 / -1; margin-top: var(--space-28); }
+  .course-stage { grid-column: 1 / -1; margin-top: var(--space-28); }
   .course-group__head { padding-left: 0; margin-bottom: var(--space-28); }
 }
 /* 휴대폰: 태그는 이름 아래로 */

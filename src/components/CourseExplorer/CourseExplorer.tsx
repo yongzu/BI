@@ -25,6 +25,11 @@ export function CourseExplorer({ types, profiles }: Props) {
   const tabsRef = useRef<HTMLDivElement>(null);
   const barRef = useRef<HTMLSpanElement>(null);
   const scrollTo = useRef<string | null>(null); // 역량 카드에서 연 수업 — 렌더 뒤 그 줄로 스크롤
+  const stageRef = useRef<HTMLDivElement>(null);
+  const trackRef = useRef<HTMLDivElement>(null);
+  const panelRefs = useRef<(HTMLElement | null)[]>([]);
+  // 탭을 바꾼 방향 — 아래 탭이면 내용이 위로 밀려 올라가고(+1), 위 탭이면 아래로 내려간다(−1)
+  const [dir, setDir] = useState(1);
   const type = types[tab];
   const total = types.reduce((n, t) => n + t.courses.length, 0);
 
@@ -49,6 +54,36 @@ export function CourseExplorer({ types, profiles }: Props) {
     return () => ro.disconnect();
   }, [tab]);
 
+  // 수업 줄: 네 타입의 패널을 세로 트랙에 쌓아 두고, 탭을 바꾸면 트랙이 위아래로 미끄러져 고른 타입으로 간다
+  // (연간 구조의 가로 트랙과 같은 방식, 사용자 지시 2026-10-19). 보이는 창의 높이는 고른 패널 높이에 맞춘다 —
+  // 탭을 바꾸는 동안만 높이도 함께 움직이고(data-moving), 수업을 여닫을 땐 창이 줄을 바로 따라간다
+  useLayoutEffect(() => {
+    const stage = stageRef.current;
+    const track = trackRef.current;
+    if (!stage || !track) return;
+    const place = () => {
+      const panel = panelRefs.current[tab];
+      if (!panel) return;
+      stage.style.height = `${panel.offsetHeight}px`;
+      track.style.transform = `translateY(${-panel.offsetTop}px)`;
+    };
+    place();
+    const ro = new ResizeObserver(place);
+    panelRefs.current.forEach((el) => el && ro.observe(el));
+    return () => ro.disconnect();
+  }, [tab]);
+  const switchTab = (next: number) => {
+    if (next === tab) return;
+    const stage = stageRef.current;
+    if (stage) {
+      stage.dataset.moving = 'true';
+      window.clearTimeout(Number(stage.dataset.timer));
+      stage.dataset.timer = String(window.setTimeout(() => { delete stage.dataset.moving; }, 800));
+    }
+    setDir(next > tab ? 1 : -1);
+    setTab(next);
+  };
+
   // 다른 섹션(역량 카드)에서 수업을 열면: 그 타입 탭을 고르고 그 수업을 펼쳐 그 줄로 간다
   useEffect(() => {
     const onOpen = (e: Event) => {
@@ -56,18 +91,23 @@ export function CourseExplorer({ types, profiles }: Props) {
       const t = types.findIndex((x) => x.courses.some((c) => c.slug === slug));
       if (t < 0) return;
       scrollTo.current = slug;
-      setTab(t);
+      switchTab(t);
       setOpen(slug);
     };
     window.addEventListener(COURSE_OPEN_EVENT, onOpen);
     return () => window.removeEventListener(COURSE_OPEN_EVENT, onOpen);
-  }, [types]);
+  });
+  // 트랙이 다 미끄러진 뒤 그 줄로 — 트랙의 transform은 offsetTop에 잡히지 않아 화면 위치(getBoundingClientRect)로 잰다.
+  // 152 = 줄이 화면 위 112px(.course-row scroll-margin-top)에 서도록 실측으로 맞춘 값
   useEffect(() => {
     const slug = scrollTo.current;
     if (!slug) return;
     scrollTo.current = null;
-    const row = document.getElementById(`course-row-${slug}`);
-    if (row) scrollToTarget(row);
+    const timer = window.setTimeout(() => {
+      const row = document.getElementById(`course-row-${slug}`);
+      if (row) scrollToTarget(Math.max(0, window.scrollY + row.getBoundingClientRect().top - 152));
+    }, 800);
+    return () => window.clearTimeout(timer);
   }, [open, tab]);
 
   const onTabKey = (e: KeyboardEvent) => {
@@ -75,7 +115,7 @@ export function CourseExplorer({ types, profiles }: Props) {
     if (!step) return;
     e.preventDefault();
     const next = (tab + step + types.length) % types.length;
-    setTab(next);
+    switchTab(next);
     tabRefs.current[next]?.focus();
   };
 
@@ -87,7 +127,7 @@ export function CourseExplorer({ types, profiles }: Props) {
   return (
     <div className="course-explorer">
       {/* 고른 타입의 머리글은 탭 · 수업 줄 위에 한 줄 전체로(사용자 시안 이미지 2026-10-19) */}
-      <header key={type.id} className="course-group__head">
+      <header key={type.id} className="course-group__head" data-dir={dir}>
         <div className="course-group__title">
           <h4 className="course-group__name">{type.name}</h4>
           <span className="course-group__meta">{type.cadence} · {type.courses.length}개 수업</span>
@@ -108,7 +148,7 @@ export function CourseExplorer({ types, profiles }: Props) {
               aria-controls={`course-panel-${t.id}`}
               tabIndex={tab === i ? 0 : -1}
               className="course-tab"
-              onClick={() => setTab(i)}
+              onClick={() => switchTab(i)}
             >
               <span className="course-tab__name">{t.name}</span>
               <span className="course-tab__count">{t.courses.length}</span>
@@ -117,20 +157,35 @@ export function CourseExplorer({ types, profiles }: Props) {
           <Text as="p" typography="Caption" color="tertiary" className="course-tabs__total">1학기 수업 {total}개</Text>
         </div>
 
-        <section key={type.id} id={`course-panel-${type.id}`} role="tabpanel" aria-labelledby={`course-tab-${type.id}`} className="course-tabpanel">
-          <ul className="course-rows">
-            {type.courses.map((course) => (
-              <CourseRow
-                key={course.slug}
-                course={course}
-                type={type}
-                profile={profiles[course.slug]}
-                open={open === course.slug}
-                onToggle={(row) => toggle(course.slug, row)}
-              />
+        <div ref={stageRef} className="course-stage">
+          <div ref={trackRef} className="course-track">
+            {types.map((t, i) => (
+              <section
+                key={t.id}
+                ref={(el) => { panelRefs.current[i] = el; }}
+                id={`course-panel-${t.id}`}
+                role="tabpanel"
+                aria-labelledby={`course-tab-${t.id}`}
+                className="course-tabpanel"
+                data-active={tab === i}
+                inert={tab !== i}
+              >
+                <ul className="course-rows">
+                  {t.courses.map((course) => (
+                    <CourseRow
+                      key={course.slug}
+                      course={course}
+                      type={t}
+                      profile={profiles[course.slug]}
+                      open={open === course.slug}
+                      onToggle={(row) => toggle(course.slug, row)}
+                    />
+                  ))}
+                </ul>
+              </section>
             ))}
-          </ul>
-        </section>
+          </div>
+        </div>
       </div>
     </div>
   );

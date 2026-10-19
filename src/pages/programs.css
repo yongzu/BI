@@ -113,6 +113,8 @@
   scroll-margin-top: calc(88px - 40px - var(--space-section));
 }
 .section--last { padding-bottom: var(--space-section); }
+/* 화면 폭 전체 섹션(연간 구조, 사용자 지시 2026-10-19) — 1200 열 대신 과정 개요 · 배우는 역량과 같은 양옆 여백 */
+.section--wide { width: 100%; padding-inline: max(24px, 3vw); }
 /* 히어로 → 첫 섹션 간격 = 다른 섹션 사이와 같은 --space-section(사용자 지시 2026-10-04). 히어로가 내용 높이만큼만
    차지하므로('자세히 보기'까지) 따로 덜어 낼 빈 곳이 없다 */
 
