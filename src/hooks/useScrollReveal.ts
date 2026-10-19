@@ -23,7 +23,8 @@ export function useScrollReveal(selector: string, rescanKey?: unknown) {
           observer.unobserve(el);
         }
       },
-      { rootMargin: '0px 0px -12% 0px', threshold: 0.1 },
+      // AnimatedContent의 threshold 0.1 = 위 끝이 화면 아래 10% 선을 넘을 때(ScrollTrigger start 'top 90%')
+      { rootMargin: '0px 0px -10% 0px', threshold: 0 },
     );
 
     elements.forEach((el) => {

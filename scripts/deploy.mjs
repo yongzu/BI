@@ -6,7 +6,8 @@
 //
 // Past versions (public/versions.json entries with a path, e.g. v1/) are frozen builds served
 // under /BI/v1/ … (2026-10-14). They are kept from the live site like /gpt/; one that is not
-// there yet is built once from its git tag (v1, v2, …) with base /BI/<id>/.
+// there yet is built once from its git tag (v1, v2, …) with base /BI/<id>/ — or from the entry's
+// "ref" (a commit or tag) when the tag is not the build to keep (v11: edited in place after tagging, 2026-10-20).
 //   npm run deploy -- --rebuild v1   rebuilds v1 from its tag instead of keeping the live copy
 //   npm run deploy -- --dry-run      builds dist/ as it would be published, without pushing
 import { execSync } from 'node:child_process';
@@ -14,7 +15,9 @@ import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, 
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 
-const snapshots = JSON.parse(readFileSync('public/versions.json', 'utf8')).filter((v) => v.path).map((v) => v.id);
+const versions = JSON.parse(readFileSync('public/versions.json', 'utf8'));
+const snapshots = versions.filter((v) => v.path).map((v) => v.id);
+const refOf = Object.fromEntries(versions.map((v) => [v.id, v.ref ?? `refs/tags/${v.id}`]));
 const rebuild = process.argv.includes('--rebuild') ? process.argv.slice(process.argv.indexOf('--rebuild') + 1) : [];
 const KEEP = ['gpt', ...snapshots.filter((id) => !rebuild.includes(id))];
 
@@ -41,8 +44,8 @@ for (const dir of KEEP) {
 for (const id of snapshots) {
   if (existsSync(join('dist', id))) continue;
   const tree = mkdtempSync(join(tmpdir(), `bi-${id}-`));
-  console.log(`building ${id}/ from tag ${id}`);
-  execSync(`git worktree add -q --detach "${tree}" refs/tags/${id}`, { stdio: 'inherit' });
+  console.log(`building ${id}/ from ${refOf[id]}`);
+  execSync(`git worktree add -q --detach "${tree}" ${refOf[id]}`, { stdio: 'inherit' });
   const modules = join(tree, 'node_modules');
   try {
     symlinkSync(resolve('node_modules'), modules, 'junction');

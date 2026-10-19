@@ -28,10 +28,15 @@ function layoutTop(el: HTMLElement) {
   return Math.max(0, top - margin - padding);
 }
 
-/** Scroll to a page Y or an element (scroll-margin / scroll-padding respected), smooth when Lenis runs. */
-export function scrollToTarget(target: number | HTMLElement, { immediate = false } = {}) {
+/**
+ * Scroll to a page Y or an element (scroll-margin / scroll-padding respected), smooth when Lenis runs.
+ * duration(초)을 주면 Lenis의 lerp(멀수록 길게 끄는 꼬리) 대신 그 시간 안에 ease-out으로 도착한다.
+ */
+const easeOutCubic = (t: number) => 1 - (1 - t) ** 3;
+export function scrollToTarget(target: number | HTMLElement, { immediate = false, duration }: { immediate?: boolean; duration?: number } = {}) {
   if (lenis) {
-    lenis.scrollTo(typeof target === 'number' ? target : layoutTop(target), { immediate, force: true });
+    const y = typeof target === 'number' ? target : layoutTop(target);
+    lenis.scrollTo(y, duration ? { immediate, force: true, duration, easing: easeOutCubic } : { immediate, force: true });
     return;
   }
   if (typeof target === 'number') window.scrollTo({ top: target, behavior: immediate ? 'auto' : 'smooth' });

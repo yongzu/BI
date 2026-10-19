@@ -1,12 +1,10 @@
-import { useRef, useState, type ReactNode } from 'react';
+import { type ReactNode } from 'react';
 import { Text } from '../components/Text/Text';
 import { Toc, type TocItem } from '../components/Toc/Toc';
 import { AnnualTimeline } from '../components/AnnualTimeline/AnnualTimeline';
 import { CourseExplorer } from '../components/CourseExplorer/CourseExplorer';
-import { BlurReveal } from '../components/BlurReveal/BlurReveal';
 import { ApplyButton } from '../components/ApplyButton/ApplyButton';
-import { HeroRipple, type RippleControl } from '../components/HeroRipple/HeroRipple';
-import { HeroLogo3D } from '../components/HeroLogo3D/HeroLogo3D';
+import { HeroReveal } from '../components/HeroReveal/HeroReveal';
 import { BackToTop, SiteHeader } from '../components/SiteHeader/SiteHeader';
 import { VersionLog } from '../components/VersionLog/VersionLog';
 import { SkillReveal } from '../components/SkillReveal/SkillReveal';
@@ -42,7 +40,13 @@ const toc: TocItem[] = [
 
 /** Blocks that rise in on scroll */
 // 히어로는 첫 화면 순서(흐린 제목 → 맑아짐 → 소개 · 기간)를 따로 가지므로 떠오르는 등장에서 뺀다
-const revealTargets = ['.section-header > *', '.group-label', '.group__lead', '.course-explorer', '.career-card', '.history', '.device-map', '.phi-os__row'].join(', ');
+// 페이지 전체(사용자 지시 2026-10-19, react-bits AnimatedContent) — 붙는 무대가 따로 움직이는 과정 개요 · 배우는 역량은 뺀다
+const revealTargets = [
+  '.section-header > *', '.group-label', '.group__lead',
+  '.history__tabs', '.history__panels',
+  '.course-tabs', '.course-heads', '.course-stage',
+  '.device-map', '.phi-os__row', '.career-card', '.footer > *',
+].join(', ');
 
 /* ------------------------------------------------------------------ */
 
@@ -115,55 +119,32 @@ function CareerCards() {
 
 /* ------------------------------------------------------------------ */
 
-/**
- * 히어로 첫 화면 방식(사용자 지시 2026-10-04):
- * 'together' — 'Programs' · 소개 · 설명 · 지원 기간이 함께 떠올라 전체가 4.2초 동안 일렁이고, 이어서 지원하기 · 자세히 보기
- * 'sequence' — 이전 방식(따로 남겨 둠): 제목만 떠올라 일렁인 뒤 소개(단어마다 블러) → 지원 기간 → 지원하기 차례로
- */
-const INTRO_STYLE: 'together' | 'sequence' = 'together';
 
 /* ------------------------------------------------------------------ */
 
 export function ProgramsPage() {
   useScrollReveal(revealTargets);
-  // 첫 화면: 흐린 'Programs'와 지원하기만 → 제목이 맑아지면 소개 · 지원 기간(사용자 지시 2026-10-04)
-  const [introDone, setIntroDone] = useState(() => window.matchMedia('(prefers-reduced-motion: reduce)').matches);
-  // 3D 로고가 X자가 될 때마다 글자를 일렁이게 한다(사용자 지시 2026-10-05)
-  const rippleCtl = useRef<RippleControl | null>(null);
 
   return (
     <>
       <SiteHeader />
       <BackToTop />
       <main className="page">
-        {/* ---------- Hero ---------- (v9의 포인터 깊이 · 스크롤 포털은 v10에서 뺐다 — 사용자 지시 2026-10-19) */}
-        <section className="hero container" aria-labelledby="hero-title" data-intro={introDone ? 'done' : INTRO_STYLE === 'together' ? 'rise' : 'blur'} data-intro-style={INTRO_STYLE}>
-          {/* 첫 화면(한 화면 높이, 내용 세로 가운데) — '자세히 보기'는 그 아래 200px(사용자 지시 2026-10-04) */}
-          <div className="hero__atf">
-            {/* phi.design 히어로의 3D Φ 로고 — 'Programs' 위, 제목과 함께 떠오른다(사용자 지시 2026-10-05) */}
-            <HeroLogo3D onPose={() => rippleCtl.current?.ripple()} />
-            {/* 제목은 'Programs' 한 단어(사용자 지시 2026-10-03) */}
-            <Text id="hero-title" typography="Display" className="hero__title">
-              Programs
-            </Text>
-            {/* 소개: 큰 글씨 두 줄 + 설명 한 문장, 단어마다 블러에서 떠오른다(사용자 지시 2026-10-03) */}
-            <BlurReveal lines={heroStatement.lines} typography="Title" headingClassName="hero__statement" className="hero__intro" show={INTRO_STYLE === 'together' || introDone}>
-              <Text typography="Lead" color="secondary">{heroStatement.body}</Text>
-            </BlurReveal>
-
-            {/* 과정 개요 대신 지원 기간 + 지원하기 — 토스뱅크 디자인 채용 히어로를 따름(사용자 지시 2026-10-03) */}
-            {/* v6: 기간 옆에 모집 상태를 글자로(파동이 기간 줄을 캔버스로 다시 그리므로 배지 면 대신 흐린 글자) */}
-            <div className="hero__apply">
-              <Text typography="Label" className="hero__period">
-                {applyPeriod.label}<span className="hero__status"> · {applyPeriod.status}</span>
-              </Text>
-              <ApplyButton href={applyPeriod.href}>{applyPeriod.cta}</ApplyButton>
-            </div>
+        {/* ---------- Hero — 배우는 역량의 연출을 응용(사용자 지시 2026-10-19): 흰 화면 → 화면 폭 'PROGRAMS'가 흐린 채 떠오름 →
+            또렷 → 작아지며 가운데보다 살짝 아래로, 위에 3D Φ 로고 · 아래 내용. 스크롤 없이 저절로, 끝날 때까지 스크롤 잠금.
+            그 뒤 로고가 X자가 될 때마다 물방울 파동(.hero__title · .hero__intro · .hero__period를 옮겨 그린다) ---------- */}
+        <HeroReveal title="PROGRAMS">
+          <div className="hero__intro">
+            <p className="hero-reveal__lines">{heroStatement.lines.map((line) => <span key={line}>{line}</span>)}</p>
+            <p className="hero-reveal__body">{heroStatement.body}</p>
           </div>
-
-          {/* 6초마다 파동이 글자를 일렁이게 한다 — 토스뱅크 디자인 채용 히어로를 따름(사용자 지시 2026-10-03) */}
-          <HeroRipple introStyle={INTRO_STYLE} onIntroEnd={() => setIntroDone(true)} controlRef={rippleCtl} />
-        </section>
+          <div className="hero__apply">
+            <p className="hero__period">
+              {applyPeriod.label}<span className="hero__status"> · {applyPeriod.status}</span>
+            </p>
+            <ApplyButton href={applyPeriod.href}>{applyPeriod.cta}</ApplyButton>
+          </div>
+        </HeroReveal>
 
         {/* 목차는 히어로 다음, '역량과 태도'부터 나온다(사용자 지시 2026-10-04) — 히어로는 화면 정가운데.
             레일이 섹션들과 함께 시작해 읽는 동안 붙어 있다가 푸터 앞에서 놓아준다 */}
@@ -187,8 +168,9 @@ export function ProgramsPage() {
         </section>
 
         {/* ---------- 커리큘럼 ---------- */}
-        <section id="curriculum" className="section container">
-          <SectionHeader title="커리큘럼" lead="상기된 역량을 중심으로 설계된 1학기 수업들입니다. 2학기는 1학기의 성취에 따라 학습 효과를 보완, 증폭할 수 있는 방향으로 준비됩니다." />
+        {/* 화면 폭 전체(사용자 지시 2026-10-19). 리드는 첫 문장 뒤에서 줄을 바꾼다 */}
+        <section id="curriculum" className="section section--wide">
+          <SectionHeader title="커리큘럼" lead={<>상기된 역량을 중심으로 설계된 1학기 수업들입니다.<br />2학기는 1학기의 성취에 따라 학습 효과를 보완, 증폭할 수 있는 방향으로 준비됩니다.</>} />
 
           {/* 필터 · 수업 목록 · 상세를 한 화면에 — 클릭 없이 전체를 파악한다 */}
           <div id="courses" className="group">

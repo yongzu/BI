@@ -9,7 +9,7 @@
   --sr-lead: 1;
   --sr-ease: cubic-bezier(0.22, 1, 0.36, 1);
   --sr-gap: 16px;
-  --sr-side: max(24px, 3vw);
+  --sr-side: var(--side-wide);
   /* 다섯 장이 화면 폭을 나눠 쓴다(토스는 여섯 장) */
   position: relative;
   /* 섹션 가운데 열을 벗어나 화면 폭 전체 */
