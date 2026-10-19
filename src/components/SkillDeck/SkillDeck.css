@@ -1,0 +1,199 @@
+/* 배우는 역량(v9) — 스킬 카드 덱. 값은 SkillDeck.tsx가 CSS 변수로: --deal(무대 진행) · --di(카드마다) · --rx/--ry/--gx/--gy(기울기 · 빛).
+   Tokens only — 카드 면은 잉크(--color-text-primary)에서 조금 더 어두운 쪽으로 기우는 그라데이션 */
+.skill-deck {
+  --deal: 1;
+  --sd-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --card-ink: var(--color-text-primary);
+  --card-deep: color-mix(in srgb, var(--color-text-primary), black 45%);
+  position: relative;
+  /* 무대가 붙어 있는 구간 — 이만큼 스크롤하는 동안 카드가 펼쳐진다 */
+  height: calc(100svh + 90svh);
+}
+
+/* ---------- 무대: 화면에 붙어 있고, 뒤에 Φ 고리(이음 A) ---------- */
+.skill-stage {
+  position: sticky;
+  top: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: var(--space-64);
+  min-height: 100svh;
+  padding-block: var(--space-80);
+  isolation: isolate; /* 고리(z −1)가 무대 뒤에 깔리되 페이지 밖으로 새지 않게 */
+}
+.skill-stage__rings {
+  position: absolute;
+  z-index: -1;
+  top: 50%;
+  left: 50%;
+  width: min(1100px, 92vw);
+  aspect-ratio: 1;
+  translate: -50% -50%;
+  scale: calc(0.75 + var(--deal) * 0.25);
+  opacity: calc(1 - var(--deal) * 0.5);
+  pointer-events: none;
+}
+.skill-stage__rings ellipse { stroke: var(--color-border); }
+.skill-stage__rings .phi-rings__g { transform-box: view-box; transform-origin: center; transform: rotate(calc(var(--deal) * 60deg - 30deg)); }
+
+/* ---------- 카드 줄: 다섯 장 ---------- */
+.skill-row { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: var(--space-12); }
+.skill-slot {
+  --di: 1;
+  position: relative;
+  z-index: calc(10 - var(--i));
+  display: flex;
+  /* C1: 쌓인 덱(가운데 카드 자리에 모여 조금씩 엇갈림) → 제자리. % = 카드 폭 */
+  translate: calc((2 - var(--i)) * (100% + 12px) * (1 - var(--di))) calc((1 - var(--di)) * (var(--i) * -10px + 40px));
+  rotate: calc((var(--i) - 2) * 5deg * (1 - var(--di)));
+  scale: calc(0.92 + var(--di) * 0.08);
+}
+
+/* ---------- 카드 앞면 ---------- */
+.skill-card {
+  --rx: 0deg;
+  --ry: 0deg;
+  --gx: 50%;
+  --gy: 0%;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-12);
+  width: 100%;
+  min-height: 340px;
+  padding: var(--space-24) var(--space-20) var(--space-20);
+  overflow: hidden;
+  border-radius: 24px;
+  background: linear-gradient(160deg, var(--card-ink), var(--card-deep));
+  color: var(--color-bg-default);
+  text-align: left;
+  cursor: var(--cursor-pointer);
+  box-shadow: 0 18px 40px -18px rgba(0, 0, 0, 0.45);
+  transform: perspective(900px) rotateX(var(--ry)) rotateY(var(--rx));
+  transition: transform 500ms var(--sd-ease), box-shadow 500ms var(--sd-ease);
+}
+/* C2: 커서 자리에 맺히는 빛 + 비스듬히 지나가는 띠 */
+.skill-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background:
+    radial-gradient(circle at var(--gx) var(--gy), rgba(255, 255, 255, 0.22), transparent 45%),
+    linear-gradient(115deg, transparent 35%, rgba(255, 255, 255, 0.08) 48%, transparent 60%);
+  opacity: 0;
+  transition: opacity 400ms var(--sd-ease);
+  pointer-events: none;
+}
+.skill-card[data-hover] { transition: transform 120ms linear, box-shadow 500ms var(--sd-ease); box-shadow: 0 28px 60px -20px rgba(0, 0, 0, 0.5); }
+.skill-card[data-hover]::after { opacity: 1; }
+.skill-card:focus-visible { outline: 2px solid var(--color-text-primary); outline-offset: 4px; }
+
+.skill-card__num { font-size: var(--typo-heading-size); line-height: 1; font-weight: var(--font-weight-bold); letter-spacing: var(--tracking-heading); font-variant-numeric: tabular-nums; opacity: 0.25; }
+.skill-card__names { display: flex; flex-direction: column; gap: var(--space-4); margin-top: auto; }
+.skill-card__ko { font-size: var(--typo-title-size); line-height: 1.2; font-weight: var(--font-weight-bold); letter-spacing: var(--tracking-heading); }
+.skill-card__en { font-size: var(--typo-caption-size); font-weight: var(--font-weight-medium); opacity: 0.5; }
+.skill-card__summary { min-height: calc(2 * 1.55em); font-size: var(--typo-meta-size); line-height: 1.55; opacity: 0.75; }
+.skill-card__foot { display: flex; flex-direction: column; gap: var(--space-8); padding-top: var(--space-12); border-top: 1px solid rgba(255, 255, 255, 0.14); }
+.skill-card__count { font-size: var(--typo-caption-size); font-weight: var(--font-weight-bold); opacity: 0.7; }
+
+/* 12칸 점 */
+.skill-dots { display: grid; grid-template-columns: repeat(12, 1fr); gap: 3px; max-width: 168px; }
+.skill-dots > span { aspect-ratio: 1; border-radius: 50%; background: currentColor; opacity: 0.18; }
+.skill-dots > span[data-on='true'] { opacity: 1; }
+
+/* ---------- C4: 고른 카드가 커져 상세, 나머지는 아래 작은 카드 ---------- */
+.skill-deck[data-open='true'] .skill-row { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.skill-slot[data-state='open'] { grid-column: 1 / -1; order: -1; }
+.skill-slot[data-state='mini'] .skill-card { min-height: 0; padding: var(--space-16) var(--space-20); flex-direction: row; align-items: center; gap: var(--space-16); }
+.skill-slot[data-state='mini'] .skill-card__num { font-size: var(--typo-body-size); opacity: 0.4; }
+.skill-slot[data-state='mini'] .skill-card__names { margin-top: 0; }
+.skill-slot[data-state='mini'] .skill-card__ko { font-size: var(--typo-body-size); }
+
+.skill-detail {
+  position: relative;
+  display: grid;
+  grid-template-columns: var(--grid-template);
+  column-gap: var(--grid-gap);
+  width: 100%;
+  padding: var(--space-40);
+  border-radius: 28px;
+  background: linear-gradient(160deg, var(--card-ink), var(--card-deep));
+  color: var(--color-bg-default);
+  box-shadow: 0 28px 60px -24px rgba(0, 0, 0, 0.5);
+}
+.skill-detail__close {
+  position: absolute;
+  top: var(--space-16);
+  right: var(--space-16);
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  font-size: var(--typo-lead-size);
+  color: inherit;
+  cursor: var(--cursor-pointer);
+  transition: background var(--duration) var(--ease);
+}
+.skill-detail__close:hover { background: rgba(255, 255, 255, 0.22); }
+.skill-detail__lead { grid-column: span 5; display: flex; flex-direction: column; gap: var(--space-8); }
+.skill-detail__summary { margin-top: var(--space-8); font-size: var(--typo-body-size); line-height: 1.6; opacity: 0.75; }
+.skill-detail__body { grid-column: span 7; display: flex; flex-direction: column; gap: var(--space-24); padding-top: var(--space-48); }
+.skill-detail__text { opacity: 0.85; }
+.skill-detail__courses { display: flex; flex-direction: column; gap: var(--space-12); }
+.skill-detail__label { display: flex; flex-direction: column; gap: var(--space-8); font-size: var(--typo-caption-size); font-weight: var(--font-weight-bold); opacity: 0.8; }
+.skill-detail__courses ul { display: flex; flex-wrap: wrap; gap: var(--space-8); }
+.skill-course {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--space-8);
+  padding: var(--space-8) var(--space-16);
+  border-radius: 999px;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.28);
+  font-size: var(--typo-meta-size);
+  font-weight: var(--font-weight-bold);
+  color: inherit;
+  cursor: var(--cursor-pointer);
+  transition: background var(--duration) var(--ease), color var(--duration) var(--ease);
+}
+.skill-course::after { content: '→'; opacity: 0.6; }
+.skill-course__type { font-size: var(--typo-caption-size); font-weight: var(--font-weight-medium); opacity: 0.55; }
+.skill-course:hover { background: var(--color-bg-default); color: var(--color-text-primary); }
+
+/* View Transitions: 같은 카드가 자리 · 크기를 바꾸는 시간과 곡선 */
+::view-transition-group(*) { animation-duration: 560ms; animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
+
+/* ---------- 좁은 화면 ---------- */
+@media (max-width: 1100px) {
+  .skill-card { min-height: 300px; }
+  .skill-detail__lead, .skill-detail__body { grid-column: 1 / -1; }
+  .skill-detail__body { padding-top: var(--space-24); }
+}
+/* 태블릿 이하: 붙는 무대 · 딜링 없이 옆으로 넘기는 줄 */
+@media (max-width: 900px) {
+  .skill-deck { height: auto; }
+  .skill-stage { position: relative; min-height: 0; padding-block: var(--space-24); }
+  .skill-stage__rings { display: none; }
+  .skill-row { display: flex; gap: var(--space-12); overflow-x: auto; scroll-snap-type: x mandatory; margin-inline: calc(-1 * var(--gutter)); padding: var(--space-8) var(--gutter) var(--space-16); scrollbar-width: none; }
+  .skill-row::-webkit-scrollbar { display: none; }
+  .skill-slot { flex: 0 0 240px; scroll-snap-align: start; translate: none; rotate: none; scale: 1; }
+  .skill-deck[data-open='true'] .skill-row { flex-wrap: wrap; overflow: visible; margin-inline: 0; padding-inline: 0; }
+  .skill-deck[data-open='true'] .skill-slot { flex: 1 1 calc(50% - 6px); }
+  .skill-deck[data-open='true'] .skill-slot[data-state='open'] { flex-basis: 100%; }
+  .skill-detail { padding: var(--space-28) var(--space-20); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .skill-deck { height: auto; }
+  .skill-stage { position: relative; min-height: 0; }
+  .skill-slot { translate: none; rotate: none; scale: 1; }
+  .skill-card { transform: none; transition: none; }
+  .skill-card::after { display: none; }
+  .skill-stage__rings { scale: 1; }
+  .skill-stage__rings .phi-rings__g { transform: none; }
+}
+
+/* 몰입 구간(무대가 붙어 있는 동안): 목차를 잠시 걷는다 */
+html[data-immersive] .toc { opacity: 0 !important; visibility: hidden !important; transition: opacity 300ms var(--ease), visibility 0s linear 300ms !important; }

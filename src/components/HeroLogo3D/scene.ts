@@ -122,20 +122,23 @@ export function createLogoScene(host: HTMLElement): LogoScene {
   const bigTrack = ringTrack(anim.rings.big);
   const smallTrack = ringTrack(anim.rings.small);
 
-  // 마우스 기울기: 로고 위에서 포인터 위치에 따라 최대 0.28rad, 프레임마다 6%씩 따라간다
+  // 마우스 기울기: 포인터 위치에 따라 최대 0.28rad, 프레임마다 6%씩 따라간다.
+  // v9(2026-10-19): 로고 위만이 아니라 히어로 전체에서 — 화면 어디에 있든 로고가 커서 쪽을 바라본다(포인터 깊이)
+  const area = host.closest<HTMLElement>('.hero') ?? host;
   const target = new Quaternion();
   const tilt = new Quaternion();
   const euler = new Euler();
   const onMove = (e: PointerEvent) => {
-    const r = host.getBoundingClientRect();
+    if (e.pointerType !== 'mouse') return;
+    const r = area.getBoundingClientRect();
     const x = ((e.clientX - r.left) / r.width) * 2 - 1;
     const y = ((e.clientY - r.top) / r.height) * 2 - 1;
     euler.set(0.28 * y, 0.28 * x, 0, 'XYZ');
     target.setFromEuler(euler);
   };
   const onLeave = () => target.identity();
-  host.addEventListener('pointermove', onMove);
-  host.addEventListener('pointerleave', onLeave);
+  area.addEventListener('pointermove', onMove);
+  area.addEventListener('pointerleave', onLeave);
 
   const resize = () => {
     const size = Math.max(1, Math.min(host.clientWidth, host.clientHeight));
@@ -178,8 +181,8 @@ export function createLogoScene(host: HTMLElement): LogoScene {
       tilt.slerp(target, 0.06);
     },
     dispose() {
-      host.removeEventListener('pointermove', onMove);
-      host.removeEventListener('pointerleave', onLeave);
+      area.removeEventListener('pointermove', onMove);
+      area.removeEventListener('pointerleave', onLeave);
       ro.disconnect();
       renderer.domElement.remove();
       big.geo.dispose();

@@ -9,9 +9,10 @@ import { HeroRipple, type RippleControl } from '../components/HeroRipple/HeroRip
 import { HeroLogo3D } from '../components/HeroLogo3D/HeroLogo3D';
 import { BackToTop, SiteHeader } from '../components/SiteHeader/SiteHeader';
 import { VersionLog } from '../components/VersionLog/VersionLog';
-import { ValueCards } from '../components/ValueCards/ValueCards';
+import { SkillDeck } from '../components/SkillDeck/SkillDeck';
 import { DeviceMap } from '../components/DeviceMap/DeviceMap';
 import { PhiOS } from '../components/PhiOS/PhiOS';
+import { HeroPortal, PhiRings } from '../components/HeroPortal/HeroPortal';
 import { ChangeChip, ChangeNotes } from '../components/ChangeNotes/ChangeNotes';
 import { courseProfiles } from '../data/courseProfiles';
 import { useScrollReveal } from '../hooks/useScrollReveal';
@@ -43,7 +44,7 @@ const toc: TocItem[] = [
 
 /** Blocks that rise in on scroll */
 // 히어로는 첫 화면 순서(흐린 제목 → 맑아짐 → 소개 · 기간)를 따로 가지므로 떠오르는 등장에서 뺀다
-const revealTargets = ['.section-header > *', '.group-label', '.group__lead', '.course-explorer', '.career-card', '.fact-tile', '.vc-cards', '.vc-detail', '.history', '.device-map', '.phi-os__row', '.closing__card'].join(', ');
+const revealTargets = ['.section-header > *', '.group-label', '.group__lead', '.course-explorer', '.career-card', '.fact-tile', '.history', '.device-map', '.phi-os__row', '.closing__card'].join(', ');
 
 /* ------------------------------------------------------------------ */
 
@@ -197,7 +198,8 @@ export function ProgramsPage() {
       <BackToTop />
       <ChangeNotes />
       <main className="page">
-        {/* ---------- Hero ---------- */}
+        {/* ---------- Hero — v9: 포인터 깊이 + 스크롤 포털(HeroPortal) ---------- */}
+        <HeroPortal rippleCtl={rippleCtl}>
         <section className="hero container" aria-labelledby="hero-title" data-intro={introDone ? 'done' : INTRO_STYLE === 'together' ? 'rise' : 'blur'} data-intro-style={INTRO_STYLE}>
           {/* 첫 화면(한 화면 높이, 내용 세로 가운데) — '자세히 보기'는 그 아래 200px(사용자 지시 2026-10-04) */}
           <div className="hero__atf">
@@ -224,7 +226,12 @@ export function ProgramsPage() {
 
           {/* 6초마다 파동이 글자를 일렁이게 한다 — 토스뱅크 디자인 채용 히어로를 따름(사용자 지시 2026-10-03) */}
           <HeroRipple introStyle={INTRO_STYLE} onIntroEnd={() => setIntroDone(true)} controlRef={rippleCtl} />
+          {/* 뒤 층: Φ 고리(H1 먼 층 · H3 포털에서 화면 밖까지 커짐) */}
+          <PhiRings className="hero__rings" />
+          {/* 포털 고리(H3): 로고에서 이어받아 화면 밖까지 커진다 */}
+          <PhiRings className="hero__portal-rings" />
         </section>
+        </HeroPortal>
 
         {/* 목차는 히어로 다음, '역량과 태도'부터 나온다(사용자 지시 2026-10-04) — 히어로는 화면 정가운데.
             레일이 섹션들과 함께 시작해 읽는 동안 붙어 있다가 푸터 앞에서 놓아준다 */}
@@ -238,17 +245,12 @@ export function ProgramsPage() {
 
         {/* ---------- 배우는 역량(v8: 태도와 나눠 초입에 — 이 1년에서 무엇을 얻나에 먼저 답한다) ---------- */}
         <section id="pillars" className="section container">
-          <SectionHeader title="배우는 역량" change="pillars" lead="어떤 환경에서도 스스로 답을 찾을 수 있는 사고방식을 만들기 위해, Phi는 아래 다섯 가지 역량을 기릅니다. 카드를 고르면 그 역량을 기르는 수업이 보입니다." />
-          {/* 휠(v2) → 가로 두 줄 상자(v3) → 두 단 줄 목록(v4 · v5) → Culture 줄(v6) →
-              v7: 묶음마다 카드 다섯 장 + 아래 상세 띠. 역량은 띠에서 그 역량을 기르는 수업으로 바로 간다(ValueCards) */}
-          <div className="group">
-            <ValueCards
-              courseTypes={courseTypes}
-              groups={[
-                { id: 'pillars-competency', name: '역량', en: 'Competency', definition: '수업에서 기르는 다섯 가지 능력. 커리큘럼의 수업마다 태그로 붙는다.', items: competencies, linkCourses: true },
-              ]}
-            />
-          </div>
+          {/* v9: 스킬 카드 덱 — 붙는 무대에서 덱이 펼쳐지고(C1), 뒤에 히어로와 같은 Φ 고리(이음 A), 기울기 · 빛(C2), 카드 → 상세(C4) */}
+          <SkillDeck
+            items={competencies}
+            courseTypes={courseTypes}
+            header={<SectionHeader title="배우는 역량" change="pillars" lead="어떤 환경에서도 스스로 답을 찾을 수 있는 사고방식을 만들기 위해, Phi는 아래 다섯 가지 역량을 기릅니다. 카드를 고르면 그 역량을 기르는 수업이 보입니다." />}
+          />
         </section>
 
         {/* ---------- 연간 구조 — 배우는 역량 바로 아래 ---------- */}
