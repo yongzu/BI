@@ -41,7 +41,6 @@ type Props = { stages: Stage[] };
 
 export function AnnualTimeline({ stages }: Props) {
   const [selected, setSelected] = useState(0);
-  const [dir, setDir] = useState(1);
   // 고른 칸을 가리키는 막대 하나 — 칸마다 선이 줄었다 늘었다 하지 않고, 고른 칸 자리로 미끄러져 간다(사용자 지시 2026-10-19).
   // 자리는 고른 탭을 재서 정한다 — 넓은 화면 한 줄 · 휴대폰 2 × 2 어디서나 맞는다
   const tabsRef = useRef<HTMLDivElement>(null);
@@ -63,7 +62,6 @@ export function AnnualTimeline({ stages }: Props) {
   }, [selected]);
   const pick = (i: number) => {
     const next = (i + stages.length) % stages.length;
-    setDir(next >= selected ? 1 : -1);
     setSelected(next);
   };
   const onKey = (e: KeyboardEvent) => {
@@ -76,7 +74,7 @@ export function AnnualTimeline({ stages }: Props) {
   };
 
   return (
-    <div className="history" style={{ '--dir': dir } as React.CSSProperties}>
+    <div className="history">
       {/* ---------- 탭: 섹션 위, 네 칸 같은 폭(v10, 사용자 시안 이미지) ----------
           가로로 긴 가는 선 위에 고른 칸만 굵은 잉크 선, 아래에 이름 · 짧은 기간. 고르지 않은 칸은 흐리게.
           칸 = 시기라 순서가 곧 시간 — 길이로 기간을 그리던 v7 · v9의 바는 내용(패널 왼쪽 기간)에 맡긴다 */}
@@ -110,6 +108,8 @@ export function AnnualTimeline({ stages }: Props) {
             aria-labelledby={`annual-tab-${i}`}
             className="history__panel"
             data-active={selected === i}
+            // 고른 시기보다 앞(왼쪽)은 −1, 뒤(오른쪽)는 +1 — 나가는 내용은 진행 반대쪽으로, 들어오는 내용은 진행 쪽에서
+            style={{ '--pos': Math.sign(i - selected) } as React.CSSProperties}
             inert={selected !== i}
           >
             <div className="history__side">

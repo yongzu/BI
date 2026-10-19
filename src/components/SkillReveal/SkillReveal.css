@@ -1,0 +1,202 @@
+/* 배우는 역량(v11) — 토스 "상품 판매와 정산" 연출. 값은 SkillReveal.tsx가 CSS 변수로:
+   --sr-shrink(글씨 작아짐 0→1) · --sr-lead(리드 0→1) · 카드마다 --sr-in(올라옴 0→1). 글자 채움은 .sr-char[data-on]. Tokens only. */
+/* 화면 폭을 다 쓰는 무대가 가로 스크롤을 만들지 않게(100vw엔 스크롤바 폭이 들어 있다).
+   섹션에서 자르면 섹션 폭(최대 1314px)에서 잘려 무대 양옆이 비었다 — 화면 폭인 main에서 자른다 */
+.page:has(.skill-reveal) { overflow-x: clip; }
+
+.skill-reveal {
+  --sr-shrink: 1;
+  --sr-lead: 1;
+  --sr-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --sr-gap: 16px;
+  --sr-side: max(24px, 3vw);
+  /* 다섯 장이 화면 폭을 나눠 쓴다(토스는 여섯 장) */
+  position: relative;
+  /* 섹션 가운데 열을 벗어나 화면 폭 전체 */
+  width: 100vw;
+  margin-left: calc(50% - 50vw);
+  background: var(--color-bg-subtle);
+}
+/* 붙는 무대(넓은 화면): 이만큼 스크롤하는 동안 채움 → 작아짐 → 카드 */
+.skill-reveal[data-pin] { height: calc(100svh + 200svh); }
+.skill-reveal__stage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-48);
+  padding: var(--space-96) 0 var(--space-96);
+}
+.skill-reveal[data-pin] .skill-reveal__stage {
+  position: sticky;
+  top: 0;
+  height: 100svh;
+  gap: var(--space-48);
+  justify-content: flex-start; /* 카드는 리드 바로 아래 — 아래로 밀면 높낮이 차이만큼 화면 밖으로 잘렸다 */
+  padding: 11svh 0 4svh;
+  overflow: hidden;
+}
+
+/* ---------- 큰 글씨: 옅은 글씨가 한 글자씩 검정으로, 다 채우면 작아지며 위로 ---------- */
+.skill-reveal__head { display: flex; flex-direction: column; align-items: center; gap: var(--space-16); text-align: center; }
+.skill-reveal__title {
+  font-size: var(--typo-heading-size);
+  line-height: 1.2;
+  font-weight: var(--font-weight-bold);
+  letter-spacing: var(--tracking-heading);
+  white-space: nowrap;
+  transform-origin: 50% 0;
+}
+.skill-reveal[data-pin] .skill-reveal__title {
+  /* 처음엔 약 2.9배(140px쯤)로 화면 가운데, 작아지며 제자리(위)로 */
+  transform: translateY(calc((1 - var(--sr-shrink)) * 22svh)) scale(calc(1 + (1 - var(--sr-shrink)) * 1.9));
+}
+.sr-char { position: relative; color: var(--color-border); transition: color 160ms var(--ease); }
+.sr-char[data-on] { color: var(--color-text-primary); }
+/* 채워지는 경계의 커서 막대(토스의 깜박이는 커서 자리) */
+.sr-char[data-caret]::before {
+  content: '';
+  position: absolute;
+  left: -0.04em;
+  top: 0.12em;
+  bottom: 0.12em;
+  width: 0.06em;
+  background: var(--color-text-primary);
+  animation: sr-blink 900ms steps(2) infinite;
+}
+@keyframes sr-blink { to { opacity: 0; } }
+.skill-reveal__lead { max-width: 640px; padding-inline: var(--gutter); font-size: var(--typo-lead-size); line-height: 1.5; color: var(--color-text-secondary); }
+.skill-reveal[data-pin] :is(.skill-reveal__lead, .skill-reveal__chip) { opacity: var(--sr-lead); transform: translateY(calc((1 - var(--sr-lead)) * 16px)); }
+
+/* ---------- 카드 줄: 화면 폭 전체, 높낮이가 엇갈린다 ----------
+   카드는 같은 몫(flex 1)으로 줄을 나눠 쓰고, 연 카드만 --grow 몫으로 넓어진다 — 나머지는 그만큼 좁아진다(v3 역량과 태도 상자).
+   연 카드는 아래로도 길어진다(--sr-h-closed → --sr-h-open) */
+.skill-reveal__cards {
+  --grow: 2.4;
+  --sr-h-closed: 224px;
+  --sr-h-open: 440px;
+  --sr-open-w: calc((100vw - 2 * var(--sr-side) - 4 * var(--sr-gap)) * var(--grow) / (4 + var(--grow))); /* 연 카드의 폭 */
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sr-gap);
+  width: 100%;
+  padding-inline: var(--sr-side);
+}
+.sr-card-slot {
+  --wave: 0px;
+  flex: 1 1 0;
+  min-width: 0;
+  height: var(--sr-h-closed);
+  translate: 0 var(--wave);
+  transition: flex-grow 640ms var(--ease-reveal), height 640ms var(--ease-reveal);
+}
+.sr-card-slot[data-open='true'] { flex-grow: var(--grow); height: var(--sr-h-open); }
+.sr-card-slot:nth-child(1) { --wave: 32px; }
+.sr-card-slot:nth-child(2) { --wave: 0px; }
+.sr-card-slot:nth-child(3) { --wave: 44px; }
+.sr-card-slot:nth-child(4) { --wave: 68px; }
+.sr-card-slot:nth-child(5) { --wave: 20px; }
+.skill-reveal[data-pin] .sr-card-slot {
+  translate: 0 calc(var(--wave) + (1 - var(--sr-in, 1)) * 70svh);
+  opacity: calc(var(--sr-in, 1) * 1.6);
+}
+
+/* ---------- 카드: TiltedCard(기울기 · 빛 · 그림자) 안에 층 셋 — 바탕(뒤) · 이름(가장 앞) · 본문(중간) ---------- */
+.sr-card { position: relative; width: 100%; height: 100%; cursor: var(--cursor-pointer); }
+.sr-tilt .tilted-card__shadow { --tc-shadow-color: rgba(0, 0, 0, 0.35); }
+.sr-tilt .tilted-card__face { background: var(--color-bg-default); }
+.sr-tilt .tilted-card__rim { --tc-rim-color: rgba(0, 0, 0, 0.06); --tc-rim-light: rgba(255, 255, 255, 0); }
+.sr-face__bg { inset: -24px; background: linear-gradient(165deg, var(--color-bg-default) 40%, var(--color-bg-subtle)); }
+.sr-face__head { display: flex; flex-direction: column; gap: var(--space-4); padding: var(--space-28) var(--space-56) 0 var(--space-24); pointer-events: none; }
+.sr-card__ko { font-size: var(--typo-title-size); line-height: 1.25; font-weight: var(--font-weight-bold); letter-spacing: var(--tracking-heading); color: var(--color-text-primary); word-break: keep-all; }
+.sr-card__en { font-size: var(--typo-meta-size); line-height: 1.4; font-weight: var(--font-weight-medium); color: var(--color-text-tertiary); }
+/* 본문 층: 이름 아래에서 시작 */
+/* 칸 폭 = 카드 폭(minmax 0) — 연 내용의 고정 폭이 닫힌 카드의 앞부분 글까지 넓혀 잘리지 않게 */
+.sr-face__copy { top: 100px; display: grid; grid-template-columns: minmax(0, 1fr); align-items: start; padding: 0 var(--space-24) var(--space-24); }
+.sr-card__excerpt,
+.sr-card__more { grid-area: 1 / 1; }
+/* 닫힌 카드: 전문의 앞부분 두 줄만 */
+.sr-card__excerpt {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  font-size: var(--typo-meta-size);
+  line-height: 1.6;
+  color: var(--color-text-secondary);
+  transition: opacity 200ms var(--ease);
+}
+/* 연 카드: 전문 + 이 역량을 기르는 수업. 열린 폭에 맞춘 고정 폭이라 넓어지는 동안 줄바꿈이 흔들리지 않는다 */
+.sr-card__more {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-12);
+  width: min(560px, calc(var(--sr-open-w, 600px) - 48px));
+  max-height: calc(var(--sr-h-open) - 124px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  opacity: 0;
+  transform: translateY(8px);
+  pointer-events: none;
+  transition: opacity 180ms var(--ease), transform 180ms var(--ease);
+}
+.sr-card[data-open='true'] .sr-card__excerpt { opacity: 0; }
+.sr-card[data-open='true'] .sr-card__more { opacity: 1; transform: none; pointer-events: auto; transition: opacity 420ms var(--ease) 260ms, transform 560ms var(--ease-reveal) 240ms; }
+.sr-card__body { font-size: var(--typo-body-size); line-height: 1.65; color: var(--color-text-secondary); }
+.sr-courses__label { margin-top: var(--space-4); padding-top: var(--space-12); border-top: 1px solid var(--color-border); font-size: var(--typo-caption-size); font-weight: var(--font-weight-bold); color: var(--color-text-tertiary); }
+.sr-courses { display: flex; flex-wrap: wrap; gap: var(--space-4); }
+.sr-course {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--space-8);
+  padding: var(--space-8) var(--space-12);
+  border-radius: 999px;
+  background: var(--color-bg-subtle);
+  font-size: var(--typo-meta-size);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+  cursor: var(--cursor-pointer);
+  transition: background var(--duration) var(--ease), color var(--duration) var(--ease);
+}
+.sr-course::after { content: '→'; opacity: 0.45; }
+.sr-course__type { font-size: var(--typo-caption-size); font-weight: var(--font-weight-medium); color: var(--color-text-tertiary); }
+.sr-course:hover { background: var(--color-text-primary); color: var(--color-bg-default); }
+.sr-course:hover .sr-course__type { color: inherit; opacity: 0.6; }
+
+/* 오른쪽 위 + 버튼 — 키보드 · 터치로 여닫는다. 열리면 ×로 돈다 */
+.sr-card__toggle {
+  position: absolute;
+  z-index: 5;
+  top: var(--space-16);
+  right: var(--space-16);
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--color-bg-subtle);
+  font-size: var(--typo-lead-size);
+  line-height: 1;
+  color: var(--color-text-primary);
+  cursor: var(--cursor-pointer);
+  transition: background var(--duration) var(--ease), color var(--duration) var(--ease);
+}
+.sr-card__toggle > span { transition: transform 420ms var(--ease-reveal); }
+.sr-card__toggle[aria-expanded='true'] { background: var(--color-text-primary); color: var(--color-bg-default); }
+.sr-card__toggle[aria-expanded='true'] > span { transform: rotate(45deg); }
+.sr-card__toggle:focus-visible { outline: 2px solid var(--color-text-primary); outline-offset: 2px; }
+
+/* 몰입 구간(무대가 붙어 있는 동안): 목차를 잠시 걷는다 */
+html[data-immersive] .toc { opacity: 0 !important; visibility: hidden !important; transition: opacity 300ms var(--ease), visibility 0s linear 300ms !important; }
+
+/* 좁은 화면: 붙는 무대 없이, 카드는 옆으로 넘기는 줄 */
+@media (max-width: 1100px) {
+  .skill-reveal__title { font-size: var(--typo-heading-size); white-space: normal; padding-inline: var(--gutter); }
+  .skill-reveal__cards { --sr-open-w: 360px; overflow-x: auto; scroll-snap-type: x mandatory; padding-bottom: var(--space-24); scrollbar-width: none; }
+  .skill-reveal__cards::-webkit-scrollbar { display: none; }
+  .sr-card-slot { --wave: 0px !important; flex: 0 0 240px; scroll-snap-align: start; scroll-margin-left: var(--sr-side); transition: flex-basis 640ms var(--ease-reveal), height 640ms var(--ease-reveal); }
+  .sr-card-slot[data-open='true'] { flex-basis: 360px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sr-char[data-caret]::before { animation: none; }
+  .sr-card-slot, .sr-card__excerpt, .sr-card__more { transition: none !important; }
+}

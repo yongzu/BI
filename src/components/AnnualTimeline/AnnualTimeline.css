@@ -4,7 +4,7 @@
 /* ---------- 시기 패널: 네 시기를 한 칸에 겹쳐 고른 것만 ---------- */
 .history__panels {
   display: grid;
-  overflow: clip; /* 비켜 선 패널(±16px)이 가로 스크롤을 만들지 않게 */
+  overflow: clip; /* 좌우로 비켜 선 패널이 가로 스크롤을 만들지 않게 */
   padding: var(--space-48) var(--space-48) var(--space-56);
   border-radius: 32px;
   background: var(--color-bg-subtle);
@@ -15,18 +15,19 @@
   grid-template-columns: var(--grid-template);
   column-gap: var(--grid-gap);
   align-items: start;
+  /* 탭을 옮기면 내용이 좌우로 페이드 — 고른 시기보다 앞(--pos −1)은 왼쪽, 뒤(+1)는 오른쪽에 비켜 있다(사용자 지시 2026-10-19).
+     오른쪽 탭으로 가면 지금 내용은 왼쪽으로 나가며 흐려지고, 새 내용은 오른쪽에서 들어오며 또렷해진다. 왼쪽 탭이면 반대 */
   opacity: 0;
   visibility: hidden;
-  transition: opacity 220ms var(--ease), transform 220ms var(--ease), visibility 0s linear 220ms;
+  transform: translateX(calc(var(--pos, 1) * 56px));
+  transition: opacity 320ms var(--ease), transform 420ms var(--h-ease), visibility 0s linear 420ms;
 }
 .history__panel[data-active='true'] {
   opacity: 1;
   visibility: visible;
   transform: none;
-  transition: opacity 420ms var(--h-ease) 120ms, transform 560ms var(--h-ease) 120ms, visibility 0s;
+  transition: opacity 480ms var(--h-ease) 140ms, transform 640ms var(--h-ease) 140ms, visibility 0s;
 }
-/* 들어오는 패널은 진행 방향 쪽에서 미끄러져 온다 */
-.history__panel:not([data-active='true']) { transform: translateX(calc(var(--dir, 1) * 16px)); }
 
 /* 왼쪽: 순서 · 질문 · 기간과 핵심 사실 */
 .history__side { grid-column: span 4; display: flex; flex-direction: column; gap: var(--space-20); }
