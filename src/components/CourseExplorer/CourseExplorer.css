@@ -70,6 +70,9 @@
   flex-direction: column;
   align-items: flex-start;
   gap: var(--space-16);
+  margin-bottom: var(--space-56);
+  padding-left: var(--space-20); /* 탭 글자와 같은 왼쪽 선(사용자 시안 이미지) */
+  animation: course-in 420ms var(--ce-slide);
 }
 .course-group__title { display: flex; flex-direction: column; gap: var(--space-8); }
 .course-group__name {
@@ -84,17 +87,19 @@
 
 /* ---------- 수업 줄 ---------- */
 /* 회색 면이 글자 바깥으로 깔리도록 줄을 양옆으로 내민다 — 글자는 머리글과 같은 선에 선다 */
-.course-rows { margin: var(--space-24) calc(-1 * var(--ce-row-pad-x)) 0; list-style: none; }
+.course-rows { margin: 0 calc(-1 * var(--ce-row-pad-x)); list-style: none; } /* 첫 줄이 첫 탭과 같은 높이에서 시작 */
 .course-row + .course-row { margin-top: var(--space-4); }
 /* 펼친 수업은 제목 줄과 상세가 한 회색 박스 — 어느 수업의 상세인지 바로 보인다(사용자 지시 2026-10-05) */
 /* 접을 땐 박스가 다 접힌 뒤에 회색 면이 빠진다 — 면이 먼저 사라지면 상세가 허공에서 줄어드는 것처럼 보였다(사용자 지시 2026-10-14) */
-.course-row { border-radius: 20px; transition: background 240ms var(--ease) 320ms; }
+.course-row { border-radius: 20px; transition: background 240ms var(--ease) 560ms; }
 .course-row[data-open='true'] { background: var(--color-bg-subtle); transition: background var(--duration) var(--ease); }
-/* 펼친 박스는 안쪽 여백을 넓혀(위 16 → 28, 양옆 +12) 박스 안의 제목으로 읽히게 한다 — 닫힌 줄은 그대로(사용자 지시 2026-10-05).
-   양옆 +12는 호버 때 글이 들어가는 거리와 같아, 호버 → 클릭으로 펼쳐도 글 자리가 그대로다 */
+/* 펼친 박스는 위 여백을 넓혀(16 → 28) 박스 안의 제목으로 읽히게 한다 — 닫힌 줄은 그대로(사용자 지시 2026-10-05).
+   펼치면 제목은 호버 때 들어간 12px 자리에 그대로 머물고 아래로만 내려간다(사용자 지시 2026-10-19) — 예전엔 들여쓰기를
+   transform → 안쪽 여백으로 바꿔 넘기며 곡선이 달라, 제목이 왼쪽으로 돌아갔다 다시 오른쪽으로 갔다.
+   상세 글(--ce-open-pad)은 들어간 제목과 같은 왼쪽 선에 선다 */
 .course-row { --ce-open-pad: calc(var(--ce-row-pad-x) + 12px); }
-.course-row[data-open='true'] .course-row__hit { border-radius: 20px; padding: var(--space-28) var(--ce-open-pad) var(--space-16); }
-.course-row[data-open='true'] .course-row__hit .course-row__text { transform: none; } /* 호버 들여쓰기보다 우선 */
+.course-row[data-open='true'] .course-row__hit { border-radius: 20px; padding-top: var(--space-28); }
+.course-row[data-open='true'] .course-row__hit .course-row__text { transform: translateX(12px); }
 .course-row[data-open='true'] .course-row__tag { background: var(--color-bg-default); }
 
 .course-row__hit {
@@ -107,7 +112,7 @@
   border-radius: 12px;
   text-align: left;
   cursor: var(--cursor-pointer);
-  transition: background var(--duration) var(--ease), padding 480ms var(--ce-ease);
+  transition: background var(--duration) var(--ease), padding 520ms var(--ce-ease);
 }
 /* 호버하면 회색 면 — 누를 수 있는 줄임을 알린다 */
 .course-row__hit:hover { background: var(--color-bg-hover); }
@@ -172,22 +177,24 @@
 .course-row[data-open='true'] .course-row__chevron { border-color: var(--color-text-primary); }
 .course-row[data-open='true'] .course-row__chevron { transform: translateY(2px) rotate(225deg); }
 
-/* 펼침: 높이 0fr → 1fr, 내용은 살짝 늦게 떠오른다. 블러는 없앴다(사용자 지시 2026-10-14).
-   접힘도 같은 높이 1fr → 0fr로 — 내용은 보이는 채 아래부터 가려지며 접히고, 끝무렵에야 흐려진다.
-   예전엔 내용이 접히기 전에 먼저 빠르게(240ms) 사라져 그냥 없어지는 것처럼 보였다(사용자 제보 2026-10-14) */
+/* 펼침: 높이 0fr → 1fr, 내용은 살짝 늦게 떠오른다(블러 없음, 2026-10-14).
+   접힘(사용자 지시 2026-10-19 — 접히는 게 잘 안 보였다): 상세는 1,000px이 넘어 같은 곡선(ease-in-out)으로 접으면
+   화면 밖 아랫부분이 빠지는 동안 시간을 다 쓰고, 보이는 부분은 끝의 한순간에 사라졌다.
+   접힘은 강한 ease-out으로 — 화면 밖 부분은 처음에 빨리 빠지고, 보이는 마지막 부분이 천천히 말려 올라간다.
+   내용은 접히는 동안 보이다가 막바지에 위로 살짝 비키며 흐려지고, 회색 면은 다 접힌 뒤에 빠진다(.course-row) */
 .course-row__panel {
   display: grid;
   grid-template-rows: 0fr;
-  transition: grid-template-rows 520ms var(--ce-ease);
+  transition: grid-template-rows 820ms cubic-bezier(0.16, 1, 0.3, 1);
 }
-.course-row[data-open='true'] .course-row__panel { grid-template-rows: 1fr; }
+.course-row[data-open='true'] .course-row__panel { grid-template-rows: 1fr; transition: grid-template-rows 520ms var(--ce-ease); }
 .course-row__inner {
   container-type: inline-size; /* 상세의 단 나눔은 화면이 아니라 이 폭을 기준으로 */
   min-height: 0;
   overflow: hidden;
   opacity: 0;
-  transform: translateY(-8px);
-  transition: opacity 200ms var(--ease) 320ms, transform 520ms var(--ce-ease);
+  transform: translateY(-12px);
+  transition: opacity 280ms var(--ease) 440ms, transform 720ms var(--ce-ease);
 }
 .course-row[data-open='true'] .course-row__inner {
   opacity: 1;
@@ -283,6 +290,7 @@
   .course-tab__name { font-size: var(--typo-body-size); letter-spacing: var(--tracking-body); }
   .course-tabs__total { display: none; }
   .course-tabpanel { grid-column: 1 / -1; margin-top: var(--space-28); }
+  .course-group__head { padding-left: 0; margin-bottom: var(--space-28); }
 }
 /* 휴대폰: 태그는 이름 아래로 */
 @media (max-width: 720px) {

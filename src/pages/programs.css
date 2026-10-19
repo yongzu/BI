@@ -116,17 +116,14 @@
 /* 히어로 → 첫 섹션 간격 = 다른 섹션 사이와 같은 --space-section(사용자 지시 2026-10-04). 히어로가 내용 높이만큼만
    차지하므로('자세히 보기'까지) 따로 덜어 낼 빈 곳이 없다 */
 
-/* 제목 왼쪽 4열, 리드 오른쪽 8열(--lead-width) — 둘은 세로 가운데로 맞춘다(사용자 지시 2026-10-12).
-   2026-10-05엔 제목 위 · 리드 아래였다. 목차가 왼쪽에서 빠져 본문이 1200 열을 다 쓰게 되면서 다시 나란히 */
+/* 제목 위 · 리드 아래(사용자 지시 2026-10-19 — 모든 섹션에서 내용은 제목 아래). 2026-10-12부터는 제목 왼쪽 · 리드 오른쪽이었다 */
 .section-header {
-  display: grid;
-  grid-template-columns: var(--grid-template);
-  column-gap: var(--grid-gap);
-  row-gap: var(--space-20);
-  align-items: center;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-20);
 }
-.section-header > :first-child { grid-column: span 4; }
-.section-header > :not(:first-child) { grid-column: span 8; }
+.section-header > :not(:first-child) { max-width: var(--lead-width); }
 
 .group { margin-top: var(--space-group); scroll-margin-top: 48px; }
 .section-header + .group { margin-top: var(--space-after-header); }
@@ -169,28 +166,6 @@
   .career-card { min-height: 260px; padding: var(--space-28) var(--space-24); }
 }
 
-/* ---------- 마무리(v6) — 히어로의 문장 · 기간 · 버튼을 회색 면 하나에 다시. 채용 연계 다음, 푸터 위 ----------
-   채용 연계가 마지막 섹션이라 그 아래 여백(--space-section) 대신 이 블록이 페이지를 닫는다 */
-.section--last:has(+ .closing) { padding-bottom: 0; }
-.closing { padding-block: var(--space-section) var(--space-160); }
-.closing__card {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--space-24);
-  padding: var(--space-112) var(--space-40);
-  border-radius: 32px;
-  background: var(--color-bg-subtle);
-  text-align: center;
-}
-.closing__title { display: flex; flex-direction: column; color: var(--color-text-primary); }
-.closing__period { margin-top: var(--space-16); color: var(--color-text-primary); }
-.closing .apply-button { margin-top: var(--space-8); }
-@media (max-width: 720px) {
-  .closing { padding-bottom: var(--space-96); }
-  .closing__card { padding: var(--space-64) var(--space-24); border-radius: 24px; }
-}
-
 /* ---------- Footer ---------- */
 .footer {
   display: flex;
@@ -227,10 +202,8 @@
 .section-header__title[data-reveal='pending'] .rise-line__text { transform: translateY(110%); }
 
 /* ---------- Responsive ---------- */
-/* 태블릿 이하: 제목 위, 리드 아래로 쌓는다 */
 @media (max-width: 900px) {
-  .section-header { row-gap: var(--space-16); }
-  .section-header > :nth-child(n) { grid-column: 1 / -1; } /* 위 두 규칙보다 뒤 · 같은 무게라 이긴다 */
+  .section-header { gap: var(--space-16); }
 }
 
 /* ---------- 수업을 관통하는 접근: components/DeviceMap(v7) ---------- */

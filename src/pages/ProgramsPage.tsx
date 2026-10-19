@@ -36,13 +36,13 @@ const toc: TocItem[] = [
   { id: 'curriculum-annual', label: '연간 구조' },
   { id: 'curriculum', label: '커리큘럼' },
   { id: 'devices', label: '수업을 관통하는 접근' },
-  { id: 'career', label: '채용 연계' },
   { id: 'phi-os', label: 'Phi OS' },
+  { id: 'career', label: '채용 연계' }, // 맨 아래(사용자 지시 2026-10-19)
 ];
 
 /** Blocks that rise in on scroll */
 // 히어로는 첫 화면 순서(흐린 제목 → 맑아짐 → 소개 · 기간)를 따로 가지므로 떠오르는 등장에서 뺀다
-const revealTargets = ['.section-header > *', '.group-label', '.group__lead', '.course-explorer', '.career-card', '.history', '.device-map', '.phi-os__row', '.closing__card'].join(', ');
+const revealTargets = ['.section-header > *', '.group-label', '.group__lead', '.course-explorer', '.career-card', '.history', '.device-map', '.phi-os__row'].join(', ');
 
 /* ------------------------------------------------------------------ */
 
@@ -220,18 +220,8 @@ export function ProgramsPage() {
           </div>
         </section>
 
-        {/* ---------- 채용 연계 ---------- */}
-        <section id="career" className="section container">
-          <SectionHeader title="채용 연계" lead="Phi의 1년제 프로그램 졸업자들은 토스의 별도 채용 전형에 지원할 수 있습니다." />
-          {/* v7: 카드 두 장 — 시점 · 대상을 크게 */}
-          <div className="group">
-            <GroupLabel>with Toss</GroupLabel>
-            <CareerCards />
-          </div>
-        </section>
-
-        {/* ---------- 태도 · Phi OS — 수업 · 장치 · 채용 연계를 다 본 뒤 "우리는 이렇게 사고한다"로 맺고, 바로 아래 신청으로(v8) ---------- */}
-        <section id="phi-os" className="section section--last container">
+        {/* ---------- 태도 · Phi OS — 수업 · 장치를 다 본 뒤 "우리는 이렇게 사고한다"(v8). 채용 연계는 그 아래 맨 끝(2026-10-19) ---------- */}
+        <section id="phi-os" className="section container">
           <SectionHeader
             title={['우리는 이렇게', '사고한다']}
             lead="Phi OS — 어떤 환경에서도 스스로 답을 찾는 사고방식을 위해 Phi가 중요시하는 다섯 가지 태도입니다. 앞에서 본 수업과 장치는 이 태도를 연습하는 자리입니다."
@@ -241,20 +231,16 @@ export function ProgramsPage() {
           </div>
         </section>
 
-        {/* ---------- 마무리 — 히어로의 문장 · 기간 · 버튼을 한 번 더(v6, 토스 채용 이벤트 세 곳의 마무리 CTA) ----------
-            다 읽은 사람이 맨 위로 돌아가지 않고 바로 신청한다. 연출은 히어로에만 두므로 여기는 정적인 면 하나 */}
-        <section className="closing container" aria-labelledby="closing-title">
-          <div id="closing" className="closing__card">
-            <Text as="p" typography="Label" color="tertiary">1 Year Programs</Text>
-            <Text as="h2" id="closing-title" typography="Heading" className="closing__title">
-              {heroStatement.lines.map((line) => <span key={line}>{line}</span>)}
-            </Text>
-            <Text as="p" typography="Label" className="closing__period">
-              {applyPeriod.label}<span className="hero__status"> · {applyPeriod.status}</span>
-            </Text>
-            <ApplyButton href={applyPeriod.href}>{applyPeriod.cta}</ApplyButton>
+        {/* ---------- 채용 연계 — 맨 아래(사용자 지시 2026-10-19). 마지막의 마무리 블록(히어로 문장 · 기간 · 버튼)은 뺐다 ---------- */}
+        <section id="career" className="section section--last container">
+          <SectionHeader title="채용 연계" lead="Phi의 1년제 프로그램 졸업자들은 토스의 별도 채용 전형에 지원할 수 있습니다." />
+          {/* v7: 카드 두 장 — 시점 · 대상을 크게 */}
+          <div className="group">
+            <GroupLabel>with Toss</GroupLabel>
+            <CareerCards />
           </div>
         </section>
+
         </div>
       </main>
 

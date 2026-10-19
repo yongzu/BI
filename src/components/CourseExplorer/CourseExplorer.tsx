@@ -7,7 +7,7 @@ import { COURSE_OPEN_EVENT } from './openCourse';
 import './CourseExplorer.css';
 
 /**
- * 커리큘럼 — 왼쪽 세로 탭(타입 + 수업 수) · 오른쪽 v5 형식(타입 머리글 + 펼쳐지는 수업 줄).
+ * 커리큘럼 — 위 타입 머리글(한 줄 전체), 아래 왼쪽 세로 탭(타입 + 수업 수) · 오른쪽 v5 형식 수업 줄(2026-10-19).
  *
  * 탭(v6부터): 타입 이름 + 수업 수 — 고르기 전에 규모가 보인다. ↑/↓로도 옮긴다.
  *   고른 칸을 가리키는 막대는 하나이고, 연간 구조 탭처럼 고른 칸 자리로 미끄러져 간다(사용자 지시 2026-10-19).
@@ -80,12 +80,20 @@ export function CourseExplorer({ types, profiles }: Props) {
   };
 
   const toggle = (slug: string, row: HTMLElement | null) => {
-    if (row) keepInPlace(row, 700); // 접힘(520ms + 늦춤)이 끝날 때까지
+    if (row) keepInPlace(row, 900); // 접힘(820ms)이 끝날 때까지
     setOpen((prev) => (prev === slug ? null : slug));
   };
 
   return (
     <div className="course-explorer">
+      {/* 고른 타입의 머리글은 탭 · 수업 줄 위에 한 줄 전체로(사용자 시안 이미지 2026-10-19) */}
+      <header key={type.id} className="course-group__head">
+        <div className="course-group__title">
+          <h4 className="course-group__name">{type.name}</h4>
+          <span className="course-group__meta">{type.cadence} · {type.courses.length}개 수업</span>
+        </div>
+        <Text typography="Body" color="secondary" className="course-group__body">{type.body}</Text>
+      </header>
       <div className="course-layout">
         <div ref={tabsRef} className="course-tabs" role="tablist" aria-orientation="vertical" aria-label="수업 유형" onKeyDown={onTabKey}>
           <span ref={barRef} className="course-tabs__indicator" aria-hidden="true" />
@@ -110,14 +118,6 @@ export function CourseExplorer({ types, profiles }: Props) {
         </div>
 
         <section key={type.id} id={`course-panel-${type.id}`} role="tabpanel" aria-labelledby={`course-tab-${type.id}`} className="course-tabpanel">
-          <header className="course-group__head">
-            <div className="course-group__title">
-              <h4 className="course-group__name">{type.name}</h4>
-              <span className="course-group__meta">{type.cadence} · {type.courses.length}개 수업</span>
-            </div>
-            <Text typography="Body" color="secondary" className="course-group__body">{type.body}</Text>
-          </header>
-
           <ul className="course-rows">
             {type.courses.map((course) => (
               <CourseRow
