@@ -82,6 +82,35 @@ main{flex:1;margin:62px 0 160px}
 /* 마일스톤 상태 */
 .status{display:inline-block;min-width:44px;color:var(--faint)}.status.now{color:var(--ink)}
 
+/* 레퍼런스 상세 — 캡처가 60장이 넘어 페이지별로 접어 둔다. 기본은 접힘, 여러 개를 함께 열 수 있다. 이미지는 펼친 뒤에만 불러온다(loading=lazy) */
+.ref-tools{display:flex;justify-content:flex-end;padding:12px 0 0 28px}
+.ref-all{min-height:44px;padding:10px 0;color:var(--faint);transition:color 200ms}.ref-all:hover{color:var(--ink)}
+.refs{list-style:none;margin:0;padding:0 0 0 28px}
+.ref{border-top:1px solid var(--rule)}
+.refs>li:last-child .ref{border-bottom:1px solid var(--rule)}
+.ref>summary{display:grid;grid-template-columns:var(--tab-w) minmax(0,var(--body-w));column-gap:var(--col-gap);align-items:baseline;min-height:44px;padding:18px 0;list-style:none;cursor:var(--phi-cursor-pointer),pointer}
+.ref>summary::-webkit-details-marker{display:none}
+.ref>summary:focus-visible{outline:1px solid #777;outline-offset:5px}
+.ref-name{display:flex;align-items:baseline;column-gap:10px;color:var(--ink);word-break:keep-all}
+.ref-meta{display:flex;align-items:center;justify-content:space-between;gap:16px;color:var(--faint);transition:color 200ms}
+.ref>summary:hover .ref-meta{color:var(--ink)}
+.ref-chev{flex:0 0 8px;width:8px;height:8px;margin-right:6px;border-right:1px solid currentColor;border-bottom:1px solid currentColor;transform:translateY(-2px) rotate(45deg);transition:transform 340ms var(--ease-move)}
+.ref[open] .ref-chev{transform:translateY(2px) rotate(-135deg)}
+.ref-body{padding:0 0 36px}
+.ref-intro{margin-left:calc(var(--tab-w) + var(--col-gap));max-width:var(--body-w)}
+.ref-link{text-decoration:underline;text-decoration-color:#d6d6d6;text-underline-offset:3px}.ref-link:hover{color:var(--ink)}
+.shots{list-style:none;margin:24px 0 0;padding:0}
+.shot{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);column-gap:var(--col-gap);align-items:start;padding:24px 0;border-top:1px solid var(--rule)}
+.shot-imgs{display:flex;flex-direction:column;gap:8px}
+.shot-imgs a{display:block;border-radius:4px}
+.shot-imgs img{display:block;width:100%;height:auto;border-radius:4px;box-shadow:0 0 0 1px var(--rule);background:#fafafa}
+.shot-title{display:flex;align-items:baseline;gap:10px;color:var(--ink);word-break:keep-all}
+.shot-num{color:var(--faint);font-size:10.5pt;font-variant-numeric:tabular-nums}
+.shot dl{margin:10px 0 0;color:var(--text);font-size:11pt;line-height:1.75;word-break:keep-all;overflow-wrap:anywhere}
+.shot dt{display:inline-block;padding:0 8px;border-radius:999px;background:#f4f4f4;color:var(--muted);font-size:10pt;line-height:1.9}
+.shot dd{margin:4px 0 0}.shot dd+dt{margin-top:12px}
+.refs+.rows{padding-top:8px}
+
 /* 스크롤 등장 — 블록이 40px 아래에서 떠오른다(홈과 같음). 움직임 줄이기면 끔 */
 .has-reveal .reveal{transition:opacity 1s var(--ease-reveal),transform 1s var(--ease-reveal)}
 .has-reveal .reveal:not([data-reveal="in"]){opacity:0;transform:translateY(40px)}
@@ -101,6 +130,12 @@ main{flex:1;margin:62px 0 160px}
  .copy{margin-top:10px;padding-left:24px}
  .topic-lead{margin-left:0}
  .copy table{display:block;overflow-x:auto}
+ .refs,.ref-tools{padding-left:0}
+ .ref>summary{display:block}
+ .ref-meta{margin:4px 0 0 24px}
+ .ref-intro{margin-left:0}
+ .shot{display:block}
+ .shot-text{margin-top:14px}
  .archive-footer{padding:40px 24px}
 }
 @media(max-width:560px){.toolbar{padding:16px 20px}:root{--header-h:72px}.brand img{height:20px}.page{width:calc(100% - 40px)}}
@@ -538,44 +573,393 @@ main{flex:1;margin:62px 0 160px}
 
 <article class="topic" id="d1015-toss">
 <h2 class="topic-title reveal"><img src="assets/asterisk.png" alt="">토스 레퍼런스 5곳</h2>
-<p class="topic-lead reveal">2026-10-15 데스크톱 폭에서 직접 스크롤하고 눌러 보며 정리했다. 채용 이벤트 세 곳은 본문이 Framer 페이지(iframe)라 일부 호버 동작은 자동 조작으로 재현되지 않았고, toss.im은 약 4만 9천 px 중 절반(광고 섹션)까지 확인했다.</p>
-<ul class="rows">
-
-<li class="row reveal"><h3 class="row-title"><span class="bullet"></span>AI · ML · Data 대규모 채용<span class="row-sub"><a href="https://toss.im/career/event/ai-ml-data-2026" target="_blank" rel="noopener">toss.im/career/event/ai-ml-data-2026</a></span></h3>
-<div class="copy">
-<p><span class="tag">구성</span>토스 채용 GNB(고정) + 본문 iframe + 하단 고정 CTA 바. 히어로(혜택 한 줄 → 큰 제목 → 기간 + 남은 시간 카운트다운 → 지원하기) → 조직 소개 문장 → 혜택 3가지 → 지원 분야(직군 7개 · 포지션 카드) → 일하는 방식 3가지 → 조직 아티클 카드 + 기술 블로그 목록 → 지원 안내(key-value) → FAQ 6문항 → 마무리 CTA.</p>
-<p><span class="tag">인터랙션</span>카운트다운이 실시간으로 줄어든다. 혜택 3행은 sticky라 한 행씩 잠시 머물며 넘어간다(왼쪽 제목 / 오른쪽 설명). 지원 분야는 세로 탭 — 직군 + 포지션 수, 활성은 진한 글씨 + 왼쪽 세로 막대, 오른쪽 패널이 바뀌고 안에서 다시 하위 팀(Ads, Commerce…)으로 묶인다. 카드를 누르면 공고 상세로 이동. 블록은 스크롤 시 떠오른다. FAQ는 아코디언이 아니라 답까지 모두 펼쳐 둔다.</p>
+<p class="topic-lead reveal">2026-10-15 데스크톱 폭(1280 × 800)에서 섹션마다 캡처하고, 각 섹션이 무엇을(정보) 어떻게(표현) 보여 주는지 적었다. 페이지마다 접고 펼친다. 캡처는 정지 화면이라 움직임은 직접 스크롤해 본 기억으로 보탰고, 채용 이벤트의 일부 호버 동작은 재현하지 못했다. 이미지를 누르면 원본 크기로 열린다.</p>
+<div class="ref-tools reveal"><button class="ref-all" type="button" aria-expanded="false">모두 펼치기</button></div>
+<ul class="refs">
+<li class="reveal"><details class="ref" id="d1015-toss-aiml">
+<summary><span class="ref-name"><span class="bullet"></span>AI · ML · Data 대규모 채용</span><span class="ref-meta">섹션 11 · 캡처 12장<span class="ref-chev" aria-hidden="true"></span></span></summary>
+<div class="ref-body">
+<div class="copy ref-intro">
+<p><a class="ref-link" href="https://toss.im/career/event/ai-ml-data-2026" target="_blank" rel="noopener">toss.im/career/event/ai-ml-data-2026</a> — 본문이 Framer iframe이라 Framer 주소(smaller-words-179060.framer.app)를 직접 캡처했다. 00은 iframe을 감싼 토스 채용 화면.</p>
 <p><span class="tag">가져올 점</span>개수를 단 세로 탭 → 주요 수업들 타입. key-value 안내 → 연간 구조 요약. 답을 다 펼친 FAQ — 대부분 읽어야 하는 정보는 숨기지 않는다.</p>
+</div>
+<ol class="shots">
+<li class="shot"><div class="shot-imgs">
+<a href="assets/toss/aiml-00.jpg" target="_blank" rel="noopener"><img src="assets/toss/aiml-00.jpg" alt="AI · ML · Data 대규모 채용 — 셸 — 토스 채용 화면 캡처 00" width="800" height="504" loading="lazy" decoding="async"></a>
+</div><div class="shot-text">
+<h4 class="shot-title"><span class="shot-num">00</span>셸 — 토스 채용 화면</h4>
+<dl><dt>정보</dt><dd>토스 채용 공통 메뉴(채용 이벤트 · 계열사 소개 · 합류 여정 · 팀 문화 · 아티클 · FAQ · 전체 공고)와 지원 버튼.</dd><dt>표현</dt><dd>GNB는 고정, 이벤트 본문은 그 아래 iframe. 하단 가운데 검은 알약형 고정 CTA 바(&quot;AI로 토스의 다음을 만들 기회 · 지원하기&quot;)가 스크롤 내내 떠 있어 어느 위치에서든 지원으로 바로 간다.</dd></dl>
 </div></li>
-
-<li class="row reveal"><h3 class="row-title"><span class="bullet"></span>토스뱅크 디자인 직군 채용<span class="row-sub"><a href="https://toss.im/career/event/tossbank-design-2026" target="_blank" rel="noopener">toss.im/career/event/tossbank-design-2026</a></span></h3>
-<div class="copy">
-<p><span class="tag">구성</span>같은 iframe 구조. 히어로 "Simplify Banking" + 채용명 · 혜택 · 기간 → 이벤트 종료 안내 → "은행을 만들 동료를 찾아요" → 직군 카드 3개(Product · Visual · UX Researcher, 각 한 줄) → 보상(AirPods 5) → "다양한 관점이 모여" 아티클 목록(직군 · 이름 · 제목) → 채용 일정(key-value, 마감 표시) → FAQ 8문항 2열 → 종료 안내 + 채용 홈 링크.</p>
-<p><span class="tag">인터랙션</span>히어로 글자가 렌즈처럼 일렁이는 왜곡 효과(시간 기반 — 우리 히어로 파동의 출처). 제목은 단어 단위로 등장. 직군 카드는 유리 질감과 바닥 반사, 컴포넌트 이름이 "Hover Reveal Card"(호버 변화는 이번에 재현하지 못함). 보상 이미지 주위로 파동 링. 상단 고정 지원하기.</p>
-<p><span class="tag">가져올 점</span>표현의 강도를 정보 성격으로 나눈다 — 히어로 · 보상 같은 "순간"엔 강한 연출, 일정 · FAQ 같은 "정보"는 정적인 표.</p>
+<li class="shot"><div class="shot-imgs">
+<a href="assets/toss/aiml-01.jpg" target="_blank" rel="noopener"><img src="assets/toss/aiml-01.jpg" alt="AI · ML · Data 대규모 채용 — 히어로 캡처 01" width="1280" height="800" loading="lazy" decoding="async"></a>
+</div><div class="shot-text">
+<h4 class="shot-title"><span class="shot-num">01</span>히어로</h4>
+<dl><dt>정보</dt><dd>혜택(직무 인터뷰만 봐도 100만원) · 채용명 · 접수 기간 · 남은 시간 · 지원하기.</dd><dt>표현</dt><dd>혜택 한 줄을 제목 위에 먼저 두고 → 채용명(AI·ML·Data만 파란 그라데이션) → 기간 + 실시간 카운트다운(&quot;9일 9시간 44분 남았어요&quot;) → 지원하기 순. 흐린 파란 곡선 배경, 아래 꺾쇠 버튼이 스크롤을 권한다.</dd></dl>
 </div></li>
-
-<li class="row reveal"><h3 class="row-title"><span class="bullet"></span>토스플레이스 전 직군 채용<span class="row-sub"><a href="https://tossplace.com/recruit" target="_blank" rel="noopener">tossplace.com/recruit</a></span></h3>
-<div class="copy">
-<p><span class="tag">구성</span>고정 GNB(소개 · 공고 · 아티클 · 일정 · FAQ 앵커 + 지원하기) → 히어로(채용명 | 기간, 지원하기) → "토스가 멈춰 있던 오프라인에 뛰어든 이유"(통계) → 제품 카드(프론트 · 포스 · 키오스크 · 페이스페이) → 채용 공고(직군 8개 + 개수 / 공고 카드 2열, 기술 태그) → 인용 "서버가 멈춰도 결제는 멈추지 않아요" → 아티클 "우리는 이렇게 일해요" → 채용 일정(카운트다운 + key-value) → FAQ 6문항 2열 → 공유하기(링크 복사).</p>
-<p><span class="tag">인터랙션</span>문장이 글자 단위로 등장. 통계 섹션은 sticky로 머물며 막대그래프가 자란다. 제품 카드는 엇갈려 떠오르고 화살표 버튼이 있다(영상 6개). 공고는 세로 탭 — 활성은 진한 글씨 + 파란 개수 + 세로 막대, 카드에 꺾쇠. GNB 앵커가 페이지 안 목차 역할을 한다.</p>
-<p><span class="tag">가져올 점</span>페이지 안 앵커 GNB는 우리 목차와 같은 역할 — 긴 한 페이지에서 섹션을 바로 고른다. 직군 개수를 탭에 적는 것.</p>
+<li class="shot"><div class="shot-imgs">
+<a href="assets/toss/aiml-02.jpg" target="_blank" rel="noopener"><img src="assets/toss/aiml-02.jpg" alt="AI · ML · Data 대규모 채용 — 조직 소개 문장 캡처 02" width="1280" height="800" loading="lazy" decoding="async"></a>
+</div><div class="shot-text">
+<h4 class="shot-title"><span class="shot-num">02</span>조직 소개 문장</h4>
+<dl><dt>정보</dt><dd>왜 지금 이 조직이 채용하는지.</dd><dt>표현</dt><dd>가운데 정렬 문장 하나를 4줄로. 줄마다 파란 톤을 달리해 강약을 준다. 장식 없이 글만.</dd></dl>
 </div></li>
-
-<li class="row reveal"><h3 class="row-title"><span class="bullet"></span>토스 회사 소개<span class="row-sub"><a href="https://toss.im/company" target="_blank" rel="noopener">toss.im/company</a></span></h3>
-<div class="copy">
-<p><span class="tag">구성</span>고정 GNB → "Daily Greatness" 히어로 → Vision(문장 + 본문) → History(기간 탭 2025 · 2024–2021 · 2020–2017 · 2016–2013) → Group(계열사 카드) → Culture(가치 8개) → Leaders(사진 · 직함 · 인용).</p>
-<p><span class="tag">인터랙션</span>History는 기간 탭 + ←/→. 탭을 고르면 왼쪽엔 그 시기의 질문, 오른쪽엔 연도 · 제목 · 한 줄 목록이 바뀐다(ARIA 탭 역할은 없음). Group은 큰 문장이 sticky 배경으로 머물고 계열사 사진 카드(로고 + 한 줄)가 엇갈려 올라온다. Culture는 왼쪽 "Culture" 라벨이 sticky, 오른쪽에 01–08 번호 · 영문/국문 제목 · 설명을 펼침 없이 모두 보인다.</p>
-<p><span class="tag">가져올 점</span>Culture는 역량과 태도와 같은 성격 — 가치 목록을 숨기지 않는다. History는 시간 정보를 "기간 탭 + 목록"으로 — 연간 구조 상세 영역의 형식.</p>
+<li class="shot"><div class="shot-imgs">
+<a href="assets/toss/aiml-03.jpg" target="_blank" rel="noopener"><img src="assets/toss/aiml-03.jpg" alt="AI · ML · Data 대규모 채용 — 혜택 3가지 캡처 03" width="1280" height="800" loading="lazy" decoding="async"></a>
+<a href="assets/toss/aiml-04.jpg" target="_blank" rel="noopener"><img src="assets/toss/aiml-04.jpg" alt="AI · ML · Data 대규모 채용 — 혜택 3가지 캡처 04" width="1280" height="800" loading="lazy" decoding="async"></a>
+</div><div class="shot-text">
+<h4 class="shot-title"><span class="shot-num">03–04</span>혜택 3가지</h4>
+<dl><dt>정보</dt><dd>인터뷰 보상 100만원, 7개 직군 40여 개 포지션 동시 오픈, 더 맞는 포지션 제안(직무를 바꿔도 보상 동일). 각주(*제세공과금 본인 부담).</dd><dt>표현</dt><dd>섹션 제목 + 3행. 행 = 왼쪽 굵은 2줄 제목 / 오른쪽 설명, 사이는 가는 구분선. 행이 sticky로 잠시 머물며 차례로 지나간다. 각주는 해당 행 안 작은 글씨. 04 아래로 넉넉한 여백 뒤 다음 섹션 제목(&quot;지원 분야&quot;)이 들어온다.</dd></dl>
 </div></li>
-
-<li class="row reveal"><h3 class="row-title"><span class="bullet"></span>토스 홈<span class="row-sub"><a href="https://toss.im/" target="_blank" rel="noopener">toss.im</a></span></h3>
-<div class="copy">
-<p><span class="tag">구성</span>고정 GNB(서비스 · 비즈니스 · 회사소개 · 뉴스룸 · 채용, 앱 다운로드) → 약 4만 9천 px 한 페이지 이야기. 확인한 범위: 영상 히어로 "금융부터 일상까지 마침내 토스 하나로" → 송금 → 자산 관리(기능 4개) → 누구나 금융 전문가(대출 금리 비교 · 카드 혜택 · 보험 분석) → 증권(AI 실적 분석 · 주식 모으기 · 커뮤니티) → 쇼핑(결제 · 최저가 · 쿠폰) → 판매자(상품 관리 · 정산 · 광고 상품 7종) …</p>
-<p><span class="tag">인터랙션</span>챕터마다 sticky 무대(한 화면이 2,400–7,600px 동안 고정) 위에서 제목이 단어 단위로 등장하고, 실제 UI 목업이 움직인다("금리 분석 중…", "밀어서 결제하기"). 섹션은 스크롤 위치에 닿아야 렌더된다.</p>
-<p><span class="tag">가져올 점</span>기능은 설명보다 "보여 주기"가 강하다 — 관통하는 접근을 한 주 시나리오 데모로. 다만 스크롤 연동은 골라 읽는 정보에는 맞지 않는다(속성값 — 트리거).</p>
+<li class="shot"><div class="shot-imgs">
+<a href="assets/toss/aiml-05.jpg" target="_blank" rel="noopener"><img src="assets/toss/aiml-05.jpg" alt="AI · ML · Data 대규모 채용 — 지원 분야 캡처 05" width="1280" height="800" loading="lazy" decoding="async"></a>
+</div><div class="shot-text">
+<h4 class="shot-title"><span class="shot-num">05</span>지원 분야</h4>
+<dl><dt>정보</dt><dd>7개 직군과 직군별 포지션 · 역할.</dd><dt>표현</dt><dd>왼쪽 세로 탭(직군 + 괄호 개수, 활성 = 진한 글씨 + 왼쪽 세로 막대) / 오른쪽 2열 회색 면 카드(포지션명 굵게 + 역할 2줄). 카드 전체가 공고 링크. 포지션이 많은 직군은 패널 안에서 하위 팀(Ads, Commerce…) 소제목으로 다시 묶인다.</dd></dl>
 </div></li>
+<li class="shot"><div class="shot-imgs">
+<a href="assets/toss/aiml-06.jpg" target="_blank" rel="noopener"><img src="assets/toss/aiml-06.jpg" alt="AI · ML · Data 대규모 채용 — 일하는 방식 캡처 06" width="1280" height="800" loading="lazy" decoding="async"></a>
+</div><div class="shot-text">
+<h4 class="shot-title"><span class="shot-num">06</span>일하는 방식</h4>
+<dl><dt>정보</dt><dd>&quot;Data First, 그리고 AI Native&quot; — 일하는 방식 3가지.</dd><dt>표현</dt><dd>왼쪽 큰 제목 + 설명이 sticky, 오른쪽에 세로 구분선과 함께 3항목이 지나간다. 항목마다 작은 일러스트(성장 곡선, Experiment 카드)로 개념을 그림으로 보여 준다.</dd></dl>
+</div></li>
+<li class="shot"><div class="shot-imgs">
+<a href="assets/toss/aiml-07.jpg" target="_blank" rel="noopener"><img src="assets/toss/aiml-07.jpg" alt="AI · ML · Data 대규모 채용 — 조직 아티클 캡처 07" width="1280" height="800" loading="lazy" decoding="async"></a>
+</div><div class="shot-text">
+<h4 class="shot-title"><span class="shot-num">07</span>조직 아티클</h4>
+<dl><dt>정보</dt><dd>구성원 인터뷰 글 — 분야 · 제목 · 직함 · 이름.</dd><dt>표현</dt><dd>3열 카드 — 인물 사진 + 분야 태그(파란 알약) + 제목 + 직함 · 이름. &quot;누구와 일하나&quot;를 사람 얼굴로 먼저 보여 준다.</dd></dl>
+</div></li>
+<li class="shot"><div class="shot-imgs">
+<a href="assets/toss/aiml-08.jpg" target="_blank" rel="noopener"><img src="assets/toss/aiml-08.jpg" alt="AI · ML · Data 대규모 채용 — 기술 블로그 캡처 08" width="1280" height="800" loading="lazy" decoding="async"></a>
+</div><div class="shot-text">
+<h4 class="shot-title"><span class="shot-num">08</span>기술 블로그</h4>
+<dl><dt>정보</dt><dd>기술 글 목록 — 분야 · 제목.</dd><dt>표현</dt><dd>1열 리스트 — 분야 태그 + 제목, 오른쪽 작은 썸네일, 행 구분선. 07(사람 이야기 카드)과 형식을 달리해 기술 글을 구분한다.</dd></dl>
+</div></li>
+<li class="shot"><div class="shot-imgs">
+<a href="assets/toss/aiml-09.jpg" target="_blank" rel="noopener"><img src="assets/toss/aiml-09.jpg" alt="AI · ML · Data 대규모 채용 — 지원 안내 캡처 09" width="1280" height="800" loading="lazy" decoding="async"></a>
+</div><div class="shot-text">
+<h4 class="shot-title"><span class="shot-num">09</span>지원 안내</h4>
+<dl><dt>정보</dt><dd>접수 기간 · 지원 방식 · 전형 과정 · 결과 안내 · 유의 사항.</dd><dt>표현</dt><dd>2열 key-value 표. 전형은 →로 단계를 나열하고, 보조 설명은 작은 회색, 유의 사항은 불릿.</dd></dl>
+</div></li>
+<li class="shot"><div class="shot-imgs">
+<a href="assets/toss/aiml-10.jpg" target="_blank" rel="noopener"><img src="assets/toss/aiml-10.jpg" alt="AI · ML · Data 대규모 채용 — FAQ 캡처 10" width="1280" height="800" loading="lazy" decoding="async"></a>
+</div><div class="shot-text">
+<h4 class="shot-title"><span class="shot-num">10</span>FAQ</h4>
+<dl><dt>정보</dt><dd>자주 묻는 질문 6개와 추가 문의처.</dd><dt>표현</dt><dd>아코디언 없이 &quot;Q. 질문&quot;(굵게) + 답(회색)을 모두 펼쳐 둔다. 끝에 회색 박스로 추가 문의 안내.</dd></dl>
+</div></li>
+<li class="shot"><div class="shot-imgs">
+<a href="assets/toss/aiml-11.jpg" target="_blank" rel="noopener"><img src="assets/toss/aiml-11.jpg" alt="AI · ML · Data 대규모 채용 — 마무리 캡처 11" width="1280" height="800" loading="lazy" decoding="async"></a>
+</div><div class="shot-text">
+<h4 class="shot-title"><span class="shot-num">11</span>마무리</h4>
+<dl><dt>정보</dt><dd>기간 · 채용명 · 지원 독려 · 지원하기.</dd><dt>표현</dt><dd>히어로와 같은 배경 · 타이포를 반복해 처음과 끝을 맞춘다. &quot;고민될 땐 일단 지원&quot; 한 줄 + 지원하기.</dd></dl>
+</div></li>
+</ol></div></details></li>
 
+<li class="reveal"><details class="ref" id="d1015-toss-bank">
+<summary><span class="ref-name"><span class="bullet"></span>토스뱅크 디자인 직군 채용</span><span class="ref-meta">섹션 8 · 캡처 10장<span class="ref-chev" aria-hidden="true"></span></span></summary>
+<div class="ref-body">
+<div class="copy ref-intro">
+<p><a class="ref-link" href="https://toss.im/career/event/tossbank-design-2026" target="_blank" rel="noopener">toss.im/career/event/tossbank-design-2026</a> — 이벤트 종료 상태. 본문 Framer 주소(courteous-cues-930542.framer.app)를 직접 캡처했다.</p>
+<p><span class="tag">가져올 점</span>표현의 강도를 정보 성격으로 나눈다 — 히어로 · 보상 같은 &quot;순간&quot;엔 강한 연출, 일정 · FAQ 같은 &quot;정보&quot;는 정적인 표.</p>
+</div>
+<ol class="shots">
+<li class="shot"><div class="shot-imgs">
+<a href="assets/toss/bank-01.jpg" target="_blank" rel="noopener"><img src="assets/toss/bank-01.jpg" alt="토스뱅크 디자인 직군 채용 — 히어로 캡처 01" width="1280" height="800" loading="lazy" decoding="async"></a>
+</div><div class="shot-text">
+<h4 class="shot-title"><span class="shot-num">01</span>히어로</h4>
+<dl><dt>정보</dt><dd>슬로건 &quot;Simplify Banking&quot; · 채용명 · 혜택(AirPods 5) · 기간.</dd><dt>표현</dt><dd>초대형 영문 슬로건이 렌즈처럼 일렁이며 색수차(파랑 · 주황 번짐)로 왜곡된다(시간 기반 — 우리 히어로 파동의 출처). 흰 배경 + 가운데 파란 빛. 아래 한글 2줄과 기간은 정적이라 읽힌다.</dd></dl>
+</div></li>
+<li class="shot"><div class="shot-imgs">
+<a href="assets/toss/bank-02.jpg" target="_blank" rel="noopener"><img src="assets/toss/bank-02.jpg" alt="토스뱅크 디자인 직군 채용 — 종료 안내 + 소개 캡처 02" width="1280" height="800" loading="lazy" decoding="async"></a>
+</div><div class="shot-text">
+<h4 class="shot-title"><span class="shot-num">02</span>종료 안내 + 소개</h4>
+<dl><dt>정보</dt><dd>이벤트 종료, 토스 채용 바로가기, &quot;NEXT 은행을 만들 동료를 찾아요&quot;.</dd><dt>표현</dt><dd>검은 &quot;토스 채용 바로가기&quot; 버튼 + 회색 종료 안내. 제목의 NEXT가 글리치처럼 일그러지며 바뀐다. 제목은 단어 단위로 등장.</dd></dl>
+</div></li>
+<li class="shot"><div class="shot-imgs">
+<a href="assets/toss/bank-03.jpg" target="_blank" rel="noopener"><img src="assets/toss/bank-03.jpg" alt="토스뱅크 디자인 직군 채용 — 직군 카드 캡처 03" width="1280" height="800" loading="lazy" decoding="async"></a>
+</div><div class="shot-text">
+<h4 class="shot-title"><span class="shot-num">03</span>직군 카드</h4>
+<dl><dt>정보</dt><dd>Product · Visual · UX Researcher, 직군마다 역할 한 줄.</dd><dt>표현</dt><dd>3×3 유리 질감 타일 중 가운데 줄에만 직군명(영문 큰 글씨, 직군마다 파랑 · 청록 · 보라 그라데이션) + 한 줄 역할. 위아래 타일은 선 · 원 장식으로 리듬만. 바닥 반사. 컴포넌트명은 &quot;Hover Reveal Card&quot;(호버 변화는 재현하지 못함).</dd></dl>
+</div></li>
+<li class="shot"><div class="shot-imgs">
+<a href="assets/toss/bank-04.jpg" target="_blank" rel="noopener"><img src="assets/toss/bank-04.jpg" alt="토스뱅크 디자인 직군 채용 — 보상 캡처 04" width="1280" height="800" loading="lazy" decoding="async"></a>
+</div><div class="shot-text">
+<h4 class="shot-title"><span class="shot-num">04</span>보상</h4>
+<dl><dt>정보</dt><dd>AirPods 5 지급.</dd><dt>표현</dt><dd>제품 실물을 가운데 두고 동심원 파동이 퍼진다. &quot;AirPods 5&quot;만 파란 알약으로 하이라이트.</dd></dl>
+</div></li>
+<li class="shot"><div class="shot-imgs">
+<a href="assets/toss/bank-05.jpg" target="_blank" rel="noopener"><img src="assets/toss/bank-05.jpg" alt="토스뱅크 디자인 직군 채용 — 아티클 캡처 05" width="1280" height="800" loading="lazy" decoding="async"></a>
+<a href="assets/toss/bank-06.jpg" target="_blank" rel="noopener"><img src="assets/toss/bank-06.jpg" alt="토스뱅크 디자인 직군 채용 — 아티클 캡처 06" width="1280" height="800" loading="lazy" decoding="async"></a>
+<a href="assets/toss/bank-07.jpg" target="_blank" rel="noopener"><img src="assets/toss/bank-07.jpg" alt="토스뱅크 디자인 직군 채용 — 아티클 캡처 07" width="1280" height="800" loading="lazy" decoding="async"></a>
+</div><div class="shot-text">
+<h4 class="shot-title"><span class="shot-num">05–07</span>아티클</h4>
+<dl><dt>정보</dt><dd>&quot;다양한 관점이 모여 하나의 경험을 만들어요&quot; — 직군별 구성원 글 7편(분야 · 이름 · 제목).</dd><dt>표현</dt><dd>가운데 제목 + 1열 리스트 7행. 행 = 분야 태그(색으로 직군 구분: Product 파랑 · Visual 청록 · UX Research 주황) + 이름 회색 칩 + 제목, 오른쪽 3D 아이콘 썸네일. 행 구분선은 양끝이 흐려지는 선. 07 아래로 &quot;채용 일정&quot; 제목이 들어온다.</dd></dl>
+</div></li>
+<li class="shot"><div class="shot-imgs">
+<a href="assets/toss/bank-08.jpg" target="_blank" rel="noopener"><img src="assets/toss/bank-08.jpg" alt="토스뱅크 디자인 직군 채용 — 채용 일정 캡처 08" width="1280" height="800" loading="lazy" decoding="async"></a>
+</div><div class="shot-text">
+<h4 class="shot-title"><span class="shot-num">08</span>채용 일정</h4>
+<dl><dt>정보</dt><dd>접수 기간과 마감 상태, 유의 사항.</dd><dt>표현</dt><dd>key-value 3행, 접수 기간 옆 파란 &quot;마감되었어요&quot; 상태 표시, 아래 회색 불릿 유의 사항.</dd></dl>
+</div></li>
+<li class="shot"><div class="shot-imgs">
+<a href="assets/toss/bank-09.jpg" target="_blank" rel="noopener"><img src="assets/toss/bank-09.jpg" alt="토스뱅크 디자인 직군 채용 — FAQ 캡처 09" width="1280" height="800" loading="lazy" decoding="async"></a>
+</div><div class="shot-text">
+<h4 class="shot-title"><span class="shot-num">09</span>FAQ</h4>
+<dl><dt>정보</dt><dd>자주 묻는 질문 8개.</dd><dt>표현</dt><dd>2열 그리드, Q 라벨 + 질문 + 답을 모두 펼쳐 둔다.</dd></dl>
+</div></li>
+<li class="shot"><div class="shot-imgs">
+<a href="assets/toss/bank-10.jpg" target="_blank" rel="noopener"><img src="assets/toss/bank-10.jpg" alt="토스뱅크 디자인 직군 채용 — 마무리 캡처 10" width="1280" height="800" loading="lazy" decoding="async"></a>
+</div><div class="shot-text">
+<h4 class="shot-title"><span class="shot-num">10</span>마무리</h4>
+<dl><dt>정보</dt><dd>슬로건 · TOSSBANK DESIGN RECRUITMENT · 기간 · 토스 채용 바로가기.</dd><dt>표현</dt><dd>히어로 슬로건을 반복(일렁임이 더 강함)해 처음과 끝을 맞춘다.</dd></dl>
+</div></li>
+</ol></div></details></li>
+
+<li class="reveal"><details class="ref" id="d1015-toss-place">
+<summary><span class="ref-name"><span class="bullet"></span>토스플레이스 전 직군 채용</span><span class="ref-meta">섹션 11 · 캡처 13장<span class="ref-chev" aria-hidden="true"></span></span></summary>
+<div class="ref-body">
+<div class="copy ref-intro">
+<p><a class="ref-link" href="https://tossplace.com/recruit" target="_blank" rel="noopener">tossplace.com/recruit</a> — 토스플레이스 자체 페이지. 히어로를 지나면 페이지 안 앵커 GNB가 나타난다.</p>
+<p><span class="tag">가져올 점</span>페이지 안 앵커 GNB는 우리 목차와 같은 역할 — 긴 한 페이지에서 섹션을 바로 고른다. 직군 개수를 탭에 적는 것. 통계는 sticky 무대에서 한 그래프가 다음 그래프로 바뀌며 이야기한다.</p>
+</div>
+<ol class="shots">
+<li class="shot"><div class="shot-imgs">
+<a href="assets/toss/place-01.jpg" target="_blank" rel="noopener"><img src="assets/toss/place-01.jpg" alt="토스플레이스 전 직군 채용 — 히어로 캡처 01" width="1280" height="800" loading="lazy" decoding="async"></a>
+</div><div class="shot-text">
+<h4 class="shot-title"><span class="shot-num">01</span>히어로</h4>
+<dl><dt>정보</dt><dd>채용명 | 기간(10.12–31) · &quot;next place&quot; · 지원하기.</dd><dt>표현</dt><dd>원근감 있는 색 기둥이 소실점으로 모이는 3D 배경, 가운데 &quot;채용명 | 기간&quot; + 보라 그라데이션 로고타입 + 지원하기. 히어로에서는 GNB가 로고만 보인다.</dd></dl>
+</div></li>
+<li class="shot"><div class="shot-imgs">
+<a href="assets/toss/place-02.jpg" target="_blank" rel="noopener"><img src="assets/toss/place-02.jpg" alt="토스플레이스 전 직군 채용 — 문제 제기 캡처 02" width="1280" height="800" loading="lazy" decoding="async"></a>
+</div><div class="shot-text">
+<h4 class="shot-title"><span class="shot-num">02</span>문제 제기</h4>
+<dl><dt>정보</dt><dd>왜 오프라인인가 — 소매판매 70%가 오프라인, 20년 멈춘 인프라.</dd><dt>표현</dt><dd>히어로를 지나면 GNB(소개 · 공고 · 아티클 · 일정 · FAQ 앵커 + 검은 지원하기)가 나타난다. 제목 + 2줄 설명 아래 회색 막대그래프(정체). 문장은 글자 단위로 등장.</dd></dl>
+</div></li>
+<li class="shot"><div class="shot-imgs">
+<a href="assets/toss/place-03.jpg" target="_blank" rel="noopener"><img src="assets/toss/place-03.jpg" alt="토스플레이스 전 직군 채용 — 성장 캡처 03" width="1280" height="800" loading="lazy" decoding="async"></a>
+</div><div class="shot-text">
+<h4 class="shot-title"><span class="shot-num">03</span>성장</h4>
+<dl><dt>정보</dt><dd>단말기 보급 추이 — 설립(23.3) → 3만 대(24.1) → 10만 → 20만 → 50만 대(26.10).</dd><dt>표현</dt><dd>같은 sticky 무대에서 회색 막대가 시간축 계단 차트로 바뀌고 마지막 막대만 파란 그라데이션. 점선 기준선 + 십자 표식 + 말풍선 주석(&quot;지난 1년간, 2분에 1대씩 증가&quot;). 제목 핵심어(&quot;유례없는 속도&quot;)만 파랑.</dd></dl>
+</div></li>
+<li class="shot"><div class="shot-imgs">
+<a href="assets/toss/place-04.jpg" target="_blank" rel="noopener"><img src="assets/toss/place-04.jpg" alt="토스플레이스 전 직군 채용 — 제품 캡처 04" width="1280" height="800" loading="lazy" decoding="async"></a>
+<a href="assets/toss/place-05.jpg" target="_blank" rel="noopener"><img src="assets/toss/place-05.jpg" alt="토스플레이스 전 직군 채용 — 제품 캡처 05" width="1280" height="800" loading="lazy" decoding="async"></a>
+</div><div class="shot-text">
+<h4 class="shot-title"><span class="shot-num">04–05</span>제품</h4>
+<dl><dt>정보</dt><dd>&quot;이제는 결제를 넘어, 잘 되는 매장의 기준으로&quot; — 프론트 · 포스 · 키오스크.</dd><dt>표현</dt><dd>3카드 = 제품 렌더 · 이름 · 한 줄 · 원형 → 버튼. 스크롤하면 카드가 서로 다른 높이로 엇갈려 떠오른다(05).</dd></dl>
+</div></li>
+<li class="shot"><div class="shot-imgs">
+<a href="assets/toss/place-06.jpg" target="_blank" rel="noopener"><img src="assets/toss/place-06.jpg" alt="토스플레이스 전 직군 채용 — 제품 콜라주 캡처 06" width="1280" height="800" loading="lazy" decoding="async"></a>
+</div><div class="shot-text">
+<h4 class="shot-title"><span class="shot-num">06</span>제품 콜라주</h4>
+<dl><dt>정보</dt><dd>실제 사용 장면과 기기.</dd><dt>표현</dt><dd>사진 · 영상 타일이 흩어진 콜라주로 스크롤과 함께 흐른다. 글 없이 장면만.</dd></dl>
+</div></li>
+<li class="shot"><div class="shot-imgs">
+<a href="assets/toss/place-07.jpg" target="_blank" rel="noopener"><img src="assets/toss/place-07.jpg" alt="토스플레이스 전 직군 채용 — 채용 공고 캡처 07" width="1280" height="800" loading="lazy" decoding="async"></a>
+</div><div class="shot-text">
+<h4 class="shot-title"><span class="shot-num">07</span>채용 공고</h4>
+<dl><dt>정보</dt><dd>직군 8개와 직군별 공고 · 기술 스택.</dd><dt>표현</dt><dd>작은 라벨 &quot;채용 공고&quot; + 큰 제목. 왼쪽 세로 탭(직군 + 파란 개수, 활성 = 진한 글씨 + 세로 막대) / 오른쪽 2열 흰 카드(공고명 + 기술 태그, 꺾쇠).</dd></dl>
+</div></li>
+<li class="shot"><div class="shot-imgs">
+<a href="assets/toss/place-08.jpg" target="_blank" rel="noopener"><img src="assets/toss/place-08.jpg" alt="토스플레이스 전 직군 채용 — 인용 전환 캡처 08" width="1280" height="800" loading="lazy" decoding="async"></a>
+</div><div class="shot-text">
+<h4 class="shot-title"><span class="shot-num">08</span>인용 전환</h4>
+<dl><dt>정보</dt><dd>&quot;서버가 멈춰도 결제는 멈추지 않아요&quot; — 구성원 한 문장.</dd><dt>표현</dt><dd>가운데 큰 인물 카드가 앞에, 좌우 카드가 뒤에서 펼쳐지며 다음 그리드로 전환된다. 문장 핵심어만 진하게.</dd></dl>
+</div></li>
+<li class="shot"><div class="shot-imgs">
+<a href="assets/toss/place-09.jpg" target="_blank" rel="noopener"><img src="assets/toss/place-09.jpg" alt="토스플레이스 전 직군 채용 — 우리는 이렇게 일해요 캡처 09" width="1280" height="800" loading="lazy" decoding="async"></a>
+<a href="assets/toss/place-10.jpg" target="_blank" rel="noopener"><img src="assets/toss/place-10.jpg" alt="토스플레이스 전 직군 채용 — 우리는 이렇게 일해요 캡처 10" width="1280" height="800" loading="lazy" decoding="async"></a>
+</div><div class="shot-text">
+<h4 class="shot-title"><span class="shot-num">09–10</span>우리는 이렇게 일해요</h4>
+<dl><dt>정보</dt><dd>구성원 6명의 일 — 한 문장 · 직무 · 이름.</dd><dt>표현</dt><dd>3열 × 2행 카드 — 인물 컷아웃 + 은은한 그라데이션 배경. 회색 문장 중 키워드만 검정(오래 · 결제 · 시장 · 구조 · 현장 · 경험), 아래 직무 + 이름(&quot;님&quot;).</dd></dl>
+</div></li>
+<li class="shot"><div class="shot-imgs">
+<a href="assets/toss/place-11.jpg" target="_blank" rel="noopener"><img src="assets/toss/place-11.jpg" alt="토스플레이스 전 직군 채용 — 채용 일정 캡처 11" width="1280" height="800" loading="lazy" decoding="async"></a>
+</div><div class="shot-text">
+<h4 class="shot-title"><span class="shot-num">11</span>채용 일정</h4>
+<dl><dt>정보</dt><dd>남은 시간, 접수 기간 · 전형 · 유의 사항.</dd><dt>표현</dt><dd>카운트다운을 섹션 제목 자리에 크게(&quot;16일 0시간 37분 남았어요&quot;) + key-value 표 + 회색 불릿.</dd></dl>
+</div></li>
+<li class="shot"><div class="shot-imgs">
+<a href="assets/toss/place-12.jpg" target="_blank" rel="noopener"><img src="assets/toss/place-12.jpg" alt="토스플레이스 전 직군 채용 — FAQ 캡처 12" width="1280" height="800" loading="lazy" decoding="async"></a>
+</div><div class="shot-text">
+<h4 class="shot-title"><span class="shot-num">12</span>FAQ</h4>
+<dl><dt>정보</dt><dd>자주 묻는 질문 6개.</dd><dt>표현</dt><dd>2열 그리드, 질문 굵게 + 답, 링크는 파랑, 위에 구분선. 모두 펼쳐 둔다.</dd></dl>
+</div></li>
+<li class="shot"><div class="shot-imgs">
+<a href="assets/toss/place-13.jpg" target="_blank" rel="noopener"><img src="assets/toss/place-13.jpg" alt="토스플레이스 전 직군 채용 — 공유 캡처 13" width="1280" height="800" loading="lazy" decoding="async"></a>
+</div><div class="shot-text">
+<h4 class="shot-title"><span class="shot-num">13</span>공유</h4>
+<dl><dt>정보</dt><dd>&quot;토스플레이스의 여정에 어울리는 분에게 알려주세요&quot; · 링크 복사 · 고지문.</dd><dt>표현</dt><dd>히어로 배경을 반복 + &quot;소식 공유하기&quot;(링크 복사). 마지막 행동을 &quot;지원&quot;이 아니라 &quot;전달&quot;로 둔다.</dd></dl>
+</div></li>
+</ol></div></details></li>
+
+<li class="reveal"><details class="ref" id="d1015-toss-company">
+<summary><span class="ref-name"><span class="bullet"></span>토스 회사 소개</span><span class="ref-meta">섹션 8 · 캡처 10장<span class="ref-chev" aria-hidden="true"></span></span></summary>
+<div class="ref-body">
+<div class="copy ref-intro">
+<p><a class="ref-link" href="https://toss.im/company" target="_blank" rel="noopener">toss.im/company</a> — toss.im 회사 소개 페이지. 장마다 왼쪽에 점 + 영문 라벨(Vision · Group · Culture)을 둔다.</p>
+<p><span class="tag">가져올 점</span>Culture는 역량과 태도와 같은 성격 — 가치 목록을 숨기지 않는다. History는 시간 정보를 &quot;기간 탭 + 목록&quot;으로 — 연간 구조 상세 영역의 형식.</p>
+</div>
+<ol class="shots">
+<li class="shot"><div class="shot-imgs">
+<a href="assets/toss/company-01.jpg" target="_blank" rel="noopener"><img src="assets/toss/company-01.jpg" alt="토스 회사 소개 — 히어로 캡처 01" width="1280" height="800" loading="lazy" decoding="async"></a>
+</div><div class="shot-text">
+<h4 class="shot-title"><span class="shot-num">01</span>히어로</h4>
+<dl><dt>정보</dt><dd>&quot;Daily Greatness&quot; + 한글 부제.</dd><dt>표현</dt><dd>왼쪽 정렬 초대형 영문 + 부제, 위쪽에 파란 빛 번짐. 아래 가는 선 다음 Vision이 시작된다.</dd></dl>
+</div></li>
+<li class="shot"><div class="shot-imgs">
+<a href="assets/toss/company-02.jpg" target="_blank" rel="noopener"><img src="assets/toss/company-02.jpg" alt="토스 회사 소개 — Vision 캡처 02" width="1280" height="800" loading="lazy" decoding="async"></a>
+</div><div class="shot-text">
+<h4 class="shot-title"><span class="shot-num">02</span>Vision</h4>
+<dl><dt>정보</dt><dd>미션 문장과 본문, 서비스 사용 장면.</dd><dt>표현</dt><dd>왼쪽 점 + 라벨 &quot;Vision&quot; / 오른쪽 굵은 미션 문장 + 본문(비대칭 2열). 아래 사용 장면 사진 3장(둥근 사각).</dd></dl>
+</div></li>
+<li class="shot"><div class="shot-imgs">
+<a href="assets/toss/company-03.jpg" target="_blank" rel="noopener"><img src="assets/toss/company-03.jpg" alt="토스 회사 소개 — History 캡처 03" width="1280" height="800" loading="lazy" decoding="async"></a>
+</div><div class="shot-text">
+<h4 class="shot-title"><span class="shot-num">03</span>History</h4>
+<dl><dt>정보</dt><dd>&quot;세상의 기준을 바꾼 토스의 질문들&quot; — 시기별 질문 · 연도 · 사건.</dd><dt>표현</dt><dd>가로 진행 막대형 기간 탭(2025 · 2024–2021 · 2020–2017 · 2016–2013, 활성만 진하게) + ←/→. 3열 = 그 시기의 질문(따옴표) / 연도(파랑) · 제목 · 한 줄 목록 / 사진. 탭을 고르면 세 열이 함께 바뀐다(ARIA 탭 역할은 없음).</dd></dl>
+</div></li>
+<li class="shot"><div class="shot-imgs">
+<a href="assets/toss/company-04.jpg" target="_blank" rel="noopener"><img src="assets/toss/company-04.jpg" alt="토스 회사 소개 — Group 문장 캡처 04" width="1280" height="800" loading="lazy" decoding="async"></a>
+</div><div class="shot-text">
+<h4 class="shot-title"><span class="shot-num">04</span>Group 문장</h4>
+<dl><dt>정보</dt><dd>&quot;일상의 불편함을 해결한다는 단 하나의 목표를 위해&quot;.</dd><dt>표현</dt><dd>가운데 점 + &quot;Group&quot; 라벨, 3줄 초대형 문장이 sticky로 머문다.</dd></dl>
+</div></li>
+<li class="shot"><div class="shot-imgs">
+<a href="assets/toss/company-05.jpg" target="_blank" rel="noopener"><img src="assets/toss/company-05.jpg" alt="토스 회사 소개 — Group 카드 캡처 05" width="1280" height="800" loading="lazy" decoding="async"></a>
+<a href="assets/toss/company-06.jpg" target="_blank" rel="noopener"><img src="assets/toss/company-06.jpg" alt="토스 회사 소개 — Group 카드 캡처 06" width="1280" height="800" loading="lazy" decoding="async"></a>
+</div><div class="shot-text">
+<h4 class="shot-title"><span class="shot-num">05–06</span>Group 카드</h4>
+<dl><dt>정보</dt><dd>계열사 9곳 — bank · securities · insurance · income · place · payments · mobile · 타다 · CX, 각 한 줄 소개.</dd><dt>표현</dt><dd>사진 배경 둥근 카드에 흰 로고 + 하단 한 줄 소개(아래로 어두워지는 그라데이션 위). 3열이 서로 다른 높이로 엇갈려 올라오며 뒤의 큰 문장을 덮는다. 06 아래로 사옥 사진이 화면 폭 가득 들어온다.</dd></dl>
+</div></li>
+<li class="shot"><div class="shot-imgs">
+<a href="assets/toss/company-07.jpg" target="_blank" rel="noopener"><img src="assets/toss/company-07.jpg" alt="토스 회사 소개 — Culture 캡처 07" width="1280" height="800" loading="lazy" decoding="async"></a>
+<a href="assets/toss/company-08.jpg" target="_blank" rel="noopener"><img src="assets/toss/company-08.jpg" alt="토스 회사 소개 — Culture 캡처 08" width="1280" height="800" loading="lazy" decoding="async"></a>
+</div><div class="shot-text">
+<h4 class="shot-title"><span class="shot-num">07–08</span>Culture</h4>
+<dl><dt>정보</dt><dd>일하는 가치 8개 — 번호 · 영문 · 국문 제목 · 설명.</dd><dt>표현</dt><dd>왼쪽 점 + &quot;Culture&quot; 라벨이 sticky / 오른쪽 행 = 회색 번호 · 영문 + 국문 제목 굵게 · 설명 회색(3단), 행 구분선. 펼침 없이 8개 모두 노출.</dd></dl>
+</div></li>
+<li class="shot"><div class="shot-imgs">
+<a href="assets/toss/company-09.jpg" target="_blank" rel="noopener"><img src="assets/toss/company-09.jpg" alt="토스 회사 소개 — Leaders 캡처 09" width="1280" height="800" loading="lazy" decoding="async"></a>
+</div><div class="shot-text">
+<h4 class="shot-title"><span class="shot-num">09</span>Leaders</h4>
+<dl><dt>정보</dt><dd>리더 — 사진 · 이름 · 직함 · 한 문장.</dd><dt>표현</dt><dd>3열 사진 카드(둥근 모서리, 오른쪽 아래 원형 → 버튼) + 이름 | 직함 굵게 + 인용 한 문장 회색.</dd></dl>
+</div></li>
+<li class="shot"><div class="shot-imgs">
+<a href="assets/toss/company-10.jpg" target="_blank" rel="noopener"><img src="assets/toss/company-10.jpg" alt="토스 회사 소개 — 푸터 캡처 10" width="1280" height="800" loading="lazy" decoding="async"></a>
+</div><div class="shot-text">
+<h4 class="shot-title"><span class="shot-num">10</span>푸터</h4>
+<dl><dt>정보</dt><dd>슬로건과 링크 묶음(계열사 · 팀 이야기 · 이용 안내 · 계정 관리).</dd><dt>표현</dt><dd>왼쪽 굵은 슬로건 &quot;금융부터 일상까지 마침내 토스 하나로.&quot; / 오른쪽 4열 링크.</dd></dl>
+</div></li>
+</ol></div></details></li>
+
+<li class="reveal"><details class="ref" id="d1015-toss-home">
+<summary><span class="ref-name"><span class="bullet"></span>토스 홈</span><span class="ref-meta">섹션 16 · 캡처 17장<span class="ref-chev" aria-hidden="true"></span></span></summary>
+<div class="ref-body">
+<div class="copy ref-intro">
+<p><a class="ref-link" href="https://toss.im/" target="_blank" rel="noopener">toss.im</a> — 약 4만 7천 px 한 페이지. 12부터는 4,000px 간격으로 찍은 표본이라 사이 챕터는 빠져 있다(18은 17과 같은 화면이라 뺐다). 화면 왼쪽 가장자리의 세로 눈금은 전체 진행 표시 — 지금 챕터의 눈금만 진하다.</p>
+<p><span class="tag">가져올 점</span>기능은 설명보다 &quot;보여 주기&quot;가 강하다 — 관통하는 접근을 한 주 시나리오 데모로. 다만 스크롤 연동은 골라 읽는 정보에는 맞지 않는다(속성값 — 트리거).</p>
+</div>
+<ol class="shots">
+<li class="shot"><div class="shot-imgs">
+<a href="assets/toss/home-01.jpg" target="_blank" rel="noopener"><img src="assets/toss/home-01.jpg" alt="토스 홈 — 히어로 캡처 01" width="1280" height="800" loading="lazy" decoding="async"></a>
+</div><div class="shot-text">
+<h4 class="shot-title"><span class="shot-num">01</span>히어로</h4>
+<dl><dt>정보</dt><dd>&quot;금융부터 일상까지 / 마침내 / 토스 하나로&quot;.</dd><dt>표현</dt><dd>둥근 모서리 영상 카드 + 문구를 카드 하단에 넓게 흩어 배치. 왼쪽 세로 눈금 진행 표시 시작.</dd></dl>
+</div></li>
+<li class="shot"><div class="shot-imgs">
+<a href="assets/toss/home-02.jpg" target="_blank" rel="noopener"><img src="assets/toss/home-02.jpg" alt="토스 홈 — 확대 전환 캡처 02" width="1280" height="800" loading="lazy" decoding="async"></a>
+</div><div class="shot-text">
+<h4 class="shot-title"><span class="shot-num">02</span>확대 전환</h4>
+<dl><dt>정보</dt><dd>(정보 없음 — 장면 전환)</dd><dt>표현</dt><dd>스크롤하면 영상 카드가 화면 가득 커진다. 다음 챕터로 들어가는 문.</dd></dl>
+</div></li>
+<li class="shot"><div class="shot-imgs">
+<a href="assets/toss/home-03.jpg" target="_blank" rel="noopener"><img src="assets/toss/home-03.jpg" alt="토스 홈 — 송금 캡처 03" width="1280" height="800" loading="lazy" decoding="async"></a>
+</div><div class="shot-text">
+<h4 class="shot-title"><span class="shot-num">03</span>송금</h4>
+<dl><dt>정보</dt><dd>송금 기능과 완료 화면.</dd><dt>표현</dt><dd>사진 카드 왼쪽에 제목 + 설명, 오른쪽에 카드 밖으로 튀어나온 폰 목업(송금 완료 화면).</dd></dl>
+</div></li>
+<li class="shot"><div class="shot-imgs">
+<a href="assets/toss/home-04.jpg" target="_blank" rel="noopener"><img src="assets/toss/home-04.jpg" alt="토스 홈 — 누구나 금융 전문가 캡처 04" width="1280" height="800" loading="lazy" decoding="async"></a>
+</div><div class="shot-text">
+<h4 class="shot-title"><span class="shot-num">04</span>누구나 금융 전문가</h4>
+<dl><dt>정보</dt><dd>대출 금리 비교 · 카드 혜택 · 보험 분석.</dd><dt>표현</dt><dd>문장 속 키워드 칩(&quot;수많은 [대출][카드][보험] 앞에서 망설임은 사라지고&quot;) + 3패널 UI 데모(금리 분석 중 · 카드 혜택 · 보험 리포트 로딩 애니메이션), 패널마다 → 버튼.</dd></dl>
+</div></li>
+<li class="shot"><div class="shot-imgs">
+<a href="assets/toss/home-05.jpg" target="_blank" rel="noopener"><img src="assets/toss/home-05.jpg" alt="토스 홈 — 증권 캡처 05" width="1280" height="800" loading="lazy" decoding="async"></a>
+</div><div class="shot-text">
+<h4 class="shot-title"><span class="shot-num">05</span>증권</h4>
+<dl><dt>정보</dt><dd>AI 번역 · 주식 모으기 · 커뮤니티.</dd><dt>표현</dt><dd>다크 3패널(번역 · 적립 차트 · 커뮤니티 지구본) + 아래 제목 · 설명.</dd></dl>
+</div></li>
+<li class="shot"><div class="shot-imgs">
+<a href="assets/toss/home-06.jpg" target="_blank" rel="noopener"><img src="assets/toss/home-06.jpg" alt="토스 홈 — 쇼핑 전환 캡처 06" width="1280" height="800" loading="lazy" decoding="async"></a>
+<a href="assets/toss/home-07.jpg" target="_blank" rel="noopener"><img src="assets/toss/home-07.jpg" alt="토스 홈 — 쇼핑 전환 캡처 07" width="1280" height="800" loading="lazy" decoding="async"></a>
+</div><div class="shot-text">
+<h4 class="shot-title"><span class="shot-num">06–07</span>쇼핑 전환</h4>
+<dl><dt>정보</dt><dd>&quot;이제는 토스로&quot; — 쇼핑 챕터 시작.</dd><dt>표현</dt><dd>3D 상자 · 테이프 · 병이 움직이는 연출 영상 위에 문구 하나.</dd></dl>
+</div></li>
+<li class="shot"><div class="shot-imgs">
+<a href="assets/toss/home-08.jpg" target="_blank" rel="noopener"><img src="assets/toss/home-08.jpg" alt="토스 홈 — 쇼핑 기능 캡처 08" width="1280" height="800" loading="lazy" decoding="async"></a>
+</div><div class="shot-text">
+<h4 class="shot-title"><span class="shot-num">08</span>쇼핑 기능</h4>
+<dl><dt>정보</dt><dd>결제 · 최저가 · 쿠폰 단계.</dd><dt>표현</dt><dd>왼쪽 폰 목업이 sticky(결제 시트 데모 &quot;밀어서 결제하기&quot;), 오른쪽 단계 문장이 스크롤에 따라 하나씩 진해지고 세로 진행선이 따라 내려온다(스크롤리텔링).</dd></dl>
+</div></li>
+<li class="shot"><div class="shot-imgs">
+<a href="assets/toss/home-09.jpg" target="_blank" rel="noopener"><img src="assets/toss/home-09.jpg" alt="토스 홈 — 판매자 캡처 09" width="1280" height="800" loading="lazy" decoding="async"></a>
+</div><div class="shot-text">
+<h4 class="shot-title"><span class="shot-num">09</span>판매자</h4>
+<dl><dt>정보</dt><dd>&quot;상품 판매와 정산 / 이것마저도 토스로&quot;.</dd><dt>표현</dt><dd>격자 배경 + 타이핑 커서로 써지는 문장, 상품 이미지가 주위를 떠다닌다.</dd></dl>
+</div></li>
+<li class="shot"><div class="shot-imgs">
+<a href="assets/toss/home-10.jpg" target="_blank" rel="noopener"><img src="assets/toss/home-10.jpg" alt="토스 홈 — 데이터 · 광고 캡처 10" width="1280" height="800" loading="lazy" decoding="async"></a>
+</div><div class="shot-text">
+<h4 class="shot-title"><span class="shot-num">10</span>데이터 · 광고</h4>
+<dl><dt>정보</dt><dd>실시간 사용자 규모(3,240,000+)와 관심사 타기팅.</dd><dt>표현</dt><dd>현재 시각 · 사용자 수 + 점으로 된 지형 시각화, 관심사 봉우리마다 주석(&quot;유럽 여행 예정&quot;).</dd></dl>
+</div></li>
+<li class="shot"><div class="shot-imgs">
+<a href="assets/toss/home-11.jpg" target="_blank" rel="noopener"><img src="assets/toss/home-11.jpg" alt="토스 홈 — 결제 연동 캡처 11" width="1280" height="800" loading="lazy" decoding="async"></a>
+</div><div class="shot-text">
+<h4 class="shot-title"><span class="shot-num">11</span>결제 연동</h4>
+<dl><dt>정보</dt><dd>결제 수단 설정과 결제창 미리보기.</dd><dt>표현</dt><dd>어드민 UI 데모(결제 수단 체크리스트 + 비밀번호 입력 미리보기) + &quot;자세히 보기&quot;.</dd></dl>
+</div></li>
+<li class="shot"><div class="shot-imgs">
+<a href="assets/toss/home-12.jpg" target="_blank" rel="noopener"><img src="assets/toss/home-12.jpg" alt="토스 홈 — 오프라인 전환 캡처 12" width="1280" height="800" loading="lazy" decoding="async"></a>
+</div><div class="shot-text">
+<h4 class="shot-title"><span class="shot-num">12</span>오프라인 전환</h4>
+<dl><dt>정보</dt><dd>&quot;온오프라인 경계 없이&quot; — 오프라인 챕터 시작.</dd><dt>표현</dt><dd>흰 화면 가운데 검은 세로 알약이 두 낱말 사이에 서 있다 — 다음 장면의 단말기 화면으로 커지는 전환으로 보인다(정지 캡처라 움직임은 미확인).</dd></dl>
+</div></li>
+<li class="shot"><div class="shot-imgs">
+<a href="assets/toss/home-13.jpg" target="_blank" rel="noopener"><img src="assets/toss/home-13.jpg" alt="토스 홈 — 결제 단말기 캡처 13" width="1280" height="800" loading="lazy" decoding="async"></a>
+</div><div class="shot-text">
+<h4 class="shot-title"><span class="shot-num">13</span>결제 단말기</h4>
+<dl><dt>정보</dt><dd>&quot;어떤 공간에도 어울리는 디자인&quot; — 단말기.</dd><dt>표현</dt><dd>실제 계산대 사진 배경 + 왼쪽 라벨 칩(&quot;결제 단말기&quot;) · 흰 제목 · 설명 · &quot;자세히 보기&quot;(반투명 알약 + 원형 →). 단말기 화면은 실제 UI(주문하기).</dd></dl>
+</div></li>
+<li class="shot"><div class="shot-imgs">
+<a href="assets/toss/home-14.jpg" target="_blank" rel="noopener"><img src="assets/toss/home-14.jpg" alt="토스 홈 — 포스 캡처 14" width="1280" height="800" loading="lazy" decoding="async"></a>
+</div><div class="shot-text">
+<h4 class="shot-title"><span class="shot-num">14</span>포스</h4>
+<dl><dt>정보</dt><dd>매출 리포트(실매출 · 객단가 · 취소 · 할인, 일별 막대).</dd><dt>표현</dt><dd>같은 계산대 무대에서 기기가 포스로 바뀐 순간. 글이 나타나기 전 프레임으로, 화면 속 실제 매출 UI가 주인공 — 마지막 막대만 파랑.</dd></dl>
+</div></li>
+<li class="shot"><div class="shot-imgs">
+<a href="assets/toss/home-15.jpg" target="_blank" rel="noopener"><img src="assets/toss/home-15.jpg" alt="토스 홈 — 페이스페이 캡처 15" width="1280" height="800" loading="lazy" decoding="async"></a>
+</div><div class="shot-text">
+<h4 class="shot-title"><span class="shot-num">15</span>페이스페이</h4>
+<dl><dt>정보</dt><dd>&quot;매장에서 결제할 땐 페이스페이&quot; — 카메라를 보면 결제 끝.</dd><dt>표현</dt><dd>13과 같은 틀(라벨 칩 · 제목 · 설명 · 자세히 보기)을 반복하고 단말기 화면만 &quot;결제 완료&quot;로. 같은 무대에서 제품만 갈아 끼운다.</dd></dl>
+</div></li>
+<li class="shot"><div class="shot-imgs">
+<a href="assets/toss/home-16.jpg" target="_blank" rel="noopener"><img src="assets/toss/home-16.jpg" alt="토스 홈 — 다음 챕터 전환 캡처 16" width="1280" height="800" loading="lazy" decoding="async"></a>
+</div><div class="shot-text">
+<h4 class="shot-title"><span class="shot-num">16</span>다음 챕터 전환</h4>
+<dl><dt>정보</dt><dd>(정보 없음 — 장면 전환)</dd><dt>표현</dt><dd>배경이 어두워지고 가운데 작은 사진 카드(비행기 창가) — 02의 확대 전환 문법을 다시 쓰는 것으로 보인다. 눈금 표시도 흰색으로 반전.</dd></dl>
+</div></li>
+<li class="shot"><div class="shot-imgs">
+<a href="assets/toss/home-17.jpg" target="_blank" rel="noopener"><img src="assets/toss/home-17.jpg" alt="토스 홈 — 푸터 캡처 17" width="1280" height="800" loading="lazy" decoding="async"></a>
+</div><div class="shot-text">
+<h4 class="shot-title"><span class="shot-num">17</span>푸터</h4>
+<dl><dt>정보</dt><dd>계열사 · 회사 · 고객 링크, 사업자 정보, 약관.</dd><dt>표현</dt><dd>흐린 파스텔 그라데이션 위에 링크 4열 + 사업자 정보 + 약관 줄, 아래에 화면 폭 가득한 반투명 &quot;All in one App&quot;.</dd></dl>
+</div></li>
+</ol></div></details></li>
+
+</ul>
+<ul class="rows">
 <li class="row reveal"><h3 class="row-title"><span class="bullet"></span>다섯 곳의 공통점</h3>
 <div class="copy"><table>
 <thead><tr><th>정보의 성격</th><th>토스의 표현</th><th>우리 섹션</th></tr></thead>
@@ -748,6 +1132,23 @@ main{flex:1;margin:62px 0 160px}
   if (target && target !== startDay) {
     target.scrollIntoView();
     document.fonts?.ready.then(() => target.scrollIntoView());
+  }
+
+  // 레퍼런스 상세: "모두 펼치기"는 지금 상태를 보고 펼치기 · 접기를 오간다
+  const refs = [...document.querySelectorAll('.ref')];
+  const allBtn = document.querySelector('.ref-all');
+  if (allBtn && refs.length) {
+    const sync = () => {
+      const all = refs.every((d) => d.open);
+      allBtn.textContent = all ? '모두 접기' : '모두 펼치기';
+      allBtn.setAttribute('aria-expanded', all);
+    };
+    allBtn.addEventListener('click', () => {
+      const open = !refs.every((d) => d.open);
+      refs.forEach((d) => { d.open = open; });
+      sync();
+    });
+    refs.forEach((d) => d.addEventListener('toggle', sync));
   }
 
   // 스크롤 등장
