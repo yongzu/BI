@@ -147,16 +147,23 @@
 .hero-more__facts { grid-column: span 6; padding-bottom: var(--space-8); }
 /* 두 칸 제목('1 Year Programs' · '과정 개요') — 아래 가는 선까지 같은 모양 */
 .hero-more__head { padding-bottom: var(--space-12); border-bottom: 1px solid var(--color-border); }
+.hero-more__facts .hero-more__head { border-bottom: 0; padding-bottom: 0; }
 .hero-more__para { margin-top: var(--space-16); line-height: 1.75; }
-.hero-more__row {
-  display: grid;
-  grid-template-columns: 100px minmax(0, 1fr);
-  gap: var(--space-16);
-  padding: var(--space-8) 0;
+/* 숫자 타일(v7): 2열, 마지막 타일은 한 줄 전체. 핵심 숫자는 Heading 크기, 보조 설명은 작게 */
+.fact-tiles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-8); margin-top: var(--space-16); }
+.fact-tile {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-12);
+  min-height: 136px;
+  padding: var(--space-20) var(--space-24);
+  border-radius: 20px;
+  background: var(--color-bg-subtle);
 }
-.hero-more__row + .hero-more__row { border-top: 1px solid var(--color-border); }
-.hero-more__row dt { align-self: center; }
-.hero-more__row :is(dt, dd) { font-size: var(--typo-meta-size); }
+.fact-tile:last-child:nth-child(odd) { grid-column: 1 / -1; }
+.fact-tile dd { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--space-4) var(--space-12); margin-top: auto; }
+.fact-tile__big { font-size: var(--typo-heading-size); line-height: 1; font-weight: var(--font-weight-bold); letter-spacing: var(--tracking-heading); font-variant-numeric: tabular-nums; color: var(--color-text-primary); }
+.fact-tile__note { font-size: var(--typo-meta-size); color: var(--color-text-secondary); }
 @media (max-width: 900px) {
   .hero-more__text, .hero-more__facts { grid-column: 1 / -1; }
   .hero-more__facts { padding-top: var(--space-24); }
@@ -196,40 +203,38 @@
 /* Group label — 왼쪽 세로 막대는 없앴다(사용자 지시 2026-10-03) */
 .group-label { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--space-12); }
 
-/* ---------- 역량 · 태도: 두 목록을 나란히 — 왼쪽 역량, 오른쪽 태도 (2026-09-30) ----------
-   한 줄을 펼쳐도 그 목록만 길어지고 옆 목록은 그대로(align-items: start). 좁으면 위아래로 */
-.pillar-columns { display: grid; grid-template-columns: var(--grid-template); gap: var(--space-56) var(--grid-gap); align-items: start; }
-.pillar-column { grid-column: span 6; scroll-margin-top: 48px; }
-@media (max-width: 900px) { .pillar-column { grid-column: 1 / -1; } }
 
 
 .annual { margin-top: var(--space-48); }
 /* 연간 구조는 자기 섹션의 머리글 아래 — 다른 섹션의 첫 그룹과 같은 간격으로 */
 .section-header + .annual,
-.section-header + .annual-guide { margin-top: var(--space-after-header); }
-.annual-guide + .annual { margin-top: var(--space-64); }
-
-/* 연간 구조 안내 표(v6): 12열 — 항목 이름 2열 · 내용 10열, 가로줄만. 보조 설명은 내용 아래 흐리게 */
-.annual-guide { border-top: 1px solid var(--color-text-primary); }
-.annual-guide__row {
-  display: grid;
-  grid-template-columns: var(--grid-template);
-  column-gap: var(--grid-gap);
-  align-items: baseline;
-  padding: var(--space-20) 0;
-  border-bottom: 1px solid var(--color-border);
-}
-.annual-guide__row dt { grid-column: span 2; }
-.annual-guide__row dd { grid-column: span 10; display: flex; flex-wrap: wrap; align-items: baseline; column-gap: var(--space-16); row-gap: var(--space-4); }
-.annual-guide__row dd > :first-child { color: var(--color-text-primary); }
-@media (max-width: 720px) {
-  .annual-guide__row { row-gap: var(--space-4); }
-  .annual-guide__row :is(dt, dd) { grid-column: 1 / -1; }
-  .annual-guide__row dd { flex-direction: column; }
-}
+.section-header + .history { margin-top: var(--space-after-header); }
 
 /* ---------- Courses: 필터 · 목록 · 상세는 components/CourseExplorer ---------- */
 
+
+/* ---------- 채용 연계(v7): 카드 두 장 — 첫 장은 잉크, 둘째 장은 회색 면 ---------- */
+.career-cards { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-12); margin-top: var(--space-24); }
+.career-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+  min-height: 320px;
+  padding: var(--space-32);
+  border-radius: 28px;
+  background: var(--color-bg-subtle);
+  color: var(--color-text-primary);
+}
+.career-card[data-tone='ink'] { background: var(--color-text-primary); color: var(--color-bg-default); }
+.career-card__label { opacity: 0.6; }
+.career-card__big { margin-top: auto; font-variant-numeric: tabular-nums; }
+.career-card__sub { opacity: 0.6; }
+.career-card__body { margin-top: var(--space-16); max-width: 440px; opacity: 0.85; }
+.career-card__note { opacity: 0.5; }
+@media (max-width: 900px) {
+  .career-cards { grid-template-columns: 1fr; }
+  .career-card { min-height: 260px; padding: var(--space-28) var(--space-24); }
+}
 
 /* ---------- 마무리(v6) — 히어로의 문장 · 기간 · 버튼을 회색 면 하나에 다시. 채용 연계 다음, 푸터 위 ----------
    채용 연계가 마지막 섹션이라 그 아래 여백(--space-section) 대신 이 블록이 페이지를 닫는다 */
@@ -294,117 +299,13 @@
   .section-header { row-gap: var(--space-16); }
   .section-header > :nth-child(n) { grid-column: 1 / -1; } /* 위 두 규칙보다 뒤 · 같은 무게라 이긴다 */
 }
-/* ---------- 역량 · 태도 / 채용 연계 줄 ----------
-   커리큘럼 수업 줄과 같은 모양(사용자 지시 2026-10-04): 선 없는 흰 면, 호버하면 회색 면 + 글이 오른쪽으로 12px
-   (살짝 튕기는 곡선) + 아이콘이 진해져 누를 수 있음을 알린다. 역량과 태도는 줄마다 마우스를 올리면 펼치고 누르면 고정(v5).
-   회색 면이 글자 바깥으로 깔리도록 목록을 양옆으로 내민다 — 글자는 머리글과 같은 선에 선다 */
-.pillar-list {
-  --row-pad-x: 20px;
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-4);
-  margin: var(--space-48) calc(-1 * var(--row-pad-x)) 0;
-}
-.pillar-row__hit {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr); /* 꺾쇠는 없앴다(사용자 지시 2026-10-05) */
-  align-items: center;
-  width: 100%;
-  min-height: 72px;
-  padding: var(--space-16) var(--row-pad-x);
-  border-radius: 12px;
-  text-align: left;
-  cursor: var(--cursor-pointer);
-  transition: background var(--duration) var(--ease);
-}
-.pillar-row__lead {
-  display: grid;
-  grid-template-columns: 48px minmax(0, 1fr);
-  gap: var(--space-20);
-  align-items: center;
-  min-width: 0;
-  transition: transform 600ms cubic-bezier(0.34, 1.32, 0.64, 1); /* 커리큘럼 줄과 같은 튕김 */
-}
-.pillar-row__titles { display: flex; flex-direction: column; gap: var(--space-4); min-width: 0; }
-.pillar-row__hit:focus-visible { outline: 2px solid var(--color-text-primary); outline-offset: 2px; }
-@media (hover: hover) {
-  .pillar-row__hit:hover { background: var(--color-bg-hover); }
-  .pillar-row__hit:hover .pillar-row__lead { transform: translateX(12px); }
-}
-/* 펼침: 높이 0fr → 1fr, 글자는 살짝 늦게 떠오른다. 설명 안에 문단이 여럿이면(채용 연계의 각주) 사이를 띄운다.
-   늘 펼친 정적 목록(채용 연계 두 줄)은 묶음의 설명을 모두 한 칸에 겹쳐 두고 제 설명만 보인다 — 펼친 높이가 늘
-   가장 긴 설명에 맞춰져 양쪽 단의 줄이 어긋나지 않는다(사용자 지시 2026-10-04) */
-.pillar-row__panel { display: grid; grid-template-rows: 0fr; transition: grid-template-rows 480ms var(--ease-reveal); }
-.pillar-row__clip { min-height: 0; overflow: hidden; }
-.pillar-row__body {
-  display: grid;
-  max-width: var(--lead-width);
-  padding: var(--space-4) var(--space-48) var(--space-24) calc(48px + var(--space-20) + var(--row-pad-x)); /* 번호 칸 48 + 간격 20 — 글이 제목과 같은 선 */
-  opacity: 0;
-  transform: translateY(-6px);
-  transition: opacity 240ms var(--ease), transform 480ms var(--ease-reveal);
-}
-.pillar-row[data-open='true'] .pillar-row__panel { grid-template-rows: 1fr; }
-.pillar-row[data-open='true'] .pillar-row__body { opacity: 1; transform: none; transition-delay: 80ms; }
-/* 고정한 줄(누름)은 회색 면이 남아 마우스만 올린 줄과 구분된다(v5, 사용자 지시 2026-10-14) */
-.pillar-row[data-pinned='true'] .pillar-row__hit { background: var(--color-bg-hover); }
-/* 겹쳐 둔 설명: 제 것만 보이고 남의 것은 자리만 */
-.pillar-row__text { grid-area: 1 / 1; display: flex; flex-direction: column; gap: var(--space-8); }
-.pillar-row__text[data-ghost='true'] { visibility: hidden; }
-/* 정적 목록(채용 연계): 누르지 않으므로 커서 · 호버 면 · 꺾쇠 자리 없이 설명까지 늘 보인다(사용자 지시 2026-10-05) */
-.pillar-list[data-static='true'] .pillar-row__hit { cursor: auto; padding-bottom: var(--space-12); }
-.pillar-list[data-static='true'] .pillar-row__hit:hover { background: none; }
-.pillar-list[data-static='true'] .pillar-row__hit:hover .pillar-row__lead { transform: none; }
-.pillar-list[data-static='true'] .pillar-row__panel,
-.pillar-list[data-static='true'] .pillar-row__body { transition: none; }
 
-/* ---------- 수업을 관통하는 접근 ---------- */
-/* 배우는 자리 묶음: 라벨(역량 · Competency와 같은 Title) 아래 45px에 박스 — 역량과 태도 목록과 같은 간격(사용자 지시 2026-10-05).
-   묶음 사이는 그룹 사이 간격. 박스를 양옆으로 24px 내밀어 박스 안 글자가 라벨과 같은 선에 선다 */
-.device-group + .device-group { margin-top: var(--space-group-stack); }
-/* 묶음 라벨 = 분류 표시(사용자 지시 2026-10-05): Meta 14(15 → 14, 2026-10-07) Medium · 70% 회색, 오른쪽으로 가는 선이 묶음의 시작을 알린다.
-   박스 이름(Title)이 섹션에서 가장 큰 글씨가 된다. 라벨이 작아진 만큼 박스와의 간격도 45 → 16(박스 안 여백 24 포함 ≈ 40) */
-.device-group__label { display: flex; align-items: center; gap: var(--space-16); }
-.device-group__label > * { flex: none; font-size: var(--typo-meta-size); }
-.device-group__label::after { content: ''; flex: 1; height: 1px; background: var(--color-border); }
-/* 줄(v6): 12열 — 왼쪽 4열 번호 · 이름 · 결과 한 줄, 오른쪽 8열 설명. 모두 펼쳐 둔다. 줄 사이는 가는 선 */
-.device-rows { margin-top: var(--space-8); }
-.device-row {
-  display: grid;
-  grid-template-columns: var(--grid-template);
-  column-gap: var(--grid-gap);
-  align-items: start;
-  padding: var(--space-28) 0;
-}
-.device-row + .device-row { border-top: 1px solid var(--color-border); }
-.device-row__lead { grid-column: span 4; display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-8); }
-.device-row__body { grid-column: span 8; max-width: 640px; }
-/* 번호 알약 */
-.device-card__badge {
-  padding: var(--space-4) var(--space-8);
-  border-radius: 20px;
-  corner-shape: squircle;
-  background: var(--color-bg-subtle);
-  color: var(--color-text-primary);
-  font-size: var(--typo-caption-size);
-  line-height: 1.3;
-  font-weight: var(--font-weight-bold);
-}
-@media (max-width: 900px) {
-  .device-row { row-gap: var(--space-12); }
-  .device-row__lead, .device-row__body { grid-column: 1 / -1; }
-}
+/* ---------- 수업을 관통하는 접근: components/DeviceMap(v7) ---------- */
 
-
-@media (max-width: 720px) {
-  .pillar-list { --row-pad-x: 12px; }
-  .pillar-row__lead { grid-template-columns: 36px minmax(0, 1fr); gap: var(--space-12); }
-  .pillar-row__body { padding: var(--space-4) var(--space-40) var(--space-24) calc(36px + var(--space-12) + var(--row-pad-x)); }
-}
 
 /* v6 시안: 섹션 머리글의 "바뀐 점" 버튼 — 리드 아래, 리드와 같은 열에서 시작 */
 .section-header > .change-chip { grid-column: 5 / span 8; justify-self: start; }
-.closing__card > .change-chip { margin-bottom: var(--space-8); }
+.hero-more__head--row { display: flex; align-items: center; justify-content: space-between; gap: var(--space-12); }
 @media (max-width: 900px) {
   .section-header > .change-chip { grid-column: 1 / -1; }
 }

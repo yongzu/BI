@@ -9,7 +9,8 @@ import { HeroRipple, type RippleControl } from '../components/HeroRipple/HeroRip
 import { HeroLogo3D } from '../components/HeroLogo3D/HeroLogo3D';
 import { BackToTop, SiteHeader } from '../components/SiteHeader/SiteHeader';
 import { VersionLog } from '../components/VersionLog/VersionLog';
-import { ValueList } from '../components/ValueList/ValueList';
+import { ValueCards } from '../components/ValueCards/ValueCards';
+import { DeviceMap } from '../components/DeviceMap/DeviceMap';
 import { ChangeChip, ChangeNotes } from '../components/ChangeNotes/ChangeNotes';
 import { courseProfiles } from '../data/courseProfiles';
 import { useScrollReveal } from '../hooks/useScrollReveal';
@@ -17,7 +18,6 @@ import {
   attitudes,
   competencies,
   courseTypes,
-  annualGuide,
   applyPeriod,
   devices,
   facts,
@@ -41,7 +41,7 @@ const toc: TocItem[] = [
 
 /** Blocks that rise in on scroll */
 // 히어로는 첫 화면 순서(흐린 제목 → 맑아짐 → 소개 · 기간)를 따로 가지므로 떠오르는 등장에서 뺀다
-const revealTargets = ['.section-header > *', '.group-label', '.group__lead', '.course-explorer', '.pillar-row', '.value-group__label', '.value-row', '.annual-guide', '.annual', '.device-row', '.closing__card'].join(', ');
+const revealTargets = ['.section-header > *', '.group-label', '.group__lead', '.course-explorer', '.career-card', '.fact-tile', '.vc-cards', '.vc-detail', '.history', '.device-map', '.closing__card'].join(', ');
 
 /* ------------------------------------------------------------------ */
 
@@ -90,161 +90,26 @@ const deviceOutcomes: Record<string, string> = {
 };
 
 /**
- * 줄 목록 — 역량과 태도가 쓴다(사용자 지시 2026-09-30). 줄에는 번호 · 제목 · 보조 문구만 두고, 설명은
- * 0fr → 1fr로 펼쳐진다. 줄마다 따로 여닫는다(v5, 사용자 지시 2026-10-14 — v4까진 한 줄을 누르면 양쪽 단 전체가 함께):
- * 마우스를 올린 줄이 펼쳐지고, 누르면 그 줄이 펼친 채 고정된다(다시 누르면 풀림, 여러 줄을 고정할 수 있다).
- * 열림 · 고정 상태는 RowColumns가 갖는다. 커리큘럼 수업 줄처럼 선 없는 흰 면 — 호버하면 회색 면 + 글이 오른쪽으로
- * 살짝 들어가 누를 수 있음을 알린다(사용자 지시 2026-10-04). 고정된 줄은 회색 면이 남는다.
- * `onToggle`이 없으면 드롭다운 없이 설명까지 늘 보이는 정적 목록(채용 연계, 사용자 지시 2026-10-05).
- * `start`는 번호를 이어 매기기 위한 값 — 오른쪽 목록이 왼쪽 목록 다음 번호부터 센다.
+ * 채용 연계(v7, 2026-10-19) — 카드 두 장. 시점(2027.08)과 대상을 크게, 설명은 아래.
+ * v6까지는 역량과 태도와 같은 두 단 줄 목록이었다. 줄 목록이 사라지며 숫자를 앞세운 카드로(토스 홈 10의 큰 숫자)
  */
-type RowItem = { id: string; title: string; sub?: string; body: ReactNode };
-
-/** 설명 한 개 — 글이면 본문 문단, 아니면 그대로 */
-const renderBody = (body: ReactNode) => (typeof body === 'string' ? <Text typography="Body" color="secondary">{body}</Text> : body);
-
-/**
- * `group`: 정적 목록(채용 연계)에서 같은 묶음의 모든 줄(양쪽 단 포함). 펼친 칸에 묶음의 설명을 모두 겹쳐 두어 높이를
- * 가장 긴 설명에 맞춘다 — 늘 함께 펼쳐 있으므로 양쪽 단의 줄이 어긋나지 않게. 줄마다 여닫는 목록은 제 설명만 둔다
- */
-type RowState = {
-  isOpen: (id: string) => boolean;
-  isPinned?: (id: string) => boolean;
-  onToggle?: (id: string) => void;
-  onHover?: (id: string | null) => void;
-};
-function RowList({ items, start = 0, group, isOpen, isPinned, onToggle, onHover }: { items: RowItem[]; start?: number; group?: RowItem[] } & RowState) {
-  return (
-    <div className="pillar-list" data-static={!onToggle}>
-      {items.map((item, i) => {
-        const panelId = `row-${item.id}`;
-        const open = isOpen(item.id);
-        const lead = (
-          <span className="pillar-row__lead">
-            <Text as="span" typography="Label" color="tertiary">{String(start + i + 1).padStart(2, '0')}</Text>
-            <span className="pillar-row__titles">
-              <Text as="span" typography="Title">{item.title}</Text>
-              {item.sub && <Text as="span" typography="Label" color="tertiary">{item.sub}</Text>}
-            </span>
-          </span>
-        );
-        return (
-          <article
-            key={item.id}
-            className="pillar-row"
-            data-open={open}
-            data-pinned={isPinned?.(item.id) ?? false}
-            // 호버로 펼치기는 마우스만 — 터치 · 키보드는 누름으로
-            onPointerEnter={(e) => { if (e.pointerType === 'mouse') onHover?.(item.id); }}
-            onPointerLeave={(e) => { if (e.pointerType === 'mouse') onHover?.(null); }}
-          >
-            {onToggle ? (
-              <button type="button" className="pillar-row__hit" aria-expanded={open} aria-pressed={isPinned?.(item.id)} aria-controls={panelId} onClick={() => onToggle(item.id)}>
-                {lead}
-              </button>
-            ) : (
-              <div className="pillar-row__hit">{lead}</div>
-            )}
-            <div id={panelId} className="pillar-row__panel" role="region" aria-label={item.title}>
-              <div className="pillar-row__clip">
-                <div className="pillar-row__body">
-                  {(group ?? [item]).map((o) => (
-                    <div key={o.id} className="pillar-row__text" data-ghost={o.id !== item.id} aria-hidden={o.id !== item.id}>
-                      {renderBody(o.body)}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </article>
-        );
-      })}
-    </div>
-  );
-}
-
-
-/**
- * 수업을 관통하는 접근(v6, 2026-10-19) — 배우는 자리(세션 안에서 · 스스로 돌아보기 · 세션 밖에서)마다 라벨 아래 줄 두 개.
- * 줄 = 왼쪽 번호 · 장치 이름 · 결과 한 줄 / 오른쪽 설명, 모두 펼쳐 둔다(AI · ML · Data 채용의 혜택 3행).
- * v5까지는 박스 하나를 누르면 여섯이 함께 열리고(누른 것과 바뀌는 것이 달랐다), 펼친 높이를 가장 긴 설명에 맞춰 짧은 박스가 비어 보였다.
- * 설명이 짧고(2–4문장) 여섯 모두 읽어야 방법론이 보이므로 숨기지 않는다 — 누를 것이 없어졌다.
- */
-function DeviceRows({ items }: { items: { name: string; tag: string; body: string }[] }) {
-  const groups = [...new Set(items.map((d) => d.tag))]; // 데이터 순서대로
-  return (
-    <div className="device-groups">
-      {groups.map((tag) => (
-        <section key={tag} className="device-group" aria-label={tag}>
-          <div className="device-group__label">
-            <Text as="h3" typography="Label" color="secondary">{tag}</Text>
-          </div>
-          <div className="device-rows">
-            {items.map((d, i) => d.tag === tag && (
-              <article key={d.name} className="device-row">
-                <div className="device-row__lead">
-                  <Text as="span" typography="Label" color="inherit" className="device-card__badge">{String(i + 1).padStart(2, '0')}</Text>
-                  <Text as="h4" typography="Title">{d.name}</Text>
-                  {deviceOutcomes[d.name] && <Text as="p" typography="Label" color="tertiary">{deviceOutcomes[d.name]}</Text>}
-                </div>
-                <Text typography="Body" color="secondary" className="device-row__body">{d.body}</Text>
-              </article>
-            ))}
-          </div>
-        </section>
-      ))}
-    </div>
-  );
-}
-
-/** 채용 연계 — 왼쪽 토스 별도 채용 전형, 오른쪽 우수 졸업자 입사 특전 */
-const careerRows: RowItem[] = [
-  { id: 'toss-hiring', title: '토스 별도 채용 전형', sub: '2027년 8월', body: '2027년 8월, Phi 1년제 1기 졸업자를 위한 토스의 별도 채용 전형이 마련됩니다.' },
-  {
-    id: 'toss-benefit',
-    title: '우수 졸업자 입사 특전',
-    sub: 'Benefit',
-    body: (
-      <>
-        <Text typography="Body" color="secondary">우수 졸업자에게는 채용 전형에 더해 별도의 입사 특전*이 제공됩니다.</Text>
-        <Text typography="Label" color="tertiary">*채용 특전의 세부 내용은 현재 검토 중입니다.</Text>
-      </>
-    ),
-  },
+const careerCards = [
+  { label: '토스 별도 채용 전형', big: '2027.08', sub: 'Phi 1년제 1기 졸업자', body: '2027년 8월, Phi 1년제 1기 졸업자를 위한 토스의 별도 채용 전형이 마련됩니다.' },
+  { label: '우수 졸업자 입사 특전', big: 'Benefit', sub: '채용 전형에 더해', body: '우수 졸업자에게는 채용 전형에 더해 별도의 입사 특전*이 제공됩니다.', note: '*채용 특전의 세부 내용은 현재 검토 중입니다.' },
 ];
 
-/**
- * 역량과 태도와 같은 두 단: 왼쪽 목록 · 오른쪽 목록, 좁으면 위아래.
- * 번호는 오른쪽이 왼쪽에 이어 세고(continue), 서로 다른 묶음(역량 · 태도)은 각자 01부터(restart).
- */
-function RowColumns({ columns, numbering = 'continue', collapsible = true }: { columns: { id?: string; label?: string; items: RowItem[] }[]; numbering?: 'continue' | 'restart'; collapsible?: boolean }) {
-  // 줄마다 따로: 마우스를 올린 줄 + 고정한 줄들이 펼쳐진다(v5, 사용자 지시 2026-10-14). 접지 않는 목록은 늘 펼침
-  const [pinned, setPinned] = useState<ReadonlySet<string>>(() => new Set());
-  const [hovered, setHovered] = useState<string | null>(null);
-  const state: RowState = collapsible
-    ? {
-      isOpen: (id) => id === hovered || pinned.has(id),
-      isPinned: (id) => pinned.has(id),
-      onToggle: (id) => setPinned((prev) => {
-        const next = new Set(prev);
-        if (!next.delete(id)) next.add(id);
-        return next;
-      }),
-      onHover: setHovered,
-    }
-    : { isOpen: () => true };
-  const group = collapsible ? undefined : columns.flatMap((col) => col.items); // 정적 목록만 양쪽 단의 펼친 높이를 같게
+function CareerCards() {
   return (
-    <div className="pillar-columns">
-      {columns.map((col, c) => {
-        const from = numbering === 'continue' ? columns.slice(0, c).reduce((n, prev) => n + prev.items.length, 0) : 0;
-        return (
-          <div key={col.id ?? c} id={col.id} className="pillar-column">
-            {col.label && <GroupLabel>{col.label}</GroupLabel>}
-            <RowList items={col.items} start={from} group={group} {...state} />
-          </div>
-        );
-      })}
+    <div className="career-cards">
+      {careerCards.map((c, i) => (
+        <article key={c.label} className="career-card" data-tone={i === 0 ? 'ink' : 'light'}>
+          <Text as="p" typography="Label" color="inherit" className="career-card__label">{c.label}</Text>
+          <Text as="p" typography="Heading" color="inherit" className="career-card__big">{c.big}</Text>
+          <Text as="p" typography="Meta" color="inherit" className="career-card__sub">{c.sub}</Text>
+          <Text typography="Body" color="inherit" className="career-card__body">{c.body}</Text>
+          {c.note && <Text as="p" typography="Caption" color="inherit" className="career-card__note">{c.note}</Text>}
+        </article>
+      ))}
     </div>
   );
 }
@@ -292,12 +157,19 @@ function HeroMore() {
             ))}
           </div>
           <div className="hero-more__facts">
-            <Text as="p" typography="Label" className="hero-more__head">과정 개요</Text>
-            <dl>
+            <div className="hero-more__head hero-more__head--row">
+              <Text as="p" typography="Label">과정 개요</Text>
+              <ChangeChip id="overview" />
+            </div>
+            {/* v7: 숫자 타일 — 크게 쓴 핵심 숫자 + 보조 설명. 읽기 프로그램엔 원문(value) */}
+            <dl className="fact-tiles">
               {facts.map((f) => (
-                <div key={f.label} className="hero-more__row">
-                  <Text as="dt" typography="Label" color="tertiary">{f.label}</Text>
-                  <Text as="dd" typography="Body">{f.value}</Text>
+                <div key={f.label} className="fact-tile">
+                  <Text as="dt" typography="Caption" color="tertiary">{f.label}</Text>
+                  <dd aria-label={f.value}>
+                    <span className="fact-tile__big" aria-hidden="true">{f.big}</span>
+                    <span className="fact-tile__note" aria-hidden="true">{f.note}</span>
+                  </dd>
                 </div>
               ))}
             </dl>
@@ -365,12 +237,13 @@ export function ProgramsPage() {
         {/* ---------- 역량과 태도 ---------- */}
         <section id="pillars" className="section container">
           <SectionHeader title="역량과 태도" change="pillars" lead="어떤 환경에서도 스스로 답을 찾을 수 있는 사고방식을 만들기 위해, Phi는 아래 역량과 태도를 중요시합니다." />
-          {/* 휠(v2) → 가로 두 줄 상자(v3, PillarStrip) → 두 단 줄 목록(v4 · v5, RowColumns) →
-              v6: 묶음을 위아래로, 왼쪽 라벨 · 오른쪽 줄(번호 · 이름 · 늘 보이는 요약, 누르면 전문) — toss.im/company Culture */}
+          {/* 휠(v2) → 가로 두 줄 상자(v3) → 두 단 줄 목록(v4 · v5) → Culture 줄(v6) →
+              v7: 묶음마다 카드 다섯 장 + 아래 상세 띠. 역량은 띠에서 그 역량을 기르는 수업으로 바로 간다(ValueCards) */}
           <div className="group">
-            <ValueList
+            <ValueCards
+              courseTypes={courseTypes}
               groups={[
-                { id: 'pillars-competency', name: '역량', en: 'Competency', definition: '수업에서 기르는 다섯 가지 능력. 커리큘럼의 수업마다 태그로 붙는다.', items: competencies },
+                { id: 'pillars-competency', name: '역량', en: 'Competency', definition: '수업에서 기르는 다섯 가지 능력. 커리큘럼의 수업마다 태그로 붙는다.', items: competencies, linkCourses: true },
                 { id: 'pillars-attitude', name: '태도', en: 'Phi OS', definition: '배우는 사람이 지니는 다섯 가지 자세.', items: attitudes },
               ]}
             />
@@ -384,18 +257,7 @@ export function ProgramsPage() {
             change="annual"
             lead="2026년 8월 개강부터 2027년 8월 졸업까지, 두 학기와 방학 캠프, 졸업 프로젝트로 이어지는 1년입니다."
           />
-          {/* v6: 늘 보이는 안내 표 — 한 주 리듬 · 방학 · 수료 · 졸업 조건을 시간축 위로 꺼냈다(토스 채용 이벤트의 지원 안내 표) */}
-          <dl className="annual-guide">
-            {annualGuide.map((g) => (
-              <div key={g.label} className="annual-guide__row">
-                <Text as="dt" typography="Label" color="tertiary">{g.label}</Text>
-                <dd>
-                  <Text as="span" typography="Body">{g.value}</Text>
-                  {g.note && <Text as="span" typography="Meta" color="tertiary" className="annual-guide__note">{g.note}</Text>}
-                </dd>
-              </div>
-            ))}
-          </dl>
+          {/* v7: 위 시기 패널 · 아래 진행 바(toss.im/company History). v6의 안내 표 문구는 시기마다 왼쪽 사실로 옮겼다 */}
           <AnnualTimeline stages={stages} months={months} />
         </section>
 
@@ -419,17 +281,17 @@ export function ProgramsPage() {
           {/* 두 단 목록을 시험해 본 뒤 박스로 되돌림(사용자 지시 2026-09-30) */}
           <div className="group">
             {/* '핵심 수업 장치' 라벨은 배우는 자리 라벨 셋이 대신한다(2026-10-05) */}
-            <DeviceRows items={devices} />
+            <DeviceMap items={devices} outcomes={deviceOutcomes} />
           </div>
         </section>
 
         {/* ---------- 채용 연계 ---------- */}
         <section id="career" className="section section--last container">
-          <SectionHeader title="채용 연계" lead="Phi의 1년제 프로그램 졸업자들은 토스의 별도 채용 전형에 지원할 수 있습니다." />
-          {/* 역량과 태도와 같은 두 단 목록: 왼쪽 채용 전형 · 오른쪽 입사 특전 — 드롭다운 없이 내용까지 바로(사용자 지시 2026-10-05) */}
+          <SectionHeader title="채용 연계" change="career" lead="Phi의 1년제 프로그램 졸업자들은 토스의 별도 채용 전형에 지원할 수 있습니다." />
+          {/* v7: 카드 두 장 — 시점 · 대상을 크게 */}
           <div className="group">
             <GroupLabel>with Toss</GroupLabel>
-            <RowColumns collapsible={false} columns={[{ items: careerRows.slice(0, 1) }, { items: careerRows.slice(1) }]} />
+            <CareerCards />
           </div>
         </section>
 
@@ -437,7 +299,6 @@ export function ProgramsPage() {
             다 읽은 사람이 맨 위로 돌아가지 않고 바로 신청한다. 연출은 히어로에만 두므로 여기는 정적인 면 하나 */}
         <section className="closing container" aria-labelledby="closing-title">
           <div id="closing" className="closing__card">
-            <ChangeChip id="closing" />
             <Text as="p" typography="Label" color="tertiary">1 Year Programs</Text>
             <Text as="h2" id="closing-title" typography="Heading" className="closing__title">
               {heroStatement.lines.map((line) => <span key={line}>{line}</span>)}

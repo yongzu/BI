@@ -117,15 +117,15 @@
 @keyframes change-flash { 0%, 100% { background: transparent; } 30% { background: var(--color-bg-subtle); } }
 .change-entry__head { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-8); }
 .change-entry__title { font-weight: var(--font-weight-bold); color: var(--color-text-primary); }
-.change-entry__prio {
+.change-entry__tag {
   padding: var(--space-4) var(--space-8);
   border-radius: 999px;
+  background: var(--color-bg-subtle);
   font-size: var(--typo-caption-size);
   line-height: 1.3;
   font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
 }
-.change-entry__prio[data-prio='먼저'] { background: var(--color-text-primary); color: var(--color-bg-default); }
-.change-entry__prio[data-prio='다음'] { background: var(--color-bg-subtle); color: var(--color-text-primary); }
 .change-entry__go {
   margin-left: auto;
   font-size: var(--typo-caption-size);

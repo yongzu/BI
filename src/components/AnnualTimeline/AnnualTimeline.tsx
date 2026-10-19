@@ -1,18 +1,15 @@
-import { useState } from 'react';
+import { useState, type KeyboardEvent } from 'react';
 import { Text } from '../Text/Text';
 import './AnnualTimeline.css';
 
 /**
- * 연간 구조 — 월 축 위의 네 막대 + 축 아래 고정 상세 칸(v6, 2026-10-19).
+ * 연간 구조(v7, 2026-10-19) — toss.im/company History 형식.
  *
- * v5까지는 막대를 누르면 축이 확대되고(최대 1.2배) 그 막대가 상세 카드로 넓어졌다. 짧은 단계(2개월)가 긴 단계(4개월)보다
- * 넓게 그려져 "길이 = 기간"이라는 시간축의 약속이 깨졌고, 바깥을 누르면 닫혀 글을 고르다 사라졌다.
- * v6은 toss.im/company History(기간 탭을 고르면 아래 칸의 내용이 바뀜)를 따른다:
- * - 축은 움직이지 않는다. 막대 길이는 늘 기간 그대로.
- * - 위 세그먼트와 막대는 같은 하나의 선택. 고르면 축 아래 상세 칸의 내용만 바뀐다. 처음엔 1학기가 골라져 있어
- *   누르기 전에도 "여기에 무엇이 나오는지" 보인다. '전체'는 없앴다 — 전체는 축 자체가 보여 준다.
- * - 바깥을 눌러도 닫히지 않는다(본문이지 팝오버가 아니다).
- * - 네 단계의 상세를 한 칸에 겹쳐 두고 고른 것만 보인다 — 칸 높이가 가장 긴 상세에 맞춰져, 단계를 바꿔도 아래 섹션이 흔들리지 않는다.
+ * 위: 시기 패널. 왼쪽에 순서(01 / 04) · 그 시기의 질문(따옴표) · 기간 · 핵심 사실, 오른쪽에 설명과 내용(주간 리듬 · 캠프 · 수료와 졸업).
+ * 아래: 1년을 한 줄로 그린 진행 바. 칸 길이 = 기간이고, 칸을 누르면(또는 ←/→) 위 패널이 바뀐다.
+ *   History의 "가로 진행 막대형 기간 탭"처럼 지난 시기는 잉크, 고른 시기는 굵은 잉크, 다음 시기는 흐리게 — 1년 중 어디쯤인지가 한눈에.
+ * v6의 위 세그먼트 탭은 없앴다(사용자 지시 2026-10-19) — 바 자체가 탭이다. 자동으로 넘어가지 않는다(WCAG 2.2.2).
+ * 네 시기의 패널을 한 칸에 겹쳐 두어 높이가 가장 긴 시기에 맞춰진다 — 시기를 바꿔도 아래 섹션이 흔들리지 않는다.
  */
 export type StageItem = { name: string; label: string; body: string };
 /** 한 주의 수업 리듬 — 요일마다 오전 · 오후 수업 이름(null = 없음)과 각 시간대 */
@@ -24,83 +21,129 @@ export type StageRhythm = {
   days: { day: string; am: string | null; pm: string | null }[];
   link: { href: string; label: string };
 };
-export type Stage = { name: string; period: string; marker?: string; start: number; end: number; body: string; items?: StageItem[]; rhythm?: StageRhythm };
+export type Stage = {
+  name: string;
+  period: string;
+  marker?: string;
+  start: number;
+  end: number;
+  question: string;
+  facts: string[][];
+  body: string;
+  items?: StageItem[];
+  rhythm?: StageRhythm;
+};
 
 type Props = { stages: Stage[]; months: number[] };
 
 export function AnnualTimeline({ stages, months }: Props) {
   const [selected, setSelected] = useState(0);
-  const total = months.length; // axis spans [0, total] — 눈금 13개, 마지막 단계는 13에서 끝난다
+  const [dir, setDir] = useState(1);
+  const total = months.length; // 바는 [0, 13] — 눈금 13개, 마지막 시기는 13에서 끝난다
   const pct = (x: number) => `${(x / total) * 100}%`;
   const barEnd = (i: number) => stages[i + 1]?.start ?? stages[i].end;
-  const inFocus = (m: number) => m >= Math.floor(stages[selected].start) && m < Math.ceil(stages[selected].end);
+  const pick = (i: number) => {
+    const next = (i + stages.length) % stages.length;
+    setDir(next >= selected ? 1 : -1);
+    setSelected(next);
+  };
+  const onKey = (e: KeyboardEvent) => {
+    if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+    e.preventDefault();
+    const next = selected + (e.key === 'ArrowRight' ? 1 : -1);
+    if (next < 0 || next >= stages.length) return;
+    pick(next);
+    document.getElementById(`annual-tab-${next}`)?.focus();
+  };
 
   return (
-    <div className="annual">
-      <div className="segmented annual__filter" role="group" aria-label="연간 구조 단계">
+    <div className="history" style={{ '--dir': dir } as React.CSSProperties}>
+      {/* ---------- 시기 패널 ---------- */}
+      <div className="history__panels">
         {stages.map((s, i) => (
-          <button key={s.name} type="button" className="segmented__tab" aria-pressed={selected === i} aria-controls="annual-panel" onClick={() => setSelected(i)}>
-            {s.name}
-          </button>
-        ))}
-      </div>
-
-      <div className="annual__chart">
-        <div className="annual__axis" aria-hidden="true">
-          {months.map((m, i) => (
-            <span key={i} className="annual__tick" data-focus={inFocus(i)} data-edge={i === 0} style={{ left: pct(i) }}>
-              <span className="annual__month">{m}</span>
-            </span>
-          ))}
-        </div>
-        <ol className="annual__rows">
-          {stages.map((s, i) => (
-            <li key={s.name} className="annual__row">
-              {/* 막대 = 세그먼트와 같은 선택. 길이는 기간 그대로(다음 단계 시작점까지) */}
-              <button
-                type="button"
-                className="annual__bar"
-                data-state={selected === i ? 'selected' : 'idle'}
-                aria-pressed={selected === i}
-                aria-controls="annual-panel"
-                style={{ marginLeft: pct(s.start), width: pct(barEnd(i) - s.start) }}
-                onClick={() => setSelected(i)}
-              >
-                <span className="annual__bar-name">{s.name}</span>
-              </button>
-            </li>
-          ))}
-        </ol>
-      </div>
-
-      {/* 고정 상세 칸: 네 상세를 겹쳐 두고 고른 것만 보인다 */}
-      <div id="annual-panel" className="annual__panel" role="region" aria-live="polite" aria-label={`${stages[selected].name} 상세`}>
-        {stages.map((s, i) => (
-          <div key={s.name} className="annual__stage" data-active={selected === i} aria-hidden={selected !== i} inert={selected !== i}>
-            <div className="annual__stage-head">
-              <Text as="h3" typography="Title">{s.name}</Text>
-              <span className="annual__meta">
-                <Text as="span" typography="Meta" color="secondary">{s.period}</Text>
-                {s.marker && <span className="annual__badge">{s.marker}</span>}
-              </span>
+          <section
+            key={s.name}
+            id={`annual-panel-${i}`}
+            role="tabpanel"
+            aria-labelledby={`annual-tab-${i}`}
+            className="history__panel"
+            data-active={selected === i}
+            inert={selected !== i}
+          >
+            <div className="history__side">
+              <Text as="span" typography="Caption" color="tertiary" className="history__index">
+                {String(i + 1).padStart(2, '0')} / {String(stages.length).padStart(2, '0')}
+              </Text>
+              <Text as="p" typography="Title" className="history__question">“{s.question}”</Text>
+              <dl className="history__facts">
+                <div>
+                  <dt>기간</dt>
+                  <dd>{s.period}</dd>
+                </div>
+                {s.facts.map(([k, v]) => (
+                  <div key={k}>
+                    <dt>{k}</dt>
+                    <dd>{v}</dd>
+                  </div>
+                ))}
+              </dl>
             </div>
-            <div className="annual__stage-body">
-              <Text typography="Body" color="secondary" className="annual__body">{s.body}</Text>
+            <div className="history__main">
+              <div className="history__title">
+                <Text as="h3" typography="Heading">{s.name}</Text>
+                {s.marker && <span className="history__badge">{s.marker}</span>}
+              </div>
+              <Text typography="Body" color="secondary" className="history__body">{s.body}</Text>
               {s.items && (
-                <span className="annual__items">
+                <div className="history__cards">
                   {s.items.map((item) => (
-                    <span key={item.name} className="annual__item">
-                      <span className="annual__item-name">{item.name}</span>
-                      <span className="annual__item-label">{item.label}</span>
-                      <span className="annual__item-body">{item.body}</span>
-                    </span>
+                    <article key={item.name} className="history__card">
+                      <Text as="span" typography="Caption" color="tertiary">{item.label}</Text>
+                      <Text as="h4" typography="Body" className="history__card-name">{item.name}</Text>
+                      <Text typography="Meta" color="secondary">{item.body}</Text>
+                    </article>
                   ))}
-                </span>
+                </div>
               )}
               {s.rhythm && <WeekRhythm rhythm={s.rhythm} />}
             </div>
-          </div>
+          </section>
         ))}
+      </div>
+
+      {/* ---------- 진행 바 = 탭 ---------- */}
+      <div className="history__nav">
+        <div className="history__track-wrap">
+          <div className="history__tabs" role="tablist" aria-label="연간 구조 시기" onKeyDown={onKey}>
+            {stages.map((s, i) => (
+              <button
+                key={s.name}
+                id={`annual-tab-${i}`}
+                type="button"
+                role="tab"
+                aria-selected={selected === i}
+                aria-controls={`annual-panel-${i}`}
+                tabIndex={selected === i ? 0 : -1}
+                className="history__tab"
+                data-state={i < selected ? 'past' : i === selected ? 'current' : 'next'}
+                style={{ left: pct(s.start), width: pct(barEnd(i) - s.start) }}
+                onClick={() => pick(i)}
+              >
+                <span className="history__tab-name">{s.name}</span>
+                <span className="history__tab-line" aria-hidden="true"><span className="history__tab-fill" /></span>
+              </button>
+            ))}
+          </div>
+          <div className="history__months" aria-hidden="true">
+            {months.map((m, i) => (
+              <span key={i} className="history__month" style={{ left: pct(i) }}>{m}</span>
+            ))}
+          </div>
+        </div>
+        <div className="history__arrows">
+          <button type="button" className="history__arrow" onClick={() => pick(selected - 1)} disabled={selected === 0} aria-label="이전 시기">←</button>
+          <button type="button" className="history__arrow" onClick={() => pick(selected + 1)} disabled={selected === stages.length - 1} aria-label="다음 시기">→</button>
+        </div>
       </div>
     </div>
   );
@@ -136,9 +179,7 @@ function WeekRhythm({ rhythm }: { rhythm: StageRhythm }) {
   );
 
   return (
-    <span className="annual__item annual__rhythm">
-      <span className="annual__item-name">{rhythm.name}</span>
-      <span className="annual__item-label">{rhythm.label}</span>
+    <div className="annual__rhythm">
       <span className="annual__week" role="table" aria-label="요일별 수업 시간">
         <span className="annual__week-row" role="row">
           {rhythm.days.map((d) => <span key={d.day} className="annual__week-day" role="columnheader">{d.day}</span>)}
@@ -151,10 +192,10 @@ function WeekRhythm({ rhythm }: { rhythm: StageRhythm }) {
         </span>
         {sessionRow('pm')}
       </span>
-      <span className="annual__item-body">{rhythm.body}</span>
-      <a className="annual__link" href={rhythm.link.href} target="_blank" rel="noreferrer">
-        {rhythm.link.label}
-      </a>
-    </span>
+      <span className="annual__week-note">
+        {rhythm.body}{' '}
+        <a className="annual__link" href={rhythm.link.href} target="_blank" rel="noreferrer">{rhythm.link.label}</a>
+      </span>
+    </div>
   );
 }

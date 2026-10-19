@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
 import { Text } from '../Text/Text';
 import type { Course, CourseType } from '../../data/programs';
 import type { CourseProfile } from '../../data/courseProfiles';
+import { COURSE_OPEN_EVENT } from './openCourse';
 import './CourseExplorer.css';
 
 /**
@@ -31,6 +32,22 @@ export function CourseExplorer({ types, profiles }: Props) {
   const slugRef = useRef<string | null>(null);
   const show = (slug: string) => { slugRef.current = slug; setOpen(slug); setShownSlug(slug); };
   const type = types[tab];
+
+  // 다른 섹션(역량 카드)에서 수업을 열면: 그 타입 탭을 고르고 옆 패널을 연다
+  useEffect(() => {
+    const onOpen = (e: Event) => {
+      const slug = (e as CustomEvent<string>).detail;
+      const t = types.findIndex((x) => x.courses.some((c) => c.slug === slug));
+      if (t < 0) return;
+      lastCard.current = document.activeElement as HTMLElement | null;
+      slugRef.current = slug;
+      setOpen(slug);
+      setShownSlug(slug);
+      setTab(t);
+    };
+    window.addEventListener(COURSE_OPEN_EVENT, onOpen);
+    return () => window.removeEventListener(COURSE_OPEN_EVENT, onOpen);
+  }, [types]);
 
   const onTabKey = (e: KeyboardEvent) => {
     const step = e.key === 'ArrowDown' ? 1 : e.key === 'ArrowUp' ? -1 : 0;
@@ -83,8 +100,8 @@ export function CourseExplorer({ types, profiles }: Props) {
             <Text typography="Body" color="secondary" className="course-type__body">{type.body}</Text>
           </header>
           <ul className="course-cards">
-            {type.courses.map((course) => (
-              <li key={course.slug}>
+            {type.courses.map((course, i) => (
+              <li key={course.slug} style={{ '--i': i } as React.CSSProperties}>
                 <CourseCard
                   course={course}
                   profile={profiles[course.slug]}
@@ -119,6 +136,13 @@ function CourseCard({ course, profile, active, onOpen }: { course: Course; profi
         <span className="course-card__ko">{course.ko}</span>
       </span>
       <span className="course-card__lead">{course.lead}</span>
+      {/* v7: 끝나면 할 수 있는 것 — 학습 목표 After 첫 줄을 카드에서 먼저(설명보다 결과를 보여 준다) */}
+      {profile.after[0] && (
+        <span className="course-card__after">
+          <span className="course-card__after-label">After</span>
+          {profile.after[0]}
+        </span>
+      )}
       <span className="course-card__foot">
         <span className="course-card__experts">{profile.experts.map((ex) => ex.name).join(' · ')}</span>
         <span className="course-card__tags">

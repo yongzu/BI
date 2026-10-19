@@ -56,7 +56,9 @@
 .course-type { display: flex; flex-direction: column; gap: var(--space-8); max-width: var(--lead-width); }
 .course-type__cadence { font-weight: var(--font-weight-bold); }
 .course-cards { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-16); margin-top: var(--space-32); }
-.course-cards > li { display: flex; }
+.course-cards > li { display: flex; animation: course-card-in 560ms var(--ce-ease) both; animation-delay: calc(var(--i, 0) * 80ms); }
+/* 탭을 바꾸면 카드가 차례로 떠오른다(토스플레이스 제품 카드 05) — 한 번, 짧게 */
+@keyframes course-card-in { from { opacity: 0; transform: translateY(24px); } }
 
 /* 카드 = 회색 면 + 상세로 가는 버튼. 호버하면 글이 살짝 들어가고 화살표가 진해진다. 패널에 열린 카드는 잉크 테두리 */
 .course-card {
@@ -86,6 +88,20 @@
   line-height: 1.6;
   color: var(--color-text-secondary);
 }
+/* 끝나면 할 수 있는 것: 카드 안 흰 면 — 첫 문장(질문)과 결과를 나란히 */
+.course-card__after {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  padding: var(--space-12) var(--space-16);
+  border-radius: 14px;
+  background: var(--color-bg-default);
+  font-size: var(--typo-meta-size);
+  line-height: 1.55;
+  color: var(--color-text-primary);
+}
+.course-card__after-label { margin-right: var(--space-8); font-size: var(--typo-caption-size); font-weight: var(--font-weight-bold); color: var(--color-text-tertiary); }
 .course-card__foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-8) var(--space-16); margin-top: auto; }
 .course-card__experts { font-size: var(--typo-meta-size); font-weight: var(--font-weight-medium); color: var(--color-text-primary); }
 .course-card__tags { display: flex; flex-wrap: wrap; gap: var(--space-4); }
@@ -241,6 +257,6 @@
   .course-panel__head, .course-detail { padding-inline: var(--space-20); }
 }
 @media (prefers-reduced-motion: reduce) {
-  .course-tabpanel { animation: none; }
+  .course-tabpanel, .course-cards > li { animation: none; }
   .course-panel, .course-tab::before, .course-card > * { transition: none !important; }
 }

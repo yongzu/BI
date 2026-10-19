@@ -1,143 +1,89 @@
-/* 연간 구조(v6) — 움직이지 않는 월 축 + 네 막대 + 축 아래 고정 상세 칸. Tokens only. */
-.annual {
-  --tl-ease: cubic-bezier(0.22, 1, 0.36, 1);
-  --tl-bar-height: 40px;
-}
+/* 연간 구조(v7) — 위 시기 패널 · 아래 진행 바(toss.im/company History). Tokens only. */
+.history { --h-ease: cubic-bezier(0.22, 1, 0.36, 1); }
 
-/* ---------- Filter (모양은 styles/segmented.css) ---------- */
-.annual__filter { margin-bottom: var(--space-24); }
-
-/* ---------- Chart: 축은 고정, 막대 길이 = 기간 ---------- */
-.annual__chart { position: relative; padding-top: var(--space-40); }
-.annual__axis { position: absolute; inset: 0; pointer-events: none; }
-.annual__tick {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  width: 0;
-  border-left: 1px dashed var(--color-border);
-  transition: border-color 360ms var(--tl-ease);
-}
-.annual__month {
-  position: absolute;
-  top: 6px;
-  left: 0;
-  transform: translateX(-50%);
-  padding: 0 var(--space-4);
-  background: var(--color-bg-default);
-  font-size: var(--typo-caption-size);
-  line-height: 1;
-  font-weight: var(--font-weight-medium);
-  color: var(--color-text-tertiary);
-  transition: color 360ms var(--tl-ease);
-}
-.annual__tick[data-edge='true'] .annual__month { transform: none; padding-left: var(--space-8); }
-.annual__tick[data-focus='true'] { border-left-color: var(--color-text-tertiary); }
-.annual__tick[data-focus='true'] .annual__month { color: var(--color-text-primary); font-weight: var(--font-weight-bold); }
-
-/* 네 막대가 한 줄 — 같은 격자 칸에 겹쳐 margin-left · width로 축 위에 선다 */
-.annual__rows { position: relative; display: grid; padding-bottom: var(--space-24); }
-.annual__row { grid-area: 1 / 1; pointer-events: none; }
-.annual__bar {
-  pointer-events: auto;
-  display: flex;
-  align-items: center;
-  min-height: var(--tl-bar-height);
-  padding: 0 var(--space-16);
-  border-radius: 20px;
-  background: var(--color-bg-default);
-  box-shadow: inset 0 0 0 1px var(--color-border);
-  color: var(--color-text-secondary);
-  text-align: left;
-  overflow: hidden;
-  cursor: var(--cursor-pointer);
-  transition: background var(--duration) var(--ease), color var(--duration) var(--ease), box-shadow var(--duration) var(--ease);
-}
-.annual__bar-name {
-  font-size: var(--typo-meta-size);
-  line-height: 1.3;
-  font-weight: var(--font-weight-bold);
-  letter-spacing: var(--tracking-body);
-  white-space: nowrap;
-  transition: transform 600ms cubic-bezier(0.34, 1.32, 0.64, 1);
-}
-@media (hover: hover) {
-  .annual__bar[data-state='idle']:hover { background: var(--color-bg-hover); box-shadow: inset 0 0 0 1px transparent; color: var(--color-text-primary); }
-  .annual__bar[data-state='idle']:hover .annual__bar-name { transform: translateX(8px); }
-}
-/* 고른 막대 = 세그먼트의 고른 칸과 같은 잉크 — 위아래 두 조작이 하나의 선택임을 보인다 */
-.annual__bar[data-state='selected'] { background: var(--color-text-primary); box-shadow: none; color: var(--color-bg-default); }
-.annual__bar:focus-visible { outline: 2px solid var(--color-text-primary); outline-offset: 2px; }
-
-/* ---------- 고정 상세 칸: 네 상세를 겹쳐 두고 고른 것만 ---------- */
-.annual__panel {
+/* ---------- 시기 패널: 네 시기를 한 칸에 겹쳐 고른 것만 ---------- */
+.history__panels {
   display: grid;
-  margin-top: var(--space-16);
-  border-radius: 24px;
+  overflow: clip; /* 비켜 선 패널(±16px)이 가로 스크롤을 만들지 않게 */
+  padding: var(--space-48) var(--space-48) var(--space-56);
+  border-radius: 32px;
   background: var(--color-bg-subtle);
 }
-.annual__stage {
+.history__panel {
   grid-area: 1 / 1;
   display: grid;
   grid-template-columns: var(--grid-template);
   column-gap: var(--grid-gap);
-  padding: var(--space-40);
+  align-items: start;
   opacity: 0;
   visibility: hidden;
-  transition: opacity 240ms var(--ease), visibility 0s linear 240ms;
+  transition: opacity 220ms var(--ease), transform 220ms var(--ease), visibility 0s linear 220ms;
 }
-.annual__stage[data-active='true'] { opacity: 1; visibility: visible; transition: opacity 360ms var(--tl-ease) 60ms, visibility 0s; }
-.annual__stage-head { grid-column: span 4; display: flex; flex-direction: column; gap: var(--space-12); }
-.annual__stage-body { grid-column: span 8; display: flex; flex-direction: column; gap: var(--space-16); }
-.annual__meta { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-8); }
-.annual__badge {
-  padding: var(--space-4) var(--space-8);
+.history__panel[data-active='true'] {
+  opacity: 1;
+  visibility: visible;
+  transform: none;
+  transition: opacity 420ms var(--h-ease) 120ms, transform 560ms var(--h-ease) 120ms, visibility 0s;
+}
+/* 들어오는 패널은 진행 방향 쪽에서 미끄러져 온다 */
+.history__panel:not([data-active='true']) { transform: translateX(calc(var(--dir, 1) * 16px)); }
+
+/* 왼쪽: 순서 · 질문 · 기간과 핵심 사실 */
+.history__side { grid-column: span 4; display: flex; flex-direction: column; gap: var(--space-20); }
+.history__index { font-variant-numeric: tabular-nums; letter-spacing: 0.02em; }
+.history__question { max-width: 300px; line-height: 1.35; color: var(--color-text-primary); }
+.history__facts { display: flex; flex-direction: column; margin-top: var(--space-12); border-top: 1px solid var(--color-border); }
+.history__facts > div { display: grid; grid-template-columns: 72px minmax(0, 1fr); gap: var(--space-12); padding: var(--space-12) 0; border-bottom: 1px solid var(--color-border); }
+.history__facts dt { font-size: var(--typo-caption-size); line-height: 1.6; font-weight: var(--font-weight-medium); color: var(--color-text-tertiary); }
+.history__facts dd { font-size: var(--typo-meta-size); line-height: 1.5; color: var(--color-text-primary); }
+
+/* 오른쪽: 이름 · 설명 · 내용 */
+.history__main { grid-column: span 8; display: flex; flex-direction: column; gap: var(--space-16); min-width: 0; }
+.history__title { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-12); }
+.history__badge {
+  padding: var(--space-4) var(--space-12);
   border-radius: 999px;
-  background: var(--color-bg-default);
+  background: var(--color-text-primary);
   font-size: var(--typo-caption-size);
   font-weight: var(--font-weight-bold);
-  color: var(--color-text-primary);
+  color: var(--color-bg-default);
 }
-.annual__body { max-width: 640px; }
-
-/* 캠프 · 수료와 졸업 박스 — 회색 칸 안에서 흰 박스로 */
-.annual__items { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: var(--space-8); }
-.annual__item {
+.history__body { max-width: 620px; }
+.history__cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--space-12); margin-top: var(--space-8); }
+.history__card {
   display: flex;
   flex-direction: column;
-  gap: var(--space-4);
-  padding: var(--space-16);
-  border-radius: 16px;
+  gap: var(--space-8);
+  padding: var(--space-20) var(--space-20) var(--space-24);
+  border-radius: 20px;
   background: var(--color-bg-default);
 }
-.annual__item-name { font-size: var(--typo-body-size); line-height: 1.35; font-weight: var(--font-weight-bold); letter-spacing: var(--tracking-body); color: var(--color-text-primary); }
-.annual__item-label { font-size: var(--typo-caption-size); line-height: 1.3; font-weight: var(--font-weight-medium); color: var(--color-text-tertiary); }
-.annual__item-body { margin-top: var(--space-8); font-size: var(--typo-meta-size); line-height: 1.6; letter-spacing: var(--tracking-body); color: var(--color-text-secondary); }
+.history__card-name { font-weight: var(--font-weight-bold); color: var(--color-text-primary); }
 
-/* 주간 리듬: 요일 다섯 칸 × 오전 · 점심 · 오후 */
-.annual__rhythm { margin-top: 0; }
-.annual__week { container-type: inline-size; display: flex; flex-direction: column; gap: var(--space-4); margin-top: var(--space-16); }
+/* 주간 리듬: 흰 면 위 요일 다섯 칸 × 오전 · 점심 · 오후 */
+.annual__rhythm { display: flex; flex-direction: column; gap: var(--space-12); margin-top: var(--space-8); padding: var(--space-20); border-radius: 20px; background: var(--color-bg-default); }
+.annual__week { container-type: inline-size; display: flex; flex-direction: column; gap: var(--space-4); }
 .annual__week-row { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: var(--space-4); }
 .annual__week-day { padding-bottom: var(--space-4); text-align: center; font-size: var(--typo-caption-size); font-weight: var(--font-weight-bold); color: var(--color-text-secondary); }
 .annual__week-cell {
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
-  min-height: 92px;
+  min-height: 80px;
   padding: var(--space-8);
   border-radius: 8px;
   box-shadow: inset 0 0 0 1px var(--color-border);
 }
 .annual__week-cell[data-on='true'] { background: var(--color-bg-subtle); box-shadow: none; }
-.annual__week-time { font-size: var(--typo-caption-size); line-height: 1.3; font-weight: var(--font-weight-medium); letter-spacing: var(--tracking-body); color: var(--color-text-tertiary); }
-.annual__week-name { font-size: var(--typo-meta-size); line-height: 1.3; font-weight: var(--font-weight-bold); letter-spacing: var(--tracking-body); color: var(--color-text-primary); }
+.annual__week-time { font-size: var(--typo-caption-size); line-height: 1.3; font-weight: var(--font-weight-medium); color: var(--color-text-tertiary); }
+.annual__week-name { font-size: var(--typo-meta-size); line-height: 1.3; font-weight: var(--font-weight-bold); color: var(--color-text-primary); }
 .annual__week-lunch {
   grid-column: 1 / -1;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: var(--space-8);
-  min-height: 44px;
+  min-height: 36px;
   border-radius: 8px;
   box-shadow: inset 0 0 0 1px var(--color-border);
   font-size: var(--typo-caption-size);
@@ -146,31 +92,103 @@
 }
 .annual__week-lunch-time { color: var(--color-text-tertiary); }
 .annual__week-caption { display: none; }
+.annual__week-note { font-size: var(--typo-meta-size); line-height: 1.6; color: var(--color-text-secondary); }
+.annual__link { font-weight: var(--font-weight-medium); color: var(--color-text-primary); white-space: nowrap; }
+.annual__link:hover { text-decoration: underline; text-underline-offset: 4px; }
 @container (max-width: 400px) {
   .annual__week-caption { display: block; margin-top: var(--space-8); font-size: var(--typo-caption-size); font-weight: var(--font-weight-medium); color: var(--color-text-secondary); }
   .annual__week-time { display: none; }
-  .annual__week-cell { min-height: 72px; }
+  .annual__week-cell { min-height: 64px; }
   .annual__week-name { font-size: var(--typo-caption-size); }
 }
-.annual__link {
-  align-self: flex-start;
-  margin-top: var(--space-8);
-  font-size: var(--typo-meta-size);
-  font-weight: var(--font-weight-medium);
-  color: var(--color-text-primary);
+
+/* ---------- 진행 바: 칸 길이 = 기간. 지난 시기 잉크 · 고른 시기 굵은 잉크 · 다음 시기 흐리게 ---------- */
+.history__nav { display: flex; align-items: flex-end; gap: var(--space-32); margin-top: var(--space-32); }
+.history__track-wrap { position: relative; flex: 1; min-width: 0; }
+.history__tabs { position: relative; height: 56px; }
+.history__tab {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: var(--space-12);
+  padding-right: 4px; /* 칸 사이 틈 */
+  text-align: left;
+  cursor: var(--cursor-pointer);
 }
-.annual__link:hover { text-decoration: underline; text-underline-offset: 4px; }
+.history__tab-name {
+  overflow: hidden;
+  font-size: var(--typo-meta-size);
+  line-height: 1.3;
+  font-weight: var(--font-weight-bold);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: var(--color-text-tertiary);
+  transition: color var(--duration) var(--ease), transform 600ms cubic-bezier(0.34, 1.32, 0.64, 1);
+}
+.history__tab-line { position: relative; display: block; height: 4px; border-radius: 4px; background: var(--color-border); overflow: hidden; transition: height 360ms var(--h-ease); }
+.history__tab-fill {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: var(--color-text-primary);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 560ms var(--h-ease);
+}
+.history__tab[data-state='past'] .history__tab-fill { transform: none; opacity: 0.35; }
+.history__tab[data-state='past'] .history__tab-name { color: var(--color-text-secondary); }
+.history__tab[data-state='current'] .history__tab-name { color: var(--color-text-primary); }
+.history__tab[data-state='current'] .history__tab-line { height: 8px; }
+.history__tab[data-state='current'] .history__tab-fill { transform: none; }
+@media (hover: hover) {
+  .history__tab:not([data-state='current']):hover .history__tab-name { color: var(--color-text-primary); transform: translateX(6px); }
+}
+.history__tab:focus-visible { outline: 2px solid var(--color-text-primary); outline-offset: 4px; border-radius: 6px; }
+
+.history__months { position: relative; height: 24px; margin-top: var(--space-8); }
+.history__month {
+  position: absolute;
+  top: 0;
+  font-size: var(--typo-caption-size);
+  font-weight: var(--font-weight-medium);
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text-tertiary);
+}
+
+.history__arrows { display: flex; gap: var(--space-8); padding-bottom: 28px; }
+.history__arrow {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 1px var(--color-border);
+  font-size: var(--typo-body-size);
+  color: var(--color-text-primary);
+  cursor: var(--cursor-pointer);
+  transition: background var(--duration) var(--ease), color var(--duration) var(--ease), box-shadow var(--duration) var(--ease);
+}
+.history__arrow:hover:not(:disabled) { background: var(--color-text-primary); color: var(--color-bg-default); box-shadow: none; }
+.history__arrow:disabled { color: var(--color-text-tertiary); cursor: default; }
 
 @media (max-width: 900px) {
-  .annual__stage { padding: var(--space-28); row-gap: var(--space-20); }
-  .annual__stage-head, .annual__stage-body { grid-column: 1 / -1; }
+  .history__panels { padding: var(--space-32) var(--space-24) var(--space-40); border-radius: 24px; }
+  .history__panel { row-gap: var(--space-28); }
+  .history__side, .history__main { grid-column: 1 / -1; }
+  .history__question { max-width: none; }
 }
-/* 휴대폰: 막대가 좁아 이름을 작게 — 잘리는 이름은 위 세그먼트가 대신 말한다 */
+/* 휴대폰: 패널이 한 화면보다 길어 아래 바까지 내려가야 시기를 바꿀 수 있다 — 바를 패널 위로 올린다 */
 @media (max-width: 720px) {
-  .annual__bar { padding: 0 var(--space-8); }
-  .annual__bar-name { font-size: var(--typo-caption-size); }
-  .annual__stage { padding: var(--space-24) var(--space-20); }
+  .history { display: flex; flex-direction: column; }
+  .history__nav { order: -1; margin: 0 0 var(--space-16); flex-direction: column; align-items: stretch; gap: var(--space-8); }
+  .history__panels { padding: var(--space-28) var(--space-20) var(--space-32); }
+  .history__tab-name { font-size: var(--typo-caption-size); }
+  .history__arrows { justify-content: flex-end; padding-bottom: 0; }
+  .annual__rhythm { padding: var(--space-12); }
 }
 @media (prefers-reduced-motion: reduce) {
-  .annual__stage, .annual__bar, .annual__tick, .annual__month { transition: none; }
+  .history__panel, .history__tab-fill, .history__tab-line, .history__tab-name { transition: none; }
 }

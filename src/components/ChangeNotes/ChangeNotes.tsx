@@ -5,7 +5,7 @@ import { changes, notYet, release, rules } from '../../data/changes';
 import './ChangeNotes.css';
 
 /**
- * 바뀐 점(v6 시안, 2026-10-19) — 최종본이 아니므로 무엇을 왜 바꿨는지를 페이지에서 바로 본다(사용자 지시 2026-10-19).
+ * 바뀐 점(v6부터, 시안) — 최종본이 아니므로 무엇을 왜 바꿨는지를 페이지에서 바로 본다(사용자 지시 2026-10-19).
  * - 왼쪽 아래에 늘 떠 있는 버튼, 그리고 바뀐 섹션마다 머리글 옆 작은 버튼(ChangeChip)이 같은 패널을 연다.
  *   섹션 버튼으로 열면 그 섹션 항목으로 바로 간다.
  * - 패널은 왼쪽에서 나오는 논모달 — 페이지를 보며 읽는다(커리큘럼 상세 패널은 오른쪽). Esc · 닫기로 닫는다.
@@ -88,7 +88,7 @@ export function ChangeNotes() {
           <header className="change-panel__intro">
             <Text as="h2" id="change-panel-title" typography="Title">이번 버전에서 바뀐 것</Text>
             <Text typography="Meta" color="secondary">
-              토스 페이지 다섯 곳을 분석해 고른 적용 후보를 페이지에 직접 넣어 본 시안입니다. 항목마다 무엇이 어떻게 바뀌었는지와 그 근거, 참고한 토스 화면을 적었습니다.
+              {release.prev}에서 카드 · 진행 바 · 고정 지도처럼 다른 컴포넌트와 인터랙션을 적극적으로 써 본 시안입니다. 항목마다 {release.prev} → {release.id}에서 무엇이 바뀌었는지와 그 근거, 참고한 토스 화면을 적었습니다.
             </Text>
             <span className="change-panel__links">
               <a className="change-panel__link" href={prevUrl} target="_blank" rel="noreferrer">{release.prev}(바꾸기 전) 보기 ↗</a>
@@ -108,7 +108,7 @@ export function ChangeNotes() {
               <li key={c.id} className="change-entry" data-change={c.id} data-focus={open && focus === c.id}>
                 <div className="change-entry__head">
                   <Text as="h3" typography="Body" className="change-entry__title">{c.section}</Text>
-                  <span className="change-entry__prio" data-prio={c.priority}>{c.priority}</span>
+                  <span className="change-entry__tag">{c.tag}</span>
                   <button type="button" className="change-entry__go" onClick={() => goTo(c.target)}>이 섹션 보기</button>
                 </div>
                 <dl className="change-entry__body">
