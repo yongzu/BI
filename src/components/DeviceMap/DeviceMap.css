@@ -70,7 +70,20 @@
 .device-map__now-label { margin-right: var(--space-8); font-size: var(--typo-caption-size); font-weight: var(--font-weight-bold); color: var(--color-text-tertiary); }
 
 /* ---------- 설명: 왼쪽 선이 지금 읽는 장치를 짚는다 ---------- */
-.device-map__list { grid-column: 7 / span 6; display: flex; flex-direction: column; }
+.device-map__list { position: relative; grid-column: 7 / span 6; display: flex; flex-direction: column; }
+/* 지금 장치를 가리키는 막대 하나 — 그 설명 자리로 위아래로 미끄러져 간다(자리 · 길이는 DeviceMap.tsx가 잰다, 사용자 지시 2026-10-20).
+   연간 구조 탭 막대와 같은 움직임 */
+.device-map__bar {
+  position: absolute;
+  z-index: 1;
+  top: 0;
+  left: 0;
+  width: 2px;
+  height: 0;
+  background: var(--color-text-primary);
+  pointer-events: none;
+  transition: transform 560ms var(--dm-ease), height 560ms var(--dm-ease);
+}
 .device-step {
   position: relative;
   display: flex;
@@ -81,19 +94,6 @@
   border-left: 1px solid var(--color-border);
   scroll-margin-top: 120px;
 }
-.device-step::before {
-  content: '';
-  position: absolute;
-  left: -1px;
-  top: var(--space-48);
-  bottom: var(--space-48);
-  width: 2px;
-  background: var(--color-text-primary);
-  transform: scaleY(0);
-  transform-origin: top;
-  transition: transform 480ms var(--dm-ease);
-}
-.device-step[data-active='true']::before { transform: none; }
 .device-step__place { margin-bottom: var(--space-12); }
 .device-step__num {
   padding: var(--space-4) var(--space-8);
@@ -113,8 +113,7 @@
   .device-map__map { display: none; }
   .device-map__list { grid-column: 1 / -1; }
   .device-step { padding: var(--space-32) 0 var(--space-32) var(--space-20); }
-  .device-step::before { top: var(--space-32); bottom: var(--space-32); }
 }
 @media (prefers-reduced-motion: reduce) {
-  .device-map__node, .device-step::before, .device-map__place::before { transition: none; }
+  .device-map__node, .device-map__bar, .device-map__place::before { transition: none; }
 }

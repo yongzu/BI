@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Text } from '../Text/Text';
 import { scrollToTarget } from '../../smoothScroll';
 import './DeviceMap.css';
@@ -10,6 +10,8 @@ import './DeviceMap.css';
  *   여섯 장치가 "어디서 일어나는가"를 한 그림으로 본다(AI · ML · Data 채용 06의 개념 그림, 토스 홈 08의 고정 화면).
  * - 오른쪽 설명을 읽어 내려가면 지금 읽는 장치가 지도에서 잉크로 표시된다. 표시만 바뀌고 글은 하나도 숨지 않는다 —
  *   흐리게 하지 않는 것은 흐린 글이 대비 기준(WCAG 1.4.3)을 넘지 못해서다.
+ * - 오른쪽 설명 옆 선의 진한 막대는 하나 — 지금 장치 자리로 위아래로 미끄러져 간다(사용자 지시 2026-10-20, 연간 구조 탭 막대처럼).
+ *   예전엔 설명마다 막대가 생겼다 사라졌다 했다.
  * - 지도의 장치를 누르면 그 설명으로 이동한다. 좁은 화면에선 지도 없이 자리 라벨 + 설명 줄.
  */
 type Device = { name: string; tag: string; body: string };
@@ -18,6 +20,7 @@ export function DeviceMap({ items, outcomes }: { items: Device[]; outcomes: Reco
   const places = [...new Set(items.map((d) => d.tag))];
   const [active, setActive] = useState(0);
   const refs = useRef<(HTMLElement | null)[]>([]);
+  const barRef = useRef<HTMLSpanElement>(null);
 
   // 화면 가운데 띠(위 40% · 아래 40%를 뺀 곳)에 들어온 설명을 지금 장치로
   useEffect(() => {
@@ -31,6 +34,26 @@ export function DeviceMap({ items, outcomes }: { items: Device[]; outcomes: Reco
     refs.current.forEach((el) => el && io.observe(el));
     return () => io.disconnect();
   }, []);
+
+  // 막대 자리 · 길이 = 지금 설명의 글 높이(위아래 여백 뺌) — 설명 높이가 바뀌어도(글꼴 · 폭) 다시 잰다
+  useLayoutEffect(() => {
+    const bar = barRef.current;
+    const list = bar?.parentElement;
+    if (!bar || !list) return;
+    const place = () => {
+      const step = refs.current[active];
+      if (!step) return;
+      const cs = getComputedStyle(step);
+      const pt = parseFloat(cs.paddingTop);
+      const pb = parseFloat(cs.paddingBottom);
+      bar.style.height = `${step.offsetHeight - pt - pb}px`;
+      bar.style.transform = `translate(${step.offsetLeft - 1}px, ${step.offsetTop + pt}px)`;
+    };
+    place();
+    const ro = new ResizeObserver(place);
+    ro.observe(list);
+    return () => ro.disconnect();
+  }, [active]);
 
   return (
     <div className="device-map">
@@ -65,6 +88,7 @@ export function DeviceMap({ items, outcomes }: { items: Device[]; outcomes: Reco
       </aside>
 
       <div className="device-map__list">
+        <span ref={barRef} className="device-map__bar" aria-hidden="true" />
         {items.map((d, i) => (
           <article
             key={d.name}

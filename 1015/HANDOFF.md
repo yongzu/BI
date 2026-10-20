@@ -223,3 +223,5 @@
   아래 줄은 LAG(가로 이동 거리 × 0.35)만큼 늦게 출발해 늦게 도착한다 — 붙는 길이 = 내용 + 이동 + LAG.
 - 채용 연계: v7 카드 두 장 → v3의 두 단 줄 목록(번호 · 제목 · 보조 문구, 설명 늘 펼침, CareerRows), 섹션은 section--wide(화면 폭).
 - 맨 아래 버전 기록(VersionLog) 뺌. versions.json · 컴포넌트는 남김(deploy.mjs가 지난 버전 사본에 쓴다). 지난 버전은 주소로만.
+- 수업을 관통하는 접근(DeviceMap): 설명마다 생겼다 사라지던 막대(.device-step::before) → 막대 하나(.device-map__bar)가
+  지금 설명 자리로 위아래로 미끄러짐(transform · height 560ms, 연간 구조 탭 막대처럼).
