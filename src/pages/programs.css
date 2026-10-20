@@ -12,7 +12,7 @@
   width: 100%;
   max-width: calc(var(--content-width) + 2 * var(--gutter));
   margin-inline: auto;
-  padding-inline: max(var(--gutter), var(--side-wide)); /* 양옆 여백 200px(사용자 지시 2026-10-19) */
+  padding-inline: var(--gutter);
 }
 
 /* ---------- Page shell & TOC rail ----------
@@ -29,7 +29,90 @@
 }
 .toc-rail > * { pointer-events: auto; }
 
-/* ---------- Hero: components/HeroReveal(2026-10-19) ---------- */
+/* ---------- Hero: 첫 화면 + 자세히 보기(사용자 지시 2026-09-30 · 2026-10-04) ----------
+   .hero__atf = 첫 화면: 한 화면 높이를 채우고 제목 → 지원하기를 세로 가운데에 둔다. 크롬 상단바 · 작업 표시줄로
+   보이는 높이가 달라져도 위아래 여백 비율이 같다. 100svh = 주소창이 보이는 상태의 실제 높이.
+   min-height라 내용이 한 화면보다 길면(작은 화면) 잘리지 않고 늘어난다. 투명한 상단바 때문에 위 64px은 늘 비운다.
+   다음은 과정 개요(components/OverviewReveal) */
+.hero {
+  position: relative;
+  /* 끌어서 고르지 않는다(사용자 지시 2026-10-20) */
+  user-select: none;
+  -webkit-user-select: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+/* 배경 GradientASCII(2026-10-20) — 히어로(1200 열)를 벗어나 화면 폭 전체 · 히어로 높이, 글자 뒤 */
+.hero__bg { position: absolute; z-index: 0; top: 0; bottom: 0; left: calc(50% - 50vw); width: 100vw; pointer-events: none; }
+.hero__atf { position: relative; z-index: 1; }
+/* 글자가 없던 첫 화면 동안 숨긴 제목 · 소개 · 기간이 부드럽게 떠오른다(예전엔 HeroRipple.css가 맡았다) */
+.hero :is(.hero__title, .hero__intro, .hero__period) { transition: opacity 900ms var(--ease-reveal), filter 900ms var(--ease-reveal), transform 900ms var(--ease-reveal); }
+.hero__atf {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 100vh;
+  min-height: 100svh;
+  /* 위 64 → 128 → 200(사용자 지시 2026-10-04): 내용이 가운데 정렬이라 늘린 만큼의 절반씩 제목이 내려온다 */
+  padding-block: max(64px, 200 * var(--hs)) max(32px, 76 * var(--hs));
+}
+/* 3D 로고가 들어온 뒤 첫 화면이 꽉 차 여백이 없어 전체를 줄이고 다시 배치(사용자 지시 2026-10-05).
+   내용 덩어리(로고 → 제목 → 소개 → 기간 → 지원하기)는 세로 가운데, 위아래 여백은 같게 — 위는 상단바(64) 아래로만.
+   1920 × 1080 기준 값에 --hs를 곱한다: 로고 200 · 제목 140 · 제목–소개 140 · 소개–기간 48 · 기간–버튼 64 */
+.hero__atf:has(> .hero-logo) { padding-block: max(64px, 80 * var(--hs)) max(40px, 80 * var(--hs)); }
+/* 제목 140은 Display 토큰 자체가 같은 식(max(44px, 140 × --hs))이라 따로 덮어쓰지 않는다(2026-10-07) */
+.hero__title { color: var(--color-text-primary); }
+
+/* ---------- Hero 첫 화면 비율 = 토스뱅크 디자인 채용 히어로(사용자 지시 2026-10-03) ----------
+   1920×1080 화면에서 토스 실측(글자 끝 기준): 제목 160–557 · 설명 두 줄 612–679 · 날짜 735–754 · 버튼 821–880(138×59).
+   아래 px 값이 그 실측이며, --hs(1440 · 1080 기준 폭 · 높이 비율 중 작은 쪽, 최대 1)를 곱해 화면에 맞게 줄인다.
+   토스에 없는 설명 한 문장(blur-reveal__body)은 설명 두 줄 바로 아래에 붙여 그만큼만 버튼이 내려간다.
+   좁은 화면(휴대폰)은 --hs가 아주 작아지므로 글자 · 간격마다 최소값을 둔다.
+   덩어리 사이 간격은 실측보다 넓혔다: 제목–설명 75→110→140→200→160 · 설명–기간 50→84→66 · 기간–버튼 66→88→128→96(사용자 지시 2026-10-04).
+   3D 로고가 들어오며 다시 줄였다: 제목–설명 96 → 140(2026-10-05) · 설명–기간 48 · 기간–버튼 64(2026-10-05).
+   소개 · 설명 · 기간 · 버튼 크기는 --fs(폭 ÷ 1440, 최대 1)로만 줄인다 — 토스처럼 화면 높이와 상관없이 1440 이상에서 고정.
+   높이까지 따르던 때는 브라우저 창(1920 모니터에서 보이는 높이 ~940)에서 토스보다 13%쯤 작았다(사용자 제보 2026-10-04).
+   간격은 첫 화면에 다 들어오도록 계속 --hs를 따른다 */
+.hero { --hs: min(1px, 100vw / 1440, 100svh / 1080); --fs: min(1px, 100vw / 1440); }
+.hero__intro { max-width: 783px; margin-top: max(48px, 140 * var(--hs)); }
+.hero .hero__statement { line-height: 1.333; } /* 크기는 Title 24(30 → 24, 사용자 지시 2026-10-07) */
+.hero__intro .blur-reveal__body { margin-top: max(4px, 4 * var(--hs)); }
+.hero__intro .blur-reveal__body > * { font-size: max(16px, 20 * var(--fs)); line-height: 1.4; }
+
+/* 지원 기간 + 지원하기 버튼(behaviour in components/ApplyButton) — 과정 개요 자리를 대신한다(2026-10-03) */
+.hero__apply { display: flex; flex-direction: column; align-items: center; gap: max(32px, 64 * var(--hs)); margin-top: max(24px, 48 * var(--hs)); }
+.hero .hero__period {
+  color: var(--color-text-primary);
+  font-size: max(16px, 20 * var(--fs));
+  line-height: 1.2;
+  /* 첫 화면에선 숨었다가 제목이 맑아진 뒤 소개(BlurReveal) 끝무렵 같은 방식으로 떠오른다(사용자 지시 2026-10-04) */
+  transition:
+    opacity 700ms cubic-bezier(0.22, 1, 0.36, 1) 900ms,
+    filter 900ms cubic-bezier(0.22, 1, 0.36, 1) 900ms,
+    transform 900ms cubic-bezier(0.22, 1, 0.36, 1) 900ms;
+}
+.hero[data-intro='blur'] .hero__period { opacity: 0; filter: blur(15px); transform: translateY(10px); }
+.hero__status { color: var(--color-text-tertiary); }
+.hero .apply-button {
+  padding: max(13px, 16 * var(--fs)) max(28px, 35 * var(--fs));
+  border-radius: max(20px, 24 * var(--fs));
+  font-size: max(16px, 20 * var(--fs));
+  /* 첫 화면에선 숨었다가 지원 기간까지 다 나온 뒤(소개 시작 + 1.6초) 40px 아래에서 떠오른다(사용자 지시 2026-10-04).
+     호버 배경 전환(ApplyButton.css)은 그대로 둔다 */
+  transition:
+    background-color 180ms ease,
+    opacity 1s var(--ease-reveal) 1.6s,
+    transform 1s var(--ease-reveal) 1.6s;
+}
+.hero:is([data-intro='blur'], [data-intro='rise']) .apply-button { opacity: 0; transform: translateY(40px); pointer-events: none; }
+/* 'together' 첫 화면: 글이 다 떠오르면(onIntroEnd) 지원하기가 곧바로 이어서 떠오른다 */
+.hero[data-intro-style='together'] .apply-button { transition-delay: 0s, 0.1s, 0.1s; }
+/* 'together' 첫 화면: 캔버스가 뜨기 전(글꼴 로딩)엔 글을 투명하게 — 자리는 그대로라 캔버스가 같은 자리에 옮겨 그린다 */
+.hero[data-intro='rise'] :is(.hero__title, .hero__intro, .hero__period) { opacity: 0; }
 
 /* ---------- Sections ---------- */
 .section {
@@ -39,19 +122,19 @@
   scroll-margin-top: calc(88px - 40px - var(--space-section));
 }
 .section--last { padding-bottom: var(--space-section); }
-/* 화면 폭 전체 섹션(연간 구조, 사용자 지시 2026-10-19) — 1200 열 대신 과정 개요 · 배우는 역량과 같은 양옆 여백 */
+/* 화면 폭 전체 섹션(연간 구조 · 커리큘럼, 사용자 지시 2026-10-19 · 10-20) — 1200 열 대신 과정 개요 · 배우는 역량과 같은 양옆 여백 */
 .section--wide { width: 100%; padding-inline: var(--side-wide); }
 /* 히어로 → 첫 섹션 간격 = 다른 섹션 사이와 같은 --space-section(사용자 지시 2026-10-04). 히어로가 내용 높이만큼만
    차지하므로('자세히 보기'까지) 따로 덜어 낼 빈 곳이 없다 */
 
-/* 제목 위 · 리드 아래(사용자 지시 2026-10-19 — 모든 섹션에서 내용은 제목 아래). 2026-10-12부터는 제목 왼쪽 · 리드 오른쪽이었다.
-   리드엔 최대 폭을 두지 않는다 — 섹션 폭에 한 줄로 들어가지 않을 때만 다음 줄로(사용자 지시 2026-10-19: 의미 없는 줄바꿈 금지) */
+/* 제목 위 · 리드 아래(사용자 지시 2026-10-19 — 모든 섹션에서 내용은 제목 아래). 2026-10-12부터는 제목 왼쪽 · 리드 오른쪽이었다 */
 .section-header {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   gap: var(--space-20);
 }
+/* 리드엔 최대 폭을 두지 않는다 — 섹션 폭에 한 줄로 들어가지 않을 때만 다음 줄로(사용자 지시 2026-10-20: 억지 줄바꿈 금지) */
 
 .group { margin-top: var(--space-group); scroll-margin-top: 48px; }
 .section-header + .group { margin-top: var(--space-after-header); }
@@ -103,15 +186,13 @@
   border-top: 1px solid var(--color-border);
 }
 
-/* ---------- Scroll reveal ----------
-   react-bits AnimatedContent 기본값 그대로(사용자 지시 2026-10-19): 100px 아래 · 투명에서 제자리 · 또렷하게,
-   0.8초 GSAP power3.out(= easeOutQuart). 화면 아래 10% 선을 넘으면 한 번(useScrollReveal) */
+/* ---------- Scroll reveal ---------- */
 [data-reveal] {
   transition:
-    opacity 800ms cubic-bezier(0.25, 1, 0.5, 1) var(--reveal-delay, 0ms),
-    transform 800ms cubic-bezier(0.25, 1, 0.5, 1) var(--reveal-delay, 0ms);
+    opacity 1s var(--ease-reveal) var(--reveal-delay, 0ms),
+    transform 1s var(--ease-reveal) var(--reveal-delay, 0ms);
 }
-[data-reveal='pending'] { opacity: 0; transform: translateY(100px); }
+[data-reveal='pending'] { opacity: 0; transform: translateY(40px); }
 [data-reveal='in'] { opacity: 1; transform: none; }
 
 /* 섹션 제목: 통째로 떠오르지 않고, 줄마다 보이지 않는 틀(overflow: hidden) 안에서 아래에서 위로 올라온다

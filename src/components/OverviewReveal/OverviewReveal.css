@@ -1,34 +1,20 @@
-/* 과정 개요(2026-10-19) — vectrfl.com 기능 구간처럼 화면 폭 네 칸 + 스크롤에 맞춰 차례로 떠오름.
-   값은 OverviewReveal.tsx가 단계마다 --in(0 → 1)으로 준다. Tokens only. */
+/* 과정 개요(2026-10-19) — vectrfl.com 기능 구간처럼 화면 폭 네 칸 + 차례로 떠오름.
+   붙는 무대는 없앴다(2026-10-20) — 칸이 화면에 들어오면(data-shown) 단계마다 --delay만큼 늦게 시간으로 떠오른다. Tokens only. */
 .overview-reveal {
-  --ov-side: var(--side-wide);
+  --ov-side: var(--side-wide); /* 화면 폭 섹션 공통 양옆 여백(foundation.css) */
   position: relative;
   /* 섹션 가운데 열을 벗어나 화면 폭 전체(가로 스크롤은 .page가 자른다) */
   width: 100vw;
   margin-left: calc(50% - 50vw);
 }
-/* 붙는 무대(넓은 화면): 이만큼 스크롤하는 동안 칸의 내용이 차례로 떠오른다 */
-.overview-reveal[data-pin] { height: calc(100svh + 130svh); } /* 180 → 130svh: 같은 연출을 더 짧은 스크롤로(2026-10-19, 너무 오래 붙어 있어 끊겨 보였다) */
 .overview-reveal__stage {
   display: flex;
   flex-direction: column;
   gap: var(--space-96);
   padding: var(--space-144) var(--ov-side) var(--space-96);
 }
-.overview-reveal[data-pin] .overview-reveal__stage {
-  position: sticky;
-  top: 0;
-  height: 100svh;
-  justify-content: center;
-  gap: clamp(48px, 9svh, 96px);
-  padding-block: 64px 4svh; /* 위 64px은 고정 상단바 */
-}
 
 .overview-reveal__title {
-  /* 흐림 → 또렷(사용자 지시 2026-10-19). --ov-title은 OverviewReveal.tsx가 섹션이 올라오는 만큼 0 → 1로 준다 */
-  opacity: calc(0.2 + 0.8 * var(--ov-title, 1));
-  filter: blur(calc((1 - var(--ov-title, 1)) * 16px));
-  will-change: filter, opacity;
   font-size: var(--typo-heading-size);
   line-height: 1.2;
   font-weight: var(--font-weight-bold);
@@ -36,7 +22,7 @@
   color: var(--color-text-primary);
 }
 
-/* ---------- 네 칸: 칸마다 왼쪽 가는 세로선(칸과 함께 떠오른다), 과정 개요는 오른쪽 두 칸을 함께 ---------- */
+/* ---------- 네 칸: 칸마다 왼쪽 가는 세로선(처음부터 보인다), 과정 개요는 오른쪽 두 칸을 함께 ---------- */
 .overview-reveal__grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); }
 .ov-col { min-width: 0; padding: 0 var(--space-24); border-left: 1px solid var(--color-border); }
 .ov-col--facts { grid-column: span 2; padding-right: 0; }
@@ -55,12 +41,17 @@
 .ov-row dt { align-self: center; font-size: var(--typo-meta-size); font-weight: var(--font-weight-medium); color: var(--color-text-tertiary); }
 .ov-row dd { font-size: var(--typo-body-size); line-height: 1.5; letter-spacing: var(--tracking-body); color: var(--color-text-primary); }
 
-/* 떠오름: 80px 아래 · 투명 → 제자리 · 또렷(vectrfl과 같은 거리). 붙는 무대에서만 — 칸은 세로선째로, 과정 개요 줄은 칸 안에서 한 번 더 */
-.overview-reveal[data-pin] .ov-step {
-  opacity: var(--in, 1);
-  transform: translateY(calc((1 - var(--in, 1)) * 80px));
-  will-change: opacity, transform;
+/* 큰 제목 · 소개 문단은 ScrollReveal — 원본 CSS의 여백 · 글자 크기 대신 이 섹션의 글자를 그대로 쓴다 */
+.overview-reveal .scroll-reveal { margin: 0; }
+.overview-reveal .scroll-reveal-text { font: inherit; letter-spacing: inherit; }
+
+/* 떠오름: 80px 아래 · 투명 → 제자리 · 또렷(vectrfl과 같은 거리). 칸이 화면에 들어오면 차례로(--delay) */
+.overview-reveal[data-anim] .ov-step {
+  opacity: 0;
+  transform: translateY(80px);
+  transition: opacity 700ms var(--ease) var(--delay, 0s), transform 1000ms var(--ease-reveal) var(--delay, 0s);
 }
+.overview-reveal[data-anim][data-shown] .ov-step { opacity: 1; transform: none; }
 
 /* 좁은 화면: 붙는 무대 없이 두 칸 → 한 칸으로 쌓는다 */
 @media (max-width: 1100px) {

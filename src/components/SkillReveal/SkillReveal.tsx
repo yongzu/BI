@@ -1,87 +1,123 @@
-import { useEffect, useRef, useState, type CSSProperties } from 'react';
-import type { CourseType, Pillar } from '../../data/programs';
-import { openCourse } from '../CourseExplorer/openCourse';
-import TiltedCard, { TiltedCardLayer } from '../TiltedCard/TiltedCard';
+import { useEffect, useRef, type CSSProperties, type PointerEvent as ReactPointerEvent } from 'react';
+import type { Pillar } from '../../data/programs';
+import ScrollReveal from '../ScrollReveal/ScrollReveal';
+import { SCROLL_REVEAL } from '../ScrollReveal/preset';
 import './SkillReveal.css';
 
 /**
- * 배우는 역량(v11, 2026-10-19) — toss.im 홈 "상품 판매와 정산" 구간의 연출(사용자 지시 2026-10-19).
+ * 역량과 태도(v14, 2026-10-20) — v12(toss.im "광고 노출 전략도 다르게")처럼 세로 스크롤이 카드 줄의 가로 이동이 된다(사용자 지시 2026-10-20).
  *
- * 무대가 화면에 붙은 채 스크롤하는 동안:
- *  1) 화면 가운데의 큰 옅은 글씨가 한 글자씩 검정으로 채워진다. 채워지는 경계에 커서 막대가 따라간다.
- *  2) 다 채워지면 글씨가 작아지며 위로 올라가고, 아래에 리드 문장이 나타난다.
- *  3) 화면 폭을 다 쓰는 카드 줄이 아래에서 차례로 올라온다(높이는 모두 같다, 2026-10-19) — 토스는 6장, 우리는 5장이라
- *     다섯 장이 화면 폭을 나눠 쓰도록 카드 폭을 (화면 폭 − 여백) ÷ 5로 키웠다.
- * 다 올라오면 무대가 풀려 페이지가 이어진다. 스크롤에 묶여 사용자가 속도를 쥐고, 저절로 넘어가지 않는다.
- * 카드(2026-10-19 수정): 닫힌 카드엔 이름 · 영문만, 열면(마우스 올림 · 누름) 좌우로 넓어지고 아래로 길어지며
- * 전문 + 이 역량을 기르는 수업. TiltedCard로 기울고 글 층마다 깊이가 다르다(아래 SkillCard).
- * 휴대폰 · 움직임 줄이기: 붙는 무대 없이 글씨는 처음부터 채워진 채, 카드는 옆으로 넘기는 줄.
+ * - 왼쪽 정렬 제목 + 리드 아래 '역량' 줄, 그다음 줄에 'Phi OS' 줄(한 줄로 잇지 않고 줄을 나눈다).
+ * - 줄마다 따로 붙는 무대: 무대(내용 높이)가 화면 세로 가운데에 붙은 채 세로로 스크롤하는 동안 그 줄의 카드가 화면 오른쪽에서
+ *   들어와 왼쪽으로 흘러간다. 다섯 장이 양쪽 여백 사이에 딱 맞게 서면(첫 카드 왼쪽 = 제목 왼쪽 선, 마지막 카드 오른쪽 = 오른쪽 여백)
+ *   무대가 풀려 페이지가 내려가고, 다음 줄에서 되풀이한다. 붙는 길이 = 그 줄이 가로로 움직이는 거리(스크롤 1px = 1px).
+ *   무대 높이를 화면 전체가 아니라 내용만큼으로 해 두 줄 사이 여백이 예전의 절반쯤이다.
+ * - 카드는 세로로 긴 한 장 — 이름 · 영문 · 전문이 처음부터 다 보인다.
+ *   3D 기울기는 뒤의 카드 판(바탕 · 빛 · 그림자)에만 — 글자 층은 변형 없이 그 위에 있어 늘 또렷하고 끌어 고를 수 있다
+ *   (예전 TiltedCard는 글자까지 기울여 흐렸다, 사용자 제보 2026-10-20).
+ * - 카드는 기본으로 옅고 본문은 흐린 채 아래로 갈수록 옅어진다 — 마우스를 올린 카드만 진하고 또렷해진다(사용자 지시 2026-10-20).
+ *   두 줄 모두 흰 카드(Phi OS 검정 카드는 되돌렸다). 오른쪽에서 들어오는 자리는 흐림 띠로 부드럽게.
+ * 좁은 화면 · 움직임 줄이기 · 낮은 창: 붙는 무대 없이 줄마다 옆으로 넘기는 줄.
  */
-type Course = { slug: string; en: string; tags: string[]; type: string };
+export type SkillGroup = { label: string; items: Pillar[] };
 
 const clamp01 = (x: number) => Math.min(1, Math.max(0, x));
-const range = (p: number, a: number, b: number) => clamp01((p - a) / (b - a));
-const ease = (x: number) => 1 - (1 - x) ** 3;
+/** 카드 판이 기우는 최대 각도(도) */
+const TILT = 6;
 
-export function SkillReveal({ title, lead, items, courseTypes }: { title: string; lead: string; items: Pillar[]; courseTypes: CourseType[] }) {
-  const courses: Course[] = courseTypes.flatMap((t) => t.courses.map((c) => ({ slug: c.slug, en: c.en, tags: c.tags, type: t.name })));
+export function SkillReveal({ title, lead, groups }: { title: string; lead: string; groups: SkillGroup[] }) {
   const wrapRef = useRef<HTMLDivElement>(null);
-  const chars = [...title];
-  const [openIdx, setOpenIdx] = useState<number | null>(null); // 누른 카드(고정)
-  const [hoverIdx, setHoverIdx] = useState<number | null>(null); // 마우스를 올린 카드
-  // 누른 카드가 있으면 그 카드가 고정 — 마우스를 다른 카드에 올려도 바뀌지 않는다(사용자 지시 2026-10-19)
-  const expanded = openIdx ?? hoverIdx;
-
-  // 카드 밖 아무 데나 누르면 원래 상태로(사용자 지시 2026-10-19)
-  useEffect(() => {
-    if (openIdx === null) return;
-    const onDown = (e: PointerEvent) => {
-      if ((e.target as Element | null)?.closest('.sr-card')) return;
-      setOpenIdx(null);
-      setHoverIdx(null);
-    };
-    document.addEventListener('pointerdown', onDown);
-    return () => document.removeEventListener('pointerdown', onDown);
-  }, [openIdx]);
 
   useEffect(() => {
     const wrap = wrapRef.current;
     if (!wrap) return;
-    const pinOn = window.matchMedia('(min-width: 1101px)');
+    const rows = [...wrap.querySelectorAll<HTMLElement>('.sr-row')].map((row) => ({
+      row,
+      stage: row.querySelector<HTMLElement>('.sr-row__stage')!,
+      track: row.querySelector<HTMLElement>('.sr-row__track')!,
+      slots: [...row.querySelectorAll<HTMLElement>('.sr-card-slot')],
+      travel: 0, // 줄이 가로로 움직이는 거리(px)
+      startX: 0,
+      top: 0, // 무대가 붙는 높이(화면 세로 가운데)
+    }));
+    const pinOn = window.matchMedia('(min-width: 1101px) and (min-height: 700px)');
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const spans = [...wrap.querySelectorAll<HTMLElement>('.sr-char')];
-    const cards = [...wrap.querySelectorAll<HTMLElement>('.sr-card-slot')];
     let raf = 0;
+    let rightLine = 0; // 오른쪽 선(화면 x)
+    /** 카드 폭 · 줄마다 출발 · 도착 자리 · 무대 길이를 잰다 — 붙는 상태(줄의 안쪽 여백이 달라진다)를 정한 뒤 프레임마다 */
+    const measure = () => {
+      const vw = document.documentElement.clientWidth; // 스크롤바를 뺀 보이는 폭
+      // 왼쪽 선 = 화면에 보이는 소제목 · 제목의 왼쪽 선, 오른쪽 선 = 그와 대칭(무대는 100vw라 스크롤바 반만큼 비껴 있어 화면 좌표로 잰다)
+      const label = wrap.querySelector<HTMLElement>('.sr-group__label');
+      const wrapLeft = wrap.getBoundingClientRect().left;
+      const left = label ? wrapLeft + (parseFloat(getComputedStyle(label).paddingLeft) || 24) : 24;
+      const right = vw - left;
+      rightLine = right;
+      // 다섯 장이 두 선 사이에 딱 맞는 폭(사용자 지시 2026-10-20 — 첫 카드 왼쪽 · 마지막 카드 오른쪽이 선에)
+      const gap = parseFloat(getComputedStyle(rows[0].track).columnGap) || 16;
+      const n = Math.max(...rows.map((r) => r.track.children.length));
+      wrap.style.setProperty('--sr-card-w', `${Math.max(160, (right - left - (n - 1) * gap) / n)}px`);
+      for (const r of rows) {
+        // 출발: 첫 카드가 화면 왼쪽에서 60% 자리에 / 도착: 마지막 카드의 오른쪽 끝이 오른쪽 선에(폭이 맞으면 첫 카드는 왼쪽 선에)
+        const base = wrapLeft + r.track.offsetLeft; // 옮기기 전 줄의 화면 왼쪽
+        r.startX = vw * 0.6 - base;
+        const endX = right - base - r.track.scrollWidth;
+        r.travel = Math.max(0, r.startX - endX);
+        // 내용 높이(무대에 준 최소 높이와 상관없이) — 첫 자식 위 끝 ~ 마지막 자식 아래 끝 + 위아래 여백
+        const cs = getComputedStyle(r.stage);
+        const kids = r.stage.children;
+        const natural =
+          kids[kids.length - 1].getBoundingClientRect().bottom - kids[0].getBoundingClientRect().top +
+          parseFloat(cs.paddingTop) + parseFloat(cs.paddingBottom);
+        r.top = Math.max(0, (window.innerHeight - natural) / 2);
+        // 마지막 줄은 붙어 있는 동안 무대가 화면 아래 끝까지 회색으로 채운다 — 아니면 끝에 가까워질수록 아래 회색이 줄어들며
+        // 다음 섹션(흰 바탕)이 올라와 보였다(사용자 제보 2026-10-20)
+        const h = r.row === rows[rows.length - 1].row ? Math.max(natural, window.innerHeight - r.top) : natural;
+        r.stage.style.minHeight = `${h}px`;
+        r.stage.style.top = `${r.top}px`;
+        r.row.style.height = `${h + r.travel}px`;
+      }
+    };
     const tick = () => {
       raf = 0;
       const on = pinOn.matches && !reduced;
-      wrap.toggleAttribute('data-pin', on);
-      // 붙지 않으면 처음부터 끝 장면(다 채운 작은 글씨 + 카드)
-      let p = 1;
-      if (on) {
-        const r = wrap.getBoundingClientRect();
-        const span = Math.max(1, r.height - window.innerHeight);
-        p = clamp01(-r.top / span);
-        document.documentElement.toggleAttribute('data-immersive', r.top <= 0 && r.bottom >= window.innerHeight);
-      } else {
+      rows.forEach((r) => r.row.toggleAttribute('data-pin', on));
+      if (!on) {
+        wrap.style.removeProperty('--sr-card-w');
+        rows.forEach((r) => {
+          r.track.style.transform = '';
+          r.stage.style.top = '';
+          r.stage.style.minHeight = '';
+          r.row.style.height = '';
+          r.slots.forEach((s) => s.style.removeProperty('opacity'));
+        });
         document.documentElement.removeAttribute('data-immersive');
+        return;
       }
-      // 1) 글자 채움 0 → 0.4
-      const fill = range(p, 0.04, 0.4) * chars.length;
-      spans.forEach((s, k) => {
-        s.toggleAttribute('data-on', k < Math.floor(fill + 0.001));
-        s.toggleAttribute('data-caret', fill > 0 && fill < chars.length && k === Math.min(chars.length - 1, Math.floor(fill)));
-      });
-      // 2) 작아지며 위로 0.42 → 0.6, 리드 0.52 → 0.66
-      wrap.style.setProperty('--sr-shrink', ease(range(p, 0.42, 0.6)).toFixed(4));
-      wrap.style.setProperty('--sr-lead', range(p, 0.52, 0.66).toFixed(4));
-      // 3) 카드가 차례로 올라온다 0.55 → 0.92
-      cards.forEach((c, i) => c.style.setProperty('--sr-in', ease(range(p, 0.55 + i * 0.05, 0.75 + i * 0.05)).toFixed(4)));
+      measure();
+      let immersive = false;
+      for (const r of rows) {
+        const box = r.row.getBoundingClientRect();
+        const p = r.travel ? clamp01((r.top - box.top) / r.travel) : 1;
+        if (box.top <= r.top && box.bottom >= r.top + r.stage.offsetHeight) immersive = true;
+        const x = r.startX - r.travel * p;
+        r.track.style.transform = `translate3d(${x.toFixed(1)}px, 0, 0)`;
+        // 오른쪽에서 들어오는 카드는 투명 → 불투명(흐림 띠 대신, 사용자 지시 2026-10-20): 화면 오른쪽 끝에서 0,
+        // 오른쪽 여백 + 카드 폭 60%만큼 들어오면 1
+        const vw = document.documentElement.clientWidth;
+        for (const s of r.slots) {
+          const left = s.getBoundingClientRect().left;
+          const zone = Math.max(1, vw - rightLine + s.offsetWidth * 0.6);
+          s.style.opacity = clamp01((vw - left) / zone).toFixed(3);
+        }
+      }
+      document.documentElement.toggleAttribute('data-immersive', immersive);
     };
     const schedule = () => { if (!raf) raf = requestAnimationFrame(tick); };
     window.addEventListener('scroll', schedule, { passive: true });
     window.addEventListener('resize', schedule);
     pinOn.addEventListener('change', schedule);
+    document.fonts?.ready.then(schedule);
     schedule();
     return () => {
       cancelAnimationFrame(raf);
@@ -90,107 +126,62 @@ export function SkillReveal({ title, lead, items, courseTypes }: { title: string
       pinOn.removeEventListener('change', schedule);
       document.documentElement.removeAttribute('data-immersive');
     };
-  }, [chars.length]);
+  }, []);
 
   return (
     <div ref={wrapRef} className="skill-reveal">
-      <div className="skill-reveal__stage">
-        <header className="skill-reveal__head">
-          <h2 className="skill-reveal__title" aria-label={title}>
-            {chars.map((ch, k) => (
-              <span key={k} className="sr-char" aria-hidden="true">{ch === ' ' ? ' ' : ch}</span>
-            ))}
-          </h2>
-          <p className="skill-reveal__lead">{lead}</p>
-        </header>
-
-        {/* 카드 줄 — 마우스를 올린(또는 누른) 카드가 좌우로 넓어지고 아래로 길어지며 나머지는 그만큼 좁아진다(v3 역량과 태도 상자).
-            펼치는 카드는 하나: 누른 카드가 있으면 그 카드(고정), 없으면 마우스를 올린 카드 */}
-        <ol className="skill-reveal__cards" data-open={expanded !== null} onPointerLeave={() => setHoverIdx(null)}>
-          {items.map((p, i) => (
-            <li key={p.en} className="sr-card-slot" data-open={expanded === i} style={{ '--i': i } as CSSProperties}>
-              <SkillCard
-                p={p}
-                related={courses.filter((c) => c.tags.includes(p.ko))}
-                open={expanded === i}
-                onHover={() => setHoverIdx(i)}
-                onPin={() => setOpenIdx(i)}
-                onToggle={() => setOpenIdx((v) => (v === i ? null : i))}
-              />
-            </li>
-          ))}
-        </ol>
-      </div>
+      {/* 줄마다 붙는 무대 하나 — 첫 줄엔 제목 · 리드가 함께 */}
+      {groups.map((g, gi) => (
+        <section key={g.label} className="sr-row" aria-label={g.label}>
+          <div className="sr-row__stage">
+            {gi === 0 && (
+              <header className="skill-reveal__head">
+                {/* 제목 · 리드는 ScrollReveal(단어마다 흐림 → 또렷, 사용자 지시 2026-10-20) */}
+                <ScrollReveal as="h2" containerClassName="skill-reveal__title sr-plain" {...SCROLL_REVEAL}>{title}</ScrollReveal>
+                <ScrollReveal as="p" containerClassName="skill-reveal__lead sr-plain" {...SCROLL_REVEAL}>{lead}</ScrollReveal>
+              </header>
+            )}
+            <h3 className="sr-group__label">{g.label}</h3>
+            <ol className="sr-row__track">
+              {g.items.map((p, i) => (
+                <li key={p.en} className="sr-card-slot" style={{ '--i': i } as CSSProperties}>
+                  <SkillCard p={p} />
+                </li>
+              ))}
+            </ol>
+          </div>
+        </section>
+      ))}
     </div>
   );
 }
 
-/**
- * 카드(v11 수정, 2026-10-19 사용자 지시):
- * - 닫힌 카드엔 이름(한글) · 영문만. 앞부분 두 줄은 카드 폭이 바뀔 때마다 줄바꿈이 흔들려 뺐다(사용자 지시 2026-10-19).
- * - 열면(마우스 올림 · 누름) 좌우로 넓어지고 아래로 길어지며 전문 전체 + 아래에 이 역량을 기르는 수업 목록.
- * - react-bits TiltedCard로 커서를 따라 기울고, 바탕 · 이름 · 본문이 서로 다른 깊이(TiltedCardLayer depth)라 글이 카드에서 떠 보인다.
- * - 카드를 누르면 고정, 카드 밖을 누르면 풀린다(SkillReveal). 오른쪽 위 + 버튼은 키보드 · 터치로 여닫는다.
- */
-function SkillCard({ p, related, open, onHover, onPin, onToggle }: { p: Pillar; related: Course[]; open: boolean; onHover: () => void; onPin: () => void; onToggle: () => void }) {
+/** 세로로 긴 카드 — 뒤의 판만 커서를 따라 기울고(빛 · 그림자), 위의 글자 층(이름 · 영문 · 전문)은 그대로 */
+function SkillCard({ p }: { p: Pillar }) {
+  const move = (e: ReactPointerEvent<HTMLElement>) => {
+    if (e.pointerType !== 'mouse' || e.buttons) return; // 끌어 고르는 동안엔 움직이지 않는다
+    const el = e.currentTarget;
+    const r = el.getBoundingClientRect();
+    const x = (e.clientX - r.left) / r.width;
+    const y = (e.clientY - r.top) / r.height;
+    el.style.setProperty('--rx', `${((0.5 - y) * 2 * TILT).toFixed(2)}deg`);
+    el.style.setProperty('--ry', `${((x - 0.5) * 2 * TILT).toFixed(2)}deg`);
+    el.style.setProperty('--gx', `${(x * 100).toFixed(1)}%`);
+    el.style.setProperty('--gy', `${(y * 100).toFixed(1)}%`);
+  };
+  const leave = (e: ReactPointerEvent<HTMLElement>) => {
+    const el = e.currentTarget;
+    el.style.setProperty('--rx', '0deg');
+    el.style.setProperty('--ry', '0deg');
+  };
   return (
-    <div
-      className="sr-card"
-      data-open={open}
-      onPointerEnter={(e) => { if (e.pointerType === 'mouse') onHover(); }}
-      onClick={onPin}
-    >
-      <TiltedCard
-        containerWidth="100%"
-        containerHeight="100%"
-        imageWidth="100%"
-        imageHeight="100%"
-        radius={22}
-        perspective={1000}
-        rotateAmplitude={open ? 7 : 11}
-        scaleOnHover={1.02}
-        glare={0.35}
-        glareColor="#ffffff"
-        shadow={0.32}
-        parallax={1}
-        intro={false}
-        gyroscope={false}
-        showTooltip={false}
-        flipOnClick={false}
-        className="sr-tilt"
-      >
-        <TiltedCardLayer depth={-10} className="sr-face__bg" />
-        <TiltedCardLayer depth={30} className="sr-face__head">
-          <h3 className="sr-card__ko">{p.ko}</h3>
-          <span className="sr-card__en">{p.en}</span>
-        </TiltedCardLayer>
-        <TiltedCardLayer depth={16} className="sr-face__copy">
-          {/* 연 카드에만 전문 + 수업(열린 폭에 맞춘 고정 폭이라 넓어지는 동안 줄바꿈이 흔들리지 않는다).
-              안쪽 스크롤은 두지 않는다 — 카드 위에서 휠이 카드 안에 갇혀 페이지가 내려가지 않았다(사용자 제보 2026-10-19) */}
-          <div className="sr-card__more" inert={!open} onClick={(e) => e.stopPropagation()}>
-            <p className="sr-card__body">{p.body}</p>
-            <span className="sr-courses__label">이 역량을 기르는 수업</span>
-            <ul className="sr-courses">
-              {related.map((c) => (
-                <li key={c.slug}>
-                  <button type="button" className="sr-course" onClick={() => openCourse(c.slug)}>
-                    {c.en}<span className="sr-course__type">{c.type}</span>
-                  </button>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </TiltedCardLayer>
-      </TiltedCard>
-      <button
-        type="button"
-        className="sr-card__toggle"
-        aria-expanded={open}
-        aria-label={open ? `${p.ko} 접기` : `${p.ko} 펼치기`}
-        onClick={(e) => { e.stopPropagation(); onToggle(); }}
-      >
-        <span className="sr-card__icon" aria-hidden="true" />
-      </button>
-    </div>
+    <article className="sr-card" onPointerMove={move} onPointerLeave={leave}>
+      <div className="sr-card__plate" aria-hidden="true" />
+      <div className="sr-card__text">
+        <h4 className="sr-card__ko">{p.ko}</h4>
+        <span className="sr-card__en">{p.en}</span>
+        <p className="sr-card__body">{p.body}</p>
+      </div>
+    </article>
   );
 }

@@ -54,6 +54,9 @@ export interface TiltedCardProps {
   reverse?: boolean;
   trackWindow?: boolean;
   floating?: boolean;
+  /** (BI 추가, 2026-10-20) 마우스가 이만큼(ms) 멈춰 있거나 누르고 있으면(글자 끌어 선택) 평평하게 돌아오고, 다 돌아오면 변형을 걷는다 —
+   *  기운 3D 층에선 글자가 비트맵으로 그려져 흐리고 선택도 어렵다. 0이면 원본처럼 늘 기운다 */
+  restFlat?: number;
   gyroscope?: boolean;
   intro?: boolean;
   introDelay?: number;
@@ -73,6 +76,7 @@ interface Settings {
   reverse: boolean;
   trackWindow: boolean;
   floating: boolean;
+  restFlat: number;
   gyroscope: boolean;
   intro: boolean;
   introDelay: number;
@@ -159,6 +163,7 @@ const TiltedCard = ({
   reverse = false,
   trackWindow = false,
   floating = false,
+  restFlat = 0,
   gyroscope = true,
   intro = true,
   introDelay = 0,
@@ -187,6 +192,7 @@ const TiltedCard = ({
     reverse,
     trackWindow,
     floating,
+    restFlat: Math.max(0, restFlat),
     gyroscope,
     intro,
     introDelay: Math.max(0, introDelay),
@@ -258,7 +264,9 @@ const TiltedCard = ({
       let busy = false;
 
       const amplitude = s.amplitude * (reduced ? 0.3 : 1);
-      const hovering = pointer.inside && pointer.mouse;
+      // 멈춘 마우스 · 누른 채 끄는 마우스(글자 선택)는 평평하게(restFlat)
+      const resting = s.restFlat > 0 && pointer.mouse && (press.active || now - pointer.last > s.restFlat);
+      const hovering = pointer.inside && pointer.mouse && !resting;
       const touching = press.active && !pointer.mouse;
       const following = hovering || touching || (s.trackWindow && pointer.seen && !coarse);
       let inputX = 0;
@@ -313,7 +321,12 @@ const TiltedCard = ({
       const ry = state.ry;
       const radiansX = (rx * Math.PI) / 180;
       const radiansY = (ry * Math.PI) / 180;
-      body.style.transform = `translate3d(0, ${state.ty.toFixed(2)}px, 0) rotateX(${rx.toFixed(3)}deg) rotateY(${(ry + state.flip).toFixed(3)}deg) scale(${scale.toFixed(4)})`;
+      // 다 평평해지면 변형을 걷어 글자가 화면 픽셀에 바로 그려지게(restFlat)
+      const flat =
+        s.restFlat > 0 && Math.abs(rx) < 0.02 && Math.abs(ry) < 0.02 && Math.abs(scale - 1) < 0.0005 &&
+        Math.abs(state.ty) < 0.05 && Math.abs(state.flip) < 0.01;
+      body.toggleAttribute('data-flat', flat);
+      body.style.transform = flat ? 'none' : `translate3d(0, ${state.ty.toFixed(2)}px, 0) rotateX(${rx.toFixed(3)}deg) rotateY(${(ry + state.flip).toFixed(3)}deg) scale(${scale.toFixed(4)})`;
       body.style.opacity = opacity < 1 ? smoother(opacity).toFixed(3) : '';
       body.style.setProperty('--tc-px', (Math.sin(radiansY) * s.parallax).toFixed(4));
       body.style.setProperty('--tc-py', (-Math.sin(radiansX) * s.parallax).toFixed(4));
@@ -371,9 +384,15 @@ const TiltedCard = ({
       };
     };
 
+    let restTimer = 0;
     const track = (event: PointerEvent) => {
       const spot = locate(event, figure);
       const now = performance.now();
+      // 멈춘 뒤 restFlat이 지나면 한 번 깨워 평평하게 돌아오게 한다(움직임이 없으면 프레임이 쉬므로)
+      if (settingsRef.current.restFlat > 0) {
+        window.clearTimeout(restTimer);
+        restTimer = window.setTimeout(() => wakeRef.current?.(), settingsRef.current.restFlat + 20);
+      }
       const elapsed = Math.max(8, now - (pointer.last || now - 16)) / 1000;
       const dx = spot.x - pointer.x;
       pointer.vx += (dx / elapsed - pointer.vx) * 0.5;
@@ -517,6 +536,7 @@ const TiltedCard = ({
 
     return () => {
       cancelAnimationFrame(raf);
+      window.clearTimeout(restTimer);
       wakeRef.current = null;
       flipRef.current = null;
       observer.disconnect();

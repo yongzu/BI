@@ -76,6 +76,12 @@
   );
 }
 
+/* (BI 추가, 2026-10-20) 평평하게 쉬는 동안(restFlat)엔 층의 변형도 걷는다 — 글자가 또렷하게 */
+.tilted-card__body[data-flat] .tilted-card__img,
+.tilted-card__body[data-flat] .tilted-card__layer {
+  transform: none;
+}
+
 .tilted-card__glare {
   position: absolute;
   inset: 0;

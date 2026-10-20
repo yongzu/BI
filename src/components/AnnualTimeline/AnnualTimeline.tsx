@@ -43,7 +43,7 @@ type Props = { stages: Stage[] };
 export function AnnualTimeline({ stages }: Props) {
   const [selected, setSelected] = useState(0);
   // 고른 칸을 가리키는 막대 하나 — 칸마다 선이 줄었다 늘었다 하지 않고, 고른 칸 자리로 미끄러져 간다(사용자 지시 2026-10-19).
-  // 자리는 고른 탭을 재서 정한다 — 넓은 화면 · 휴대폰 모두 네 칸 한 줄
+  // 자리는 고른 탭을 재서 정한다 — 넓은 화면 한 줄 · 휴대폰 2 × 2 어디서나 맞는다
   const tabsRef = useRef<HTMLDivElement>(null);
   const barRef = useRef<HTMLSpanElement>(null);
   useLayoutEffect(() => {
@@ -53,9 +53,8 @@ export function AnnualTimeline({ stages }: Props) {
     const place = () => {
       const tab = list.querySelector<HTMLElement>(`#annual-tab-${selected}`);
       if (!tab) return;
-      // 막대는 칸의 글자 폭만큼(오른쪽 안쪽 여백 + 4px은 비워 칸 사이가 띄어 보인다) — 휴대폰은 여백이 좁다
-      bar.style.width = `${tab.offsetWidth - parseFloat(getComputedStyle(tab).paddingRight) - 4}px`;
-      bar.style.transform = `translateX(${tab.offsetLeft}px)`; // 칸은 언제나 한 줄(2026-10-19)
+      bar.style.width = `${tab.offsetWidth - 28}px`;
+      bar.style.transform = `translate(${tab.offsetLeft}px, ${tab.offsetTop}px)`;
     };
     place();
     const ro = new ResizeObserver(place);
@@ -130,7 +129,7 @@ export function AnnualTimeline({ stages }: Props) {
             </div>
             <div className="history__main">
               <div className="history__title">
-                <Text as="h3" typography="Heading">{s.name}</Text>
+                <Text as="h3" typography="Title">{s.name}</Text>{/* 커리큘럼 머리글 이름과 같은 크기(사용자 지시 2026-10-20, Heading 48 → Title 24) */}
                 {s.marker && <span className="history__badge">{s.marker}</span>}
               </div>
               <Text typography="Body" color="secondary" className="history__body">{s.body}</Text>

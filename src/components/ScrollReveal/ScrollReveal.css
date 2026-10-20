@@ -1,0 +1,21 @@
+/* ScrollReveal — react-bits 원본 CSS 그대로. 글자 크기 · 여백은 쓰는 곳(OverviewReveal.css)에서 덮어쓴다 */
+.scroll-reveal {
+  margin: 20px 0;
+}
+
+.scroll-reveal-text {
+  display: block;
+  font-size: clamp(1.6rem, 4vw, 3rem);
+  line-height: 1.5;
+  font-weight: 600;
+}
+
+.scroll-reveal-word,
+.scroll-reveal-piece {
+  display: inline-block;
+}
+
+/* (BI 추가, 2026-10-20) sr-plain — 원본의 여백 · 글자 크기 대신 그 자리(섹션 제목 · 리드 등)의 글자를 그대로 쓴다.
+   글 속 줄바꿈 문자(\n)는 그 자리에서 줄을 바꾼다(리드의 의도한 줄바꿈) */
+.scroll-reveal.sr-plain { margin: 0; }
+.scroll-reveal.sr-plain .scroll-reveal-text { font: inherit; letter-spacing: inherit; white-space: pre-line; }

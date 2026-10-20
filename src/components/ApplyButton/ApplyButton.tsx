@@ -3,8 +3,7 @@ import './ApplyButton.css';
 
 /**
  * 지원하기 버튼 — 토스뱅크 디자인 채용 페이지의 rolling button을 따름(사용자 지시 2026-10-03).
- * 잉크로 채운 둥근 버튼 + 위쪽 빛 반사. 호버하면 조금 더 진해지고, 글이 오른쪽으로 4px 밀리며
- * 동그란 화살표가 옆에서 열린다.
+ * 잉크로 채운 둥근 버튼 + 위쪽 빛 반사 + 동그란 화살표(늘 보인다, 2026-10-20). 호버하면 조금 더 진해지고 글이 오른쪽으로 4px 밀린다.
  */
 type Props = { href: string; children: ReactNode; className?: string };
 

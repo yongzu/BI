@@ -43,22 +43,20 @@
 }
 .apply-button:hover .apply-button__label { left: 4px; }
 
-/* 화살표: 평소엔 폭 0으로 숨고, 호버 · 포커스에 옆에서 열린다 */
+/* 화살표: 늘 보인다(사용자 지시 2026-10-20 — 예전엔 평소 폭 0으로 숨고 호버 · 포커스에 옆에서 열렸다) */
 .apply-button__arrow {
   display: inline-flex;
   justify-content: flex-end;
-  width: 0;
+  width: 1em;
   height: 1em;
-  margin-left: 0;
+  margin-left: var(--space-8);
   overflow: hidden;
-  opacity: 0;
+  opacity: 1;
   color: rgba(255, 255, 255, 0.6);
   transition: width 280ms var(--apply-ease), margin-left 280ms var(--apply-ease), opacity 160ms ease;
 }
 .apply-button__arrow svg { width: 1em; height: 1em; flex-shrink: 0; }
 .apply-button__arrow path { stroke: var(--apply-bg); } /* 동그라미 안 화살표는 버튼 색으로 뚫어 보이게 */
-.apply-button:hover .apply-button__arrow,
-.apply-button:focus-visible .apply-button__arrow { width: 1em; margin-left: var(--space-8); opacity: 1; }
 
 @media (prefers-reduced-motion: reduce) {
   .apply-button,
