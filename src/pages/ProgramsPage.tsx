@@ -6,6 +6,7 @@ import { CourseExplorer } from '../components/CourseExplorer/CourseExplorer';
 import { ApplyButton } from '../components/ApplyButton/ApplyButton';
 import GradientASCII from '../components/GradientASCII/GradientASCII';
 import { BackToTop, SiteHeader } from '../components/SiteHeader/SiteHeader';
+import { VersionLog } from '../components/VersionLog/VersionLog';
 import { SkillReveal } from '../components/SkillReveal/SkillReveal';
 import { DeviceMap } from '../components/DeviceMap/DeviceMap';
 import { OverviewReveal } from '../components/OverviewReveal/OverviewReveal';
@@ -273,6 +274,8 @@ export function ProgramsPage() {
         <Text typography="Label" color="tertiary">
           평일 10:00 - 18:00 (점심시간 13:00 - 14:00) · © 2026 Phi Institute of Design · <a href="#system" className="link">Design System</a>
         </Text>
+        {/* 지난 버전 페이지로 — 맨 아래(사용자 지시 2026-10-14). 뺐다가 되돌림(2026-10-20) — 번호와 핵심 변경만 */}
+        <VersionLog />
       </footer>
     </>
   );

@@ -58,23 +58,36 @@
 .course-tab:focus-visible { outline: 2px solid var(--color-text-primary); outline-offset: -2px; border-radius: 8px; }
 .course-tabs__total { padding: var(--space-16) var(--space-20) 0; }
 
-/* ---------- 탭 패널: 타입을 바꾸면 한 번 짧게 떠오른다 ---------- */
-/* 수업 줄: 네 타입의 패널을 세로 트랙에 쌓고, 탭을 바꾸면 트랙이 위아래로 미끄러진다(연간 구조와 같은 방식, 2026-10-19).
-   창(.course-stage)은 고른 패널 높이만큼만 보이고 위아래를 자른다 — 줄의 회색 면이 양옆으로 내민 만큼은 자르지 않게 세로만.
-   자리 · 높이는 CourseExplorer.tsx가 잰다. 움직임은 탭을 바꾸는 동안(data-moving)만 — 수업을 여닫을 땐 창이 바로 따라간다 */
+/* ---------- 탭 패널: 타입을 바꾸면 바로 아래에서 짧게 떠오른다 ---------- */
+/* 머리글 · 수업 줄 모두 네 타입을 한 칸에 겹쳐 둔다(grid-area 1 / 1). 고른 타입만 보인다(사용자 지시 2026-10-20 — 예전엔 세로 트랙이
+   화면 밖에서 760ms 미끄러져 들어와 움직임이 컸다). 나가는 타입은 제자리에서 빠르게 흐려지고, 들어오는 타입은 16px 아래에서
+   투명하게 시작해 올라오며 진해진다. 창(.course-stage · .course-heads)의 높이는 고른 타입에 맞추고(CourseExplorer.tsx), 탭을
+   바꾸는 동안(data-moving)만 높이가 따라 움직인다 — 수업을 여닫을 땐 창이 바로 따라간다. 세로만 잘라 줄의 회색 면은 양옆으로 나간다 */
 .course-stage { grid-column: span 9; min-width: 0; overflow: visible clip; }
 .course-track,
-.course-heads__track { display: flex; flex-direction: column; gap: var(--space-96); }
+.course-heads__track { display: grid; }
+.course-track > *,
+.course-heads__track > * { grid-area: 1 / 1; align-self: start; }
 .course-stage[data-moving],
-.course-heads[data-moving] { transition: height 760ms cubic-bezier(0.65, 0, 0.35, 1); }
-.course-stage[data-moving] .course-track,
-.course-heads[data-moving] .course-heads__track { transition: transform 760ms cubic-bezier(0.65, 0, 0.35, 1); }
-/* 머리글도 같은 트랙(사용자 지시 2026-10-20, v14) — 창은 고른 머리글 높이, 지나가는 머리글은 옅게 */
+.course-heads[data-moving] { transition: height 480ms var(--ce-slide); }
 .course-heads { min-width: 0; overflow: visible clip; margin-bottom: var(--space-56); }
-.course-group__head { opacity: 0.25; transition: opacity 560ms var(--ease); }
-.course-group__head[data-active='true'] { opacity: 1; }
-.course-tabpanel { min-width: 0; opacity: 0.25; transition: opacity 560ms var(--ease); }
-.course-tabpanel[data-active='true'] { opacity: 1; }
+.course-group__head,
+.course-tabpanel {
+  min-width: 0;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(16px);
+  /* 나갈 때: 제자리에서 흐려진 뒤에야 아래 자리로 돌아가고 숨는다 */
+  transition: opacity 200ms var(--ease), transform 0s 200ms, visibility 0s 200ms;
+}
+.course-group__head[data-active='true'],
+.course-tabpanel[data-active='true'] {
+  opacity: 1;
+  visibility: visible;
+  transform: none;
+  /* 들어올 때: 나가는 타입이 흐려지는 사이 살짝 늦게, 올라오며 진해진다 */
+  transition: opacity 360ms var(--ease) 120ms, transform 480ms var(--ce-slide) 120ms, visibility 0s;
+}
 /* 역량 카드에서 수업을 열면 그 줄로 스크롤 — 위 고정 바에 가리지 않게 */
 .course-row { scroll-margin-top: 112px; }
 
@@ -275,7 +288,8 @@
 .course-detail__facts dd { font-size: var(--typo-meta-size); line-height: 1.5; color: var(--color-text-primary); }
 
 @media (prefers-reduced-motion: reduce) {
-  .course-stage, .course-track, .course-heads, .course-heads__track, .course-group__head { transition: none !important; }
+  .course-stage, .course-track, .course-heads, .course-heads__track, .course-group__head, .course-tabpanel { transition: none !important; }
+  .course-group__head, .course-tabpanel { transform: none; }
   .course-tabs__indicator,
   .course-row,
   .course-row__panel,

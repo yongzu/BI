@@ -75,18 +75,8 @@
   /* 카드는 기본으로 옅고, 마우스를 올린 카드만 진하다(사용자 지시 2026-10-20). 터치 화면은 처음부터 진하다 */
   .sr-card { opacity: var(--sr-rest); }
   .sr-card:hover { opacity: 1; }
-  /* 본문은 기본으로 흐리고 아래로 갈수록 옅어진다 — 마우스를 올리면 또렷하게 다 보인다 */
-  .sr-card__body {
-    --sr-clear: 0%;
-    filter: blur(2.5px);
-    -webkit-mask-image: linear-gradient(to bottom, #000 var(--sr-clear), transparent calc(var(--sr-clear) + 100%));
-    mask-image: linear-gradient(to bottom, #000 var(--sr-clear), transparent calc(var(--sr-clear) + 100%));
-    transition: filter 420ms var(--ease), --sr-clear 520ms var(--ease-reveal);
-  }
-  .sr-card:hover .sr-card__body { --sr-clear: 100%; filter: none; }
 }
-/* 가림막 경계를 부드럽게 옮기려면 퍼센트 변수로 등록해야 한다 */
-@property --sr-clear { syntax: '<percentage>'; inherits: false; initial-value: 0%; }
+/* 본문의 흐림 · 가림막은 뺐다 — 마우스를 올리지 않아도 모든 카드의 전문을 읽는다(사용자 지시 2026-10-20) */
 .sr-card__text {
   position: relative;
   display: flex;
@@ -95,6 +85,9 @@
   height: 100%;
   overflow: hidden;
   padding: var(--space-24) var(--space-24) var(--space-20);
+  /* 카드보다 긴 전문은 아래 여백 자리에서 부드럽게 끝난다(잘린 줄이 칼같이 끊겨 보이지 않게) */
+  -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 56px), transparent calc(100% - 16px));
+  mask-image: linear-gradient(to bottom, #000 calc(100% - 56px), transparent calc(100% - 16px));
   transition: opacity 320ms var(--ease);
 }
 .sr-card__ko { font-size: var(--typo-title-size); line-height: 1.25; font-weight: var(--font-weight-bold); letter-spacing: var(--tracking-heading); color: var(--color-text-primary); word-break: keep-all; }

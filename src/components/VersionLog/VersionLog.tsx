@@ -4,6 +4,7 @@ import './VersionLog.css';
 
 /**
  * 버전 기록 — 푸터 맨 아래에서 이전 버전 페이지로 건너간다(사용자 지시 2026-10-14).
+ * 줄에는 번호와 핵심 변경(title)만 둔다 — 날짜와 긴 요약은 뺐다(사용자 지시 2026-10-20). versions.json의 date · summary는 기록으로 남는다.
  *
  * 목록은 사이트 맨 위의 versions.json(public/) 하나를 읽는다. 지난 버전(/BI/v1/ 등)은 그때 코드로 고정된 빌드라,
  * 목록을 빌드에 넣으면 나중 버전이 보이지 않는다 — 런타임에 맨 위 목록을 읽어 어느 버전에서든 같은 목록을 본다.
@@ -15,8 +16,6 @@ type Version = { id: string; date: string; title: string; summary: string; path:
 const base = import.meta.env.BASE_URL; // '/BI/' · '/BI/v1/' · dev '/'
 const own = base.match(/(v\d+)\/$/)?.[1];
 const siteRoot = own ? base.slice(0, -(own.length + 1)) : base;
-
-const formatDate = (iso: string) => iso.slice(5).replace('-', '.');
 
 export function VersionLog() {
   const [versions, setVersions] = useState<Version[]>([]);
@@ -41,11 +40,7 @@ export function VersionLog() {
           const row = (
             <>
               <Text as="span" typography="Label" color="primary" className="version-log__id">{v.id}</Text>
-              <Text as="span" typography="Label" color="tertiary" className="version-log__date">{formatDate(v.date)}</Text>
-              <span className="version-log__text">
-                <Text as="span" typography="Label" color="primary">{v.title}</Text>
-                <Text as="span" typography="Label" color="tertiary" className="version-log__summary">{v.summary}</Text>
-              </span>
+              <Text as="span" typography="Label" color="primary" className="version-log__text">{v.title}</Text>
               <Text as="span" typography="Label" color="tertiary" className="version-log__state">{isCurrent ? '보는 중' : '보기'}</Text>
             </>
           );

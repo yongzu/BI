@@ -227,3 +227,6 @@
   지금 설명 자리로 위아래로 미끄러짐(transform · height 560ms, 연간 구조 탭 막대처럼).
 - 커리큘럼 머리글: 설명을 문장 단위로 줄바꿈(data의 \n + .course-group__body white-space: pre-line) — Fundamental · Domain · Study 첫 문장 뒤, Ritual은 줄바꿈 없음.
   설명은 Lead(20px). 머리글 · 탭 글자는 섹션 제목과 같은 왼쪽 선, 탭의 세로 선 · 막대는 20px 바깥(.course-tabs margin-left −20px).
+- 커리큘럼: 수업 패널 높이 = 가장 긴 수업을 펼친 높이(여닫아도 아래 여백 고정). 다른 수업을 누르면 목록 맨 위로 0.45초 easeOut 스크롤
+  (smoothScroll scrollToTarget duration 옵션). 탭 전환은 세로 트랙 슬라이드 → 네 타입을 한 칸에 겹치고 고른 타입이 16px 아래에서 떠오르며 진해짐.
+- 역량과 태도 카드: 본문 흐림 · 가림막 뺌(카드 아래 끝만 부드럽게). 버전 기록 다시 넣음 — 번호와 핵심 변경(title)만, 날짜 · 요약은 뺌.

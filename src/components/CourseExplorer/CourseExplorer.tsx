@@ -21,6 +21,10 @@ type Props = { types: CourseType[]; profiles: Record<string, CourseProfile> };
 /** 넓은 화면에서 왼쪽 탭이 붙는 높이(px) — CSS .course-tabs top과 같다. 머리글은 목록보다 56px 위에서 끝나므로
  *  목록 맨 위를 여기 맞추면 머리글이 화면 위로 다 빠진다 */
 const TABS_TOP = 56;
+/** 펼친 줄의 위 여백이 늘어나는 만큼(px) — CSS .course-row[data-open] .course-row__hit padding-top 28 − 닫힌 16 */
+const OPEN_PAD_EXTRA = 12;
+/** 수업을 연 채 다른 수업을 누를 때 목록 맨 위로 가는 스크롤 시간(초) */
+const SWITCH_SCROLL = 0.45;
 
 export function CourseExplorer({ types, profiles }: Props) {
   const [tab, setTab] = useState(0);
@@ -59,25 +63,40 @@ export function CourseExplorer({ types, profiles }: Props) {
     return () => ro.disconnect();
   }, [tab]);
 
-  // 수업 줄: 네 타입의 패널을 세로 트랙에 쌓아 두고, 탭을 바꾸면 트랙이 위아래로 미끄러져 고른 타입으로 간다
-  // (연간 구조의 가로 트랙과 같은 방식, 사용자 지시 2026-10-19). 보이는 창의 높이는 고른 패널 높이에 맞춘다 —
-  // 탭을 바꾸는 동안만 높이도 함께 움직이고(data-moving), 수업을 여닫을 땐 창이 줄을 바로 따라간다
-  // 머리글(이름 · 진행 방식 · 설명)도 같은 방식 — 네 타입을 세로 트랙에 쌓고 수업 줄과 같은 시간 · 곡선으로 함께 미끄러진다
-  // (사용자 지시 2026-10-20, v14). 예전엔 고른 머리글만 바꿔 끼우고 24px 떠오르게 했다
+  // 수업 줄 · 머리글: 네 타입을 한 칸에 겹쳐 두고, 탭을 바꾸면 고른 타입이 바로 아래에서 투명하게 떠올라 진해진다(CSS,
+  // 사용자 지시 2026-10-20 — 예전 세로 트랙이 화면 밖에서 미끄러져 들어오던 움직임은 너무 컸다). 보이는 창의 높이는 고른 타입에
+  // 맞춘다 — 탭을 바꾸는 동안만 높이도 함께 움직이고(data-moving), 수업을 여닫을 땐 창이 줄을 바로 따라간다
   useLayoutEffect(() => {
     const pairs = [
       [stageRef.current, trackRef.current, panelRefs.current],
       [headStageRef.current, headTrackRef.current, headRefs.current],
     ] as const;
     const place = () => {
+      // 수업 패널의 높이는 가장 긴 수업을 펼친 높이로 고정한다(사용자 지시 2026-10-20 — 여닫을 때마다 아래 여백이 바뀌어
+      // 화면이 움직였다). 닫힌 줄 높이의 합 + 가장 긴 상세 + 펼친 줄의 넓어진 위 여백. 폭이 바뀌면(글이 다시 감기면) 다시 잰다
+      panelRefs.current.forEach((panel) => {
+        if (!panel) return;
+        const rows = [...panel.querySelectorAll<HTMLElement>('.course-row')];
+        let closed = 0;
+        let detail = 0;
+        rows.forEach((row, i) => {
+          const hit = row.querySelector<HTMLElement>('.course-row__hit')!;
+          const cs = getComputedStyle(hit);
+          // 닫힌 줄의 위 여백은 아래 여백과 같다 — 여닫히는 중(위 여백이 움직이는 중)에도 닫힌 높이를 얻는다
+          closed += hit.offsetHeight - parseFloat(cs.paddingTop) + parseFloat(cs.paddingBottom);
+          if (i > 0) closed += parseFloat(getComputedStyle(row).marginTop) || 0;
+          detail = Math.max(detail, row.querySelector<HTMLElement>('.course-row__inner')?.scrollHeight ?? 0);
+        });
+        panel.style.minHeight = `${Math.ceil(closed + detail + OPEN_PAD_EXTRA)}px`;
+      });
       for (const [stage, track, items] of pairs) {
         const item = items[tab];
         if (!stage || !track || !item) continue;
-        stage.style.height = `${item.offsetHeight}px`;
-        track.style.transform = `translateY(${-item.offsetTop}px)`;
+        stage.style.height = `${item.offsetHeight}px`; // 네 타입이 한 칸에 겹쳐 있어 트랙은 옮기지 않는다(CSS)
       }
     };
     place();
+    document.fonts?.ready.then(place); // 글꼴이 늦게 들어와 줄 높이가 바뀌어도 — 패널은 최소 높이에 묶여 크기 변화로는 못 잡는다
     const ro = new ResizeObserver(place);
     for (const [, , items] of pairs) items.forEach((el) => el && ro.observe(el));
     return () => ro.disconnect();
@@ -88,7 +107,7 @@ export function CourseExplorer({ types, profiles }: Props) {
       if (!stage) continue;
       stage.dataset.moving = 'true';
       window.clearTimeout(Number(stage.dataset.timer));
-      stage.dataset.timer = String(window.setTimeout(() => { delete stage.dataset.moving; }, 800));
+      stage.dataset.timer = String(window.setTimeout(() => { delete stage.dataset.moving; }, 600)); // 떠오름(120 + 480ms)이 끝날 때까지
     }
     setTab(next);
   };
@@ -114,7 +133,7 @@ export function CourseExplorer({ types, profiles }: Props) {
     window.addEventListener(COURSE_OPEN_EVENT, onOpen);
     return () => window.removeEventListener(COURSE_OPEN_EVENT, onOpen);
   });
-  // 트랙이 다 미끄러진 뒤 그 줄로 — 트랙의 transform은 offsetTop에 잡히지 않아 화면 위치(getBoundingClientRect)로 잰다.
+  // 고른 타입이 다 떠오른 뒤 그 줄로 — 떠오르는 transform은 offsetTop에 잡히지 않아 화면 위치(getBoundingClientRect)로 잰다.
   // 152 = 줄이 화면 위 112px(.course-row scroll-margin-top)에 서도록 실측으로 맞춘 값
   useEffect(() => {
     const slug = scrollTo.current;
@@ -123,7 +142,7 @@ export function CourseExplorer({ types, profiles }: Props) {
     const timer = window.setTimeout(() => {
       const row = document.getElementById(`course-row-${slug}`);
       if (row) scrollToTarget(Math.max(0, window.scrollY + row.getBoundingClientRect().top - 152));
-    }, 800);
+    }, 600);
     return () => window.clearTimeout(timer);
   }, [open, tab]);
 
@@ -141,8 +160,10 @@ export function CourseExplorer({ types, profiles }: Props) {
     // 왼쪽 탭과 첫 수업이 같은 높이에 선다(사용자 지시 2026-10-20). 예전엔 누른 줄을 제자리에 붙잡아(keepInPlace) 위 수업이
     // 접히는 만큼 페이지가 끌려 올라가 머리글까지 보였다. 목록 위쪽은 여닫힘과 상관없어 접히는 동안에도 목표가 그대로다
     const layout = layoutRef.current;
+    // 위 수업을 바로 닫고 누른 줄을 제자리에 두던 방식(A안)은 뚝 끊기고 머리글까지 보여 되돌렸다(사용자 지시 2026-10-20).
+    // 그 대신 목록 맨 위로 가는 스크롤을 빠르게(SWITCH_SCROLL초, 끝이 부드러운 곡선) — 바로 건너뛰지도, 느리게 흐르지도 않게
     if (open && open !== slug && layout) {
-      scrollToTarget(Math.max(0, window.scrollY + layout.getBoundingClientRect().top - TABS_TOP));
+      scrollToTarget(Math.max(0, window.scrollY + layout.getBoundingClientRect().top - TABS_TOP), { duration: SWITCH_SCROLL });
     } else if (row) keepInPlace(row, 900); // 접힘(820ms)이 끝날 때까지
     setOpen((prev) => (prev === slug ? null : slug));
   };
