@@ -6,7 +6,6 @@ import { CourseExplorer } from '../components/CourseExplorer/CourseExplorer';
 import { ApplyButton } from '../components/ApplyButton/ApplyButton';
 import GradientASCII from '../components/GradientASCII/GradientASCII';
 import { BackToTop, SiteHeader } from '../components/SiteHeader/SiteHeader';
-import { VersionLog } from '../components/VersionLog/VersionLog';
 import { SkillReveal } from '../components/SkillReveal/SkillReveal';
 import { DeviceMap } from '../components/DeviceMap/DeviceMap';
 import { OverviewReveal } from '../components/OverviewReveal/OverviewReveal';
@@ -41,7 +40,7 @@ const toc: TocItem[] = [
 /** Blocks that rise in on scroll */
 // 히어로는 첫 화면 순서(흐린 제목 → 맑아짐 → 소개 · 기간)를 따로 가지므로 떠오르는 등장에서 뺀다
 // 섹션 제목 · 리드는 ScrollReveal이 맡으므로 뺐다(2026-10-20)
-const revealTargets = ['.group-label', '.group__lead', '.course-explorer', '.career-card', '.history', '.device-map'].join(', ');
+const revealTargets = ['.group-label', '.group__lead', '.course-explorer', '.career-row', '.history', '.device-map'].join(', ');
 
 /* ------------------------------------------------------------------ */
 
@@ -83,24 +82,28 @@ const deviceOutcomes: Record<string, string> = {
 };
 
 /**
- * 채용 연계(v7, 2026-10-19) — 카드 두 장. 시점(2027.08)과 대상을 크게, 설명은 아래.
- * v6까지는 역량과 태도와 같은 두 단 줄 목록이었다. 줄 목록이 사라지며 숫자를 앞세운 카드로(토스 홈 10의 큰 숫자)
+ * 채용 연계 — v3의 두 단 줄 목록으로 되돌림(사용자 지시 2026-10-20, 화면 폭 전체). 왼쪽 토스 별도 채용 전형 · 오른쪽 우수 졸업자 입사 특전.
+ * 줄마다 번호 · 제목 · 보조 문구, 설명은 늘 펼쳐져 있다(v3의 정적 목록 — 누르지 않는다). v7 ~ v14는 카드 두 장이었다
  */
-const careerCards = [
-  { label: '토스 별도 채용 전형', big: '2027.08', sub: 'Phi 1년제 1기 졸업자', body: '2027년 8월, Phi 1년제 1기 졸업자를 위한 토스의 별도 채용 전형이 마련됩니다.' },
-  { label: '우수 졸업자 입사 특전', big: 'Benefit', sub: '채용 전형에 더해', body: '우수 졸업자에게는 채용 전형에 더해 별도의 입사 특전*이 제공됩니다.', note: '*채용 특전의 세부 내용은 현재 검토 중입니다.' },
+const careerRows: { id: string; title: string; sub: string; body: string; note?: string }[] = [
+  { id: 'toss-hiring', title: '토스 별도 채용 전형', sub: '2027년 8월', body: '2027년 8월, Phi 1년제 1기 졸업자를 위한 토스의 별도 채용 전형이 마련됩니다.' },
+  { id: 'toss-benefit', title: '우수 졸업자 입사 특전', sub: 'Benefit', body: '우수 졸업자에게는 채용 전형에 더해 별도의 입사 특전*이 제공됩니다.', note: '*채용 특전의 세부 내용은 현재 검토 중입니다.' },
 ];
 
-function CareerCards() {
+function CareerRows() {
   return (
-    <div className="career-cards">
-      {careerCards.map((c, i) => (
-        <article key={c.label} className="career-card" data-tone={i === 0 ? 'ink' : 'light'}>
-          <Text as="p" typography="Label" color="inherit" className="career-card__label">{c.label}</Text>
-          <Text as="p" typography="Heading" color="inherit" className="career-card__big">{c.big}</Text>
-          <Text as="p" typography="Meta" color="inherit" className="career-card__sub">{c.sub}</Text>
-          <Text typography="Body" color="inherit" className="career-card__body">{c.body}</Text>
-          {c.note && <Text as="p" typography="Caption" color="inherit" className="career-card__note">{c.note}</Text>}
+    <div className="career-columns">
+      {careerRows.map((r, i) => (
+        <article key={r.id} className="career-row">
+          <Text as="span" typography="Label" color="tertiary" className="career-row__num">{String(i + 1).padStart(2, '0')}</Text>
+          <span className="career-row__titles">
+            <Text as="span" typography="Title">{r.title}</Text>
+            <Text as="span" typography="Label" color="tertiary">{r.sub}</Text>
+          </span>
+          <div className="career-row__body">
+            <Text typography="Body" color="secondary">{r.body}</Text>
+            {r.note && <Text typography="Label" color="tertiary">{r.note}</Text>}
+          </div>
         </article>
       ))}
     </div>
@@ -251,12 +254,13 @@ export function ProgramsPage() {
         </section>
 
         {/* ---------- 채용 연계 — 맨 아래(사용자 지시 2026-10-19). 마지막의 마무리 블록(히어로 문장 · 기간 · 버튼)은 뺐다 ---------- */}
-        <section id="career" className="section section--last container">
+        {/* 화면 폭 전체(사용자 지시 2026-10-20) — 다른 화면 폭 섹션과 같은 양옆 여백 */}
+        <section id="career" className="section section--wide section--last">
           <SectionHeader title="채용 연계" lead="Phi의 1년제 프로그램 졸업자들은 토스의 별도 채용 전형에 지원할 수 있습니다." />
-          {/* v7: 카드 두 장 — 시점 · 대상을 크게 */}
+          {/* v3: 두 단 줄 목록 — 설명까지 늘 보인다 */}
           <div className="group">
             <GroupLabel>with Toss</GroupLabel>
-            <CareerCards />
+            <CareerRows />
           </div>
         </section>
 
@@ -269,8 +273,6 @@ export function ProgramsPage() {
         <Text typography="Label" color="tertiary">
           평일 10:00 - 18:00 (점심시간 13:00 - 14:00) · © 2026 Phi Institute of Design · <a href="#system" className="link">Design System</a>
         </Text>
-        {/* 지난 버전 페이지로 — 맨 아래(사용자 지시 2026-10-14) */}
-        <VersionLog />
       </footer>
     </>
   );
