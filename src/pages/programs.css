@@ -166,7 +166,6 @@
 @media (max-width: 720px) {
   .career-row { grid-template-columns: 36px minmax(0, 1fr); column-gap: var(--space-12); }
 }
-}
 
 /* ---------- Footer ---------- */
 .footer {
