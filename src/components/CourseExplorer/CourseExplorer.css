@@ -21,6 +21,8 @@
   display: flex;
   flex-direction: column;
   border-left: 1px solid var(--color-border);
+  /* 탭 글자는 섹션 제목과 같은 왼쪽 선에, 세로 선 · 막대는 그 바깥으로(사용자 지시 2026-10-20 — 탭 안쪽 여백만큼 왼쪽으로 내민다) */
+  margin-left: calc(-1 * var(--space-20));
 }
 .course-tab {
   position: relative;
@@ -84,7 +86,7 @@
   flex-direction: column;
   align-items: flex-start;
   gap: var(--space-16);
-  padding-left: var(--space-20); /* 탭 글자와 같은 왼쪽 선(사용자 시안 이미지) */
+  /* 섹션 제목 · 탭 글자와 같은 왼쪽 선(사용자 지시 2026-10-20 — 예전엔 20px 들였다) */
 }
 .course-group__title { display: flex; flex-direction: column; gap: var(--space-8); }
 .course-group__name {
@@ -96,6 +98,10 @@
 }
 .course-group__meta { font-size: var(--typo-meta-size); line-height: 1.4; font-weight: var(--font-weight-medium); color: var(--color-text-tertiary); }
 .course-group__body { max-width: none; } /* 최대 폭을 두지 않는다 — 머리글 폭에 한 줄로 들어가지 않을 때만 다음 줄로(사용자 지시 2026-10-20) */
+/* 데이터의 줄바꿈(\n)은 그 자리에서 줄을 바꾼다 — 문장 단위로 끊어 읽히게(사용자 지시 2026-10-20) */
+.course-group__body { white-space: pre-line; }
+/* 설명은 Lead 크기(사용자 지시 2026-10-20, 16 → 20) — 이름(24)과 수업 줄(16) 사이 */
+.course-group__head .course-group__body { font-size: var(--typo-lead-size); line-height: 1.5; }
 
 /* ---------- 수업 줄 ---------- */
 /* 회색 면이 글자 바깥으로 깔리도록 줄을 양옆으로 내민다 — 글자는 머리글과 같은 선에 선다 */
@@ -303,8 +309,8 @@
   .course-tab__name { font-size: var(--typo-body-size); letter-spacing: var(--tracking-body); }
   .course-tabs__total { display: none; }
   .course-stage { grid-column: 1 / -1; margin-top: var(--space-28); }
-  .course-group__head { padding-left: 0; }
   .course-heads { margin-bottom: var(--space-28); }
+  .course-group__head .course-group__body { font-size: var(--typo-body-size); line-height: 1.6; }
 }
 /* 휴대폰: 태그는 이름 아래로 */
 @media (max-width: 720px) {

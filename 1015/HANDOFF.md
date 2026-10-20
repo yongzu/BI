@@ -225,3 +225,5 @@
 - 맨 아래 버전 기록(VersionLog) 뺌. versions.json · 컴포넌트는 남김(deploy.mjs가 지난 버전 사본에 쓴다). 지난 버전은 주소로만.
 - 수업을 관통하는 접근(DeviceMap): 설명마다 생겼다 사라지던 막대(.device-step::before) → 막대 하나(.device-map__bar)가
   지금 설명 자리로 위아래로 미끄러짐(transform · height 560ms, 연간 구조 탭 막대처럼).
+- 커리큘럼 머리글: 설명을 문장 단위로 줄바꿈(data의 \n + .course-group__body white-space: pre-line) — Fundamental · Domain · Study 첫 문장 뒤, Ritual은 줄바꿈 없음.
+  설명은 Lead(20px). 머리글 · 탭 글자는 섹션 제목과 같은 왼쪽 선, 탭의 세로 선 · 막대는 20px 바깥(.course-tabs margin-left −20px).
