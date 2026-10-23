@@ -104,7 +104,6 @@ const programRows: ProgramRow[] = [
   {
     id: 'pillars',
     title: '역량과 태도',
-    en: 'Competencies & Attitudes',
     summary: '역량 5 · 태도(Phi OS) 5',
     content: (
       <div className="pr-block">
@@ -122,7 +121,6 @@ const programRows: ProgramRow[] = [
   {
     id: 'curriculum',
     title: '커리큘럼',
-    en: 'Curriculum',
     summary: `1학기 ${courseCount}개 수업 · 워크숍 · 행사`,
     content: (
       <div className="pr-block">
@@ -147,11 +145,11 @@ const programRows: ProgramRow[] = [
   {
     id: 'annual',
     title: '연간 구조',
-    en: 'Annual Structure',
     summary: '1년 · 월–금 전일제 · 약 1,000시간',
     content: (
       <div className="pr-block">
-        {/* 과정 개요(v15까지 따로 섹션) — 얼마나 걸리는지 먼저 */}
+        {/* 과정 개요(v15까지 따로 섹션) — 얼마나 걸리는지 먼저. 아래 일정은 1기 기준(v17 — 학비와 지원 줄의 2기 일정과 헷갈렸다) */}
+        <p className="pr-group__note">아래 일정은 1기(2026년 8월 개강) 기준입니다.</p>
         <dl className="pr-facts">
           {facts.map((f) => (
             <div key={f.label}>
@@ -167,7 +165,6 @@ const programRows: ProgramRow[] = [
   {
     id: 'career',
     title: '채용 연계',
-    en: 'Career with Toss',
     summary: '토스 별도 채용 전형',
     content: (
       <div className="pr-block">
@@ -178,7 +175,6 @@ const programRows: ProgramRow[] = [
   {
     id: 'admissions',
     title: '학비와 지원',
-    en: 'Tuition & Admissions',
     summary: '연 1,200만원 · 학력 · 전공 · 나이 무관',
     content: (
       <div className="pr-block">

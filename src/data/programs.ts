@@ -63,7 +63,7 @@ export const philosophy: { label: string; paragraphs: string[][] } = {
  * v16 학비 · 지원 — phi.design/admissions(2026-10-23 확인)의 내용을 줄여 옮겼다. 세부 일정 · FAQ는 그 페이지로 잇는다
  */
 export const admissions = {
-  opens: '2기 지원은 2026년 12월 15일 시작됩니다.',
+  opens: '2기 지원은 2026년 12월 15일 시작되고, 2027년 2월 15일 개강합니다. 세부 일정은 변동될 수 있습니다.',
   tuition: [
     ['연간 학비', '1,200만원 (학기당 600만원)'],
     ['납부 방식', '학기별 납부 · 일시불 또는 12개월 무이자 할부'],

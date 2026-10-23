@@ -17,7 +17,8 @@
 .course-tabs {
   grid-column: span 3;
   position: sticky;
-  top: 56px; /* TABS_TOP(CourseExplorer.tsx) — 로고 판(위 10 ~ 51px) 바로 아래. 수업 목록 맨 위도 여기에 맞춰 탭과 같은 높이(2026-10-20) */
+  top: var(--ce-tabs-top, 56px); /* TABS_TOP(CourseExplorer.tsx) — 로고 판(위 10 ~ 51px) 바로 아래. 수업 목록 맨 위도 여기에 맞춰 탭과 같은 높이(2026-10-20).
+                                    v17: 1년제 프로그램 줄 안에선 붙은 줄 머리 아래(ProgramRows.css --ce-tabs-top) */
   display: flex;
   flex-direction: column;
   border-left: 1px solid var(--color-border);
@@ -201,18 +202,27 @@
 /* 줄에 회색 면이 깔리면 캡슐은 흰색으로 뒤집어 묻히지 않게 한다 */
 .course-row__hit:hover .course-row__tag { background: var(--color-bg-default); }
 
-.course-row__chevron {
-  justify-self: center;
-  width: 9px;
-  height: 9px;
-  border-right: 1.5px solid var(--color-text-tertiary);
-  border-bottom: 1.5px solid var(--color-text-tertiary);
-  transform: translateY(-3px) rotate(45deg);
-  transition: transform 480ms var(--ce-ease), border-color var(--duration) var(--ease);
+/* 펼침 표시: v17(2026-10-23)부터 ∨ 대신 + → − — 바깥 1년제 프로그램 줄(ProgramRows.css)과 같은 기호. 줄이 작아 12px */
+.course-row__chevron { position: relative; justify-self: center; width: 16px; height: 16px; }
+.course-row__chevron::before,
+.course-row__chevron::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 12px;
+  height: 1.5px;
+  border-radius: 1px;
+  background: var(--color-text-tertiary);
+  translate: -50% -50%;
+  transition: rotate 360ms var(--ce-ease), background var(--duration) var(--ease);
 }
-.course-row__hit:hover .course-row__chevron,
-.course-row[data-open='true'] .course-row__chevron { border-color: var(--color-text-primary); }
-.course-row[data-open='true'] .course-row__chevron { transform: translateY(2px) rotate(225deg); }
+.course-row__chevron::after { rotate: 90deg; }
+.course-row__hit:hover .course-row__chevron::before,
+.course-row__hit:hover .course-row__chevron::after,
+.course-row[data-open='true'] .course-row__chevron::before,
+.course-row[data-open='true'] .course-row__chevron::after { background: var(--color-text-primary); }
+.course-row[data-open='true'] .course-row__chevron::after { rotate: 0deg; }
 
 /* 펼침: 높이 0fr → 1fr, 내용은 살짝 늦게 떠오른다(블러 없음, 2026-10-14).
    접힘(사용자 지시 2026-10-19 — 접히는 게 잘 안 보였다): 상세는 1,000px이 넘어 같은 곡선(ease-in-out)으로 접으면
@@ -302,7 +312,8 @@
   .course-row,
   .course-row__panel,
   .course-row__inner,
-  .course-row__chevron,
+  .course-row__chevron::before,
+  .course-row__chevron::after,
   .course-row__text { transition: none !important; }
 }
 
