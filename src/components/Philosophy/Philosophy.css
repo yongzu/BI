@@ -1,0 +1,44 @@
+/* 교육 철학(v16) — sui.io 큰 글 단락. 화면 폭 섹션 공통 양옆 여백(--side-wide), 글은 Heading보다 조금 작은 큰 글. Tokens only. */
+.philosophy {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-96);
+  padding: var(--space-section) var(--side-wide) 0;
+}
+/* sui의 작은 회색 칸 라벨(고정폭 글꼴) */
+.philosophy__label {
+  padding: var(--space-4) var(--space-8);
+  border-radius: 4px;
+  background: var(--color-bg-subtle);
+  font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  font-size: var(--typo-caption-size);
+  line-height: 1.4;
+  color: var(--color-text-secondary);
+}
+.philosophy__label + .philosophy__para { margin-top: calc(-1 * var(--space-64)); } /* 라벨은 첫 단락에 붙는다 */
+.philosophy__para { display: flex; flex-direction: column; gap: var(--space-40); max-width: 22em; font-size: clamp(1.75rem, 3.1vw, 2.75rem); }
+.philosophy__sentence {
+  line-height: 1.4;
+  font-weight: var(--font-weight-bold);
+  letter-spacing: var(--tracking-heading);
+  word-break: keep-all;
+  text-wrap: pretty;
+}
+/* 아직 지나가지 않은 낱말은 옅은 회색, 지나가면 잉크 */
+.philosophy__word { color: var(--color-border); transition: color 240ms var(--ease); }
+.philosophy__word[data-lit] { color: var(--color-text-primary); }
+/* 강조 낱말: 테두리 캡슐(시안의 '사고방식') — 테두리도 글자와 함께 채워진다 */
+.philosophy__word--mark {
+  display: inline-block;
+  padding: 0 0.22em;
+  border: 2px solid currentColor;
+  border-radius: 0.28em;
+  line-height: 1.2;
+}
+
+@media (max-width: 720px) {
+  .philosophy { gap: var(--space-64); }
+  .philosophy__label + .philosophy__para { margin-top: calc(-1 * var(--space-40)); }
+  .philosophy__para { gap: var(--space-28); }
+}
