@@ -131,9 +131,11 @@ export type Course = {
 };
 
 export type CourseType = {
-  id: 'fundamental' | 'domain' | 'ritual' | 'study';
+  id: 'fundamental' | 'domain' | 'ritual' | 'study' | 'workshop' | 'event';
   name: string;
-  cadence: string;
+  /** 코스 밖에서 열리는 분류(Workshop · Event) — 정해진 수업 목록 · 진행 방식이 없고, 탭에선 Study 밑 선 아래에 둔다 */
+  extra?: true;
+  cadence?: string;
   body: string;
   courses: Course[];
 };
@@ -182,6 +184,21 @@ export const courseTypes: CourseType[] = [
       { slug: 'aesthetic-literacy', en: 'Aesthetic Literacy', ko: '이미지 제텔카스텐', tags: ['심미안', '언어화'], lead: '모아둔 레퍼런스는 저절로 사고의 도구가 되지 않는다.', body: '제텔카스텐 메모법으로 끌리는 이미지를 포착하며 나의 취향을 언어화하고, 그것을 패턴으로 엮는 구조를 훈련한다. 수업이 끝난 뒤에도 계속 자라는 나만의 미적 언어 체계를 구축한다.' },
       { slug: 'what-if', en: 'What If', ko: '만약에 ~라면?', tags: ['관점 전환', '구조화'], lead: '창의성은 훈련 가능한 역량일까?', body: '가장 처음 떠올린 해결책이 너무나도 자명해 보여서 다른 해결책은 절대 없을 것 같은 느낌이 들 때, 어떻게 접근해볼 수 있을까. 이 수업에서는 동일한 문제를 다양한 분야의 전문가들이 어떻게 풀어나가는지를 비교 분석하면서 그들의 전문성을 추출하고, 내 작업에 이식해보는 방법을 배운다.' },
     ],
+  },
+  // 코스 밖 분류(사용자 지시 2026-10-23) — 탭에서 Study 밑에 선을 긋고 구분한다
+  {
+    id: 'workshop',
+    name: 'Workshop',
+    extra: true,
+    body: '학기 중 코스 외 시간에 학습 능력 증진을 위해 제공되는 워크숍입니다.',
+    courses: [],
+  },
+  {
+    id: 'event',
+    name: 'Event',
+    extra: true,
+    body: '외부인사 초청 강연이나 OT, 클로징 파티 등 코스를 시작하거나 끝맺음할 때, 혹은 특별한 이벤트가 있을 때 열리는 행사입니다.',
+    courses: [],
   },
 ];
 

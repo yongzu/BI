@@ -173,6 +173,7 @@
   flex-direction: column;
   gap: var(--space-8);
   padding-block: var(--space-64) var(--space-96);
+  padding-inline: var(--side-wide); /* 화면 폭 섹션 공통 양옆 여백(foundation.css) */
   border-top: 1px solid var(--color-border);
 }
 

@@ -40,7 +40,6 @@ export function CourseExplorer({ types, profiles }: Props) {
   const headTrackRef = useRef<HTMLDivElement>(null);
   const headRefs = useRef<(HTMLElement | null)[]>([]);
   const layoutRef = useRef<HTMLDivElement>(null);
-  const total = types.reduce((n, t) => n + t.courses.length, 0);
 
   // 고른 탭 자리로 막대를 옮긴다 — 넓은 화면은 왼쪽 세로 막대, 좁은 화면(탭이 가로 줄)은 아래 가로 막대
   useLayoutEffect(() => {
@@ -177,7 +176,7 @@ export function CourseExplorer({ types, profiles }: Props) {
             <header key={t.id} ref={(el) => { headRefs.current[i] = el; }} className="course-group__head" data-active={tab === i} aria-hidden={tab !== i}>
               <div className="course-group__title">
                 <h4 className="course-group__name">{t.name}</h4>
-                <span className="course-group__meta">{t.cadence} · {t.courses.length}개 수업</span>
+                {!t.extra && <span className="course-group__meta">{t.cadence} · {t.courses.length}개 수업</span>}
               </div>
               <Text typography="Body" color="secondary" className="course-group__body">{t.body}</Text>
             </header>
@@ -187,7 +186,9 @@ export function CourseExplorer({ types, profiles }: Props) {
       <div ref={layoutRef} className="course-layout">
         <div ref={tabsRef} className="course-tabs" role="tablist" aria-orientation="vertical" aria-label="수업 유형" onKeyDown={onTabKey}>
           <span ref={barRef} className="course-tabs__indicator" aria-hidden="true" />
-          {types.map((t, i) => (
+          {types.map((t, i) => [
+            // 코스 밖 분류(Workshop · Event)는 Study 밑에 선을 긋고 구분한다(사용자 지시 2026-10-23)
+            t.extra && !types[i - 1]?.extra && <span key={`${t.id}-divider`} className="course-tabs__divider" role="presentation" />,
             <button
               key={t.id}
               ref={(el) => { tabRefs.current[i] = el; }}
@@ -201,10 +202,9 @@ export function CourseExplorer({ types, profiles }: Props) {
               onClick={() => pickTab(i)}
             >
               <span className="course-tab__name">{t.name}</span>
-              <span className="course-tab__count">{t.courses.length}</span>
-            </button>
-          ))}
-          <Text as="p" typography="Caption" color="tertiary" className="course-tabs__total">1학기 수업 {total}개</Text>
+              {!t.extra && <span className="course-tab__count">{t.courses.length}</span>}
+            </button>,
+          ])}
         </div>
 
         <div ref={stageRef} className="course-stage">

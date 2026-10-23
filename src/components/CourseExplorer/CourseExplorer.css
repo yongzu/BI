@@ -56,7 +56,8 @@
 .course-tab:hover { color: var(--color-text-secondary); }
 .course-tab[aria-selected='true'] { color: var(--color-text-primary); }
 .course-tab:focus-visible { outline: 2px solid var(--color-text-primary); outline-offset: -2px; border-radius: 8px; }
-.course-tabs__total { padding: var(--space-16) var(--space-20) 0; }
+/* 코스 밖 분류(Workshop · Event) 앞 구분선 — 탭 글자 선에서 시작하고, 길이는 남은 폭의 절반(사용자 지시 2026-10-23) */
+.course-tabs__divider { flex: none; width: calc((100% - var(--space-20)) / 2); height: 1px; margin: var(--space-12) 0 var(--space-12) var(--space-20); background: var(--color-border); }
 
 /* ---------- 탭 패널: 타입을 바꾸면 바로 아래에서 짧게 떠오른다 ---------- */
 /* 머리글 · 수업 줄 모두 네 타입을 한 칸에 겹쳐 둔다(grid-area 1 / 1). 고른 타입만 보인다(사용자 지시 2026-10-20 — 예전엔 세로 트랙이
@@ -321,7 +322,7 @@
   }
   .course-tab { flex: none; padding: var(--space-12) var(--space-16); }
   .course-tab__name { font-size: var(--typo-body-size); letter-spacing: var(--tracking-body); }
-  .course-tabs__total { display: none; }
+  .course-tabs__divider { width: 1px; height: 12px; align-self: center; margin: 0 var(--space-8); } /* 세로선도 절반(탭 글자 높이 24 → 12) */
   .course-stage { grid-column: 1 / -1; margin-top: var(--space-28); }
   .course-heads { margin-bottom: var(--space-28); }
   .course-group__head .course-group__body { font-size: var(--typo-body-size); line-height: 1.6; }

@@ -268,7 +268,8 @@ export function ProgramsPage() {
         </div>
       </main>
 
-      <footer className="footer container">
+      {/* 화면 폭 전체(사용자 지시 2026-10-23) — 채용 연계 등 화면 폭 섹션과 같은 양옆 여백 */}
+      <footer className="footer">
         <Text typography="Title">Phi Institute of Design</Text>
         <Text typography="Body" color="secondary">파이인스티튜트오브디자인 · 02-556-8461 · contact@phi.design</Text>
         <Text typography="Label" color="tertiary">
