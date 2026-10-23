@@ -12,6 +12,7 @@ export function ApplyButton({ href, children, className }: Props) {
     <a className={['apply-button', className].filter(Boolean).join(' ')} href={href} target="_blank" rel="noreferrer">
       <span className="apply-button__label">
         {children}
+        <span className="visually-hidden">(새 탭)</span>
         <span className="apply-button__arrow" aria-hidden="true">
           <svg viewBox="0 0 24 24" fill="none">
             <circle cx="12" cy="12" r="11" fill="currentColor" />

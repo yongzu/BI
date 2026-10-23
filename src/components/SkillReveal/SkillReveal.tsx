@@ -1,4 +1,4 @@
-import { useEffect, useRef, type CSSProperties, type PointerEvent as ReactPointerEvent } from 'react';
+import { useEffect, useRef, useState, type CSSProperties, type PointerEvent as ReactPointerEvent } from 'react';
 import type { Pillar } from '../../data/programs';
 import ScrollReveal from '../ScrollReveal/ScrollReveal';
 import { SCROLL_REVEAL } from '../ScrollReveal/preset';
@@ -25,11 +25,21 @@ export type SkillGroup = { label: string; items: Pillar[] };
 const clamp01 = (x: number) => Math.min(1, Math.max(0, x));
 /** 카드 판이 기우는 최대 각도(도) */
 const TILT = 6;
-/** 아래 줄(Phi OS)이 위 줄(역량)보다 늦게 출발하는 거리 — 가로 이동 거리에 대한 비율 */
-const LAG = 0.35;
+/** 아래 줄(Phi OS)이 위 줄(역량)보다 늦게 출발하는 거리 — 가로 이동 거리에 대한 비율(v15: 0.35 → 0.2) */
+const LAG = 0.2;
+/** 세로 스크롤 1px에 카드 줄이 가로로 움직이는 거리(px). v15(2026-10-23): 1 → 1.6 — 붙잡는 구간이 길어
+ *  지나가고 싶어도 못 지나갔다(휴리스틱 평가 · 사용자 통제와 자유). 붙는 길이 = (이동 + 시간차) ÷ SPEED */
+const SPEED = 1.6;
 
 export function SkillReveal({ title, lead, groups }: { title: string; lead: string; groups: SkillGroup[] }) {
   const wrapRef = useRef<HTMLDivElement>(null);
+  // 카드를 누르면 전문을 대화 상자로(v15, 2026-10-23) — 카드 높이를 넘는 전문은 아래가 잘려, 터치 화면에선 끝까지 읽을 길이 없었다
+  const dialogRef = useRef<HTMLDialogElement>(null);
+  const [reading, setReading] = useState<Pillar | null>(null);
+  const read = (p: Pillar) => {
+    setReading(p);
+    dialogRef.current?.showModal();
+  };
 
   useEffect(() => {
     const wrap = wrapRef.current;
@@ -82,7 +92,7 @@ export function SkillReveal({ title, lead, groups }: { title: string; lead: stri
       const h = Math.max(natural, window.innerHeight - top);
       stage.style.minHeight = `${h}px`;
       stage.style.top = `${top}px`;
-      row.style.height = `${h + travel + lag * (tracks.length - 1)}px`;
+      row.style.height = `${h + (travel + lag * (tracks.length - 1)) / SPEED}px`;
     };
     const tick = () => {
       raf = 0;
@@ -106,7 +116,7 @@ export function SkillReveal({ title, lead, groups }: { title: string; lead: stri
       const immersive = box.top <= top && box.bottom >= top + stage.offsetHeight;
       const vw = document.documentElement.clientWidth;
       tracks.forEach((t, i) => {
-        const p = travel ? clamp01((scrolled - lag * i) / travel) : 1;
+        const p = travel ? clamp01((scrolled * SPEED - lag * i) / travel) : 1;
         const x = t.startX - travel * p;
         t.track.style.transform = `translate3d(${x.toFixed(1)}px, 0, 0)`;
         // 오른쪽에서 들어오는 카드는 투명 → 불투명(흐림 띠 대신, 사용자 지시 2026-10-20): 화면 오른쪽 끝에서 0,
@@ -150,7 +160,7 @@ export function SkillReveal({ title, lead, groups }: { title: string; lead: stri
               <ol className="sr-row__track">
                 {g.items.map((p, i) => (
                   <li key={p.en} className="sr-card-slot" style={{ '--i': i } as CSSProperties}>
-                    <SkillCard p={p} />
+                    <SkillCard p={p} onRead={() => read(p)} />
                   </li>
                 ))}
               </ol>
@@ -158,12 +168,28 @@ export function SkillReveal({ title, lead, groups }: { title: string; lead: stri
           ))}
         </div>
       </div>
+      {/* 바깥(배경)을 누르거나 Esc · 닫기 버튼으로 닫힌다. 닫히면 초점은 누른 카드로 돌아간다(브라우저 기본) */}
+      <dialog
+        ref={dialogRef}
+        className="sr-dialog"
+        aria-labelledby="sr-dialog-title"
+        onClick={(e) => { if (e.target === e.currentTarget) e.currentTarget.close(); }}
+      >
+        {reading && (
+          <div className="sr-dialog__inner">
+            <h4 id="sr-dialog-title" className="sr-card__ko">{reading.ko}</h4>
+            <span className="sr-card__en">{reading.en}</span>
+            <p className="sr-card__body">{reading.body}</p>
+            <button type="button" className="sr-dialog__close" onClick={() => dialogRef.current?.close()}>닫기</button>
+          </div>
+        )}
+      </dialog>
     </div>
   );
 }
 
 /** 카드 — 뒤의 판만 커서를 따라 기울고(빛 · 그림자), 위의 글자 층(이름 · 영문 · 전문)은 그대로 */
-function SkillCard({ p }: { p: Pillar }) {
+function SkillCard({ p, onRead }: { p: Pillar; onRead: () => void }) {
   const move = (e: ReactPointerEvent<HTMLElement>) => {
     if (e.pointerType !== 'mouse' || e.buttons) return; // 끌어 고르는 동안엔 움직이지 않는다
     const el = e.currentTarget;
@@ -181,13 +207,18 @@ function SkillCard({ p }: { p: Pillar }) {
     el.style.setProperty('--ry', '0deg');
   };
   return (
-    <article className="sr-card" onPointerMove={move} onPointerLeave={leave}>
+    // 카드 어디를 눌러도 전문이 열린다 — 글자를 끌어 고른 뒤 손을 뗀 경우만 빼고(글자 층은 늘 끌어 고를 수 있다)
+    <article className="sr-card" onPointerMove={move} onPointerLeave={leave} onClick={() => { if (!window.getSelection()?.toString()) onRead(); }}>
       <div className="sr-card__plate" aria-hidden="true" />
       <div className="sr-card__text">
         <h4 className="sr-card__ko">{p.ko}</h4>
         <span className="sr-card__en">{p.en}</span>
         <p className="sr-card__body">{p.body}</p>
       </div>
+      {/* 키보드 · 화면 읽기 프로그램용 버튼이자 '누르면 열린다'는 표시 — 위 오른쪽 '+' */}
+      <button type="button" className="sr-card__open" aria-haspopup="dialog" aria-label={`${p.ko} 전문 보기`} onClick={(e) => { e.stopPropagation(); onRead(); }}>
+        <span className="sr-card__plus" aria-hidden="true" />
+      </button>
     </article>
   );
 }

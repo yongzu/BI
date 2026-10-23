@@ -54,11 +54,12 @@ export function OverviewReveal({ id, title, paragraphs, factsTitle, facts }: { i
       <div className="overview-reveal__stage">
         <ScrollReveal as="h2" id={`${id}-title`} containerClassName="overview-reveal__title sr-plain" {...SCROLL_REVEAL_FAST}>{title}</ScrollReveal>
         <div className="overview-reveal__grid">
-          {paragraphs.map((p) => (
-            <div key={p.slice(0, 12)} className="ov-col">
-              <ScrollReveal as="p" containerClassName="ov-para sr-plain" {...SCROLL_REVEAL_FAST}>{p}</ScrollReveal>
-            </div>
-          ))}
+          {/* 소개 문단들은 두 칸을 함께 쓰는 한 칸에(v15, 2026-10-23) — 한 칸에 하나씩이면 폭 211px · 한 줄 12–13자라 줄이 너무 자주 바뀌었다 */}
+          <div className="ov-col ov-col--intro">
+            {paragraphs.map((p) => (
+              <ScrollReveal key={p.slice(0, 12)} as="p" containerClassName="ov-para sr-plain" {...SCROLL_REVEAL_FAST}>{p}</ScrollReveal>
+            ))}
+          </div>
           {/* 과정 개요 — 두 칸을 함께 쓰고, 다섯 줄을 가는 선으로 나눈다(v5) */}
           <div className="ov-col ov-col--facts">
             <p className="ov-step ov-facts__head" style={at(headAt)}>{factsTitle}</p>

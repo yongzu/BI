@@ -26,6 +26,7 @@
 .overview-reveal__grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); }
 .ov-col { min-width: 0; padding: 0 var(--space-24); border-left: 1px solid var(--color-border); }
 .ov-col--facts { grid-column: span 2; padding-right: 0; }
+.ov-col--intro { grid-column: span 2; display: flex; flex-direction: column; gap: var(--space-24); padding-right: var(--space-48); } /* v15: 소개 문단 둘을 두 칸 폭 한 칸에 */
 
 .ov-para { max-width: 34em; font-size: var(--typo-body-size); line-height: 1.75; letter-spacing: var(--tracking-body); color: var(--color-text-secondary); }
 
@@ -57,7 +58,7 @@
 @media (max-width: 1100px) {
   .overview-reveal__stage { gap: var(--space-48); padding: var(--space-96) var(--gutter) var(--space-48); }
   .overview-reveal__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); row-gap: var(--space-48); }
-  .ov-col--facts { grid-column: 1 / -1; }
+  .ov-col--facts, .ov-col--intro { grid-column: 1 / -1; }
 }
 @media (max-width: 720px) {
   .overview-reveal__grid { grid-template-columns: minmax(0, 1fr); row-gap: var(--space-32); }

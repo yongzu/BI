@@ -193,7 +193,8 @@ function WeekRhythm({ rhythm }: { rhythm: StageRhythm }) {
         {sessionRow('am')}
         <span className="annual__week-row" role="row">
           <span className="annual__week-lunch" role="cell" aria-colspan={rhythm.days.length}>
-            점심시간 <span className="annual__week-lunch-time">{rhythm.times.lunch}</span>
+            {/* '점심 · 휴식'(v15) — 푸터의 운영시간 '점심시간 13:00 - 14:00'과 같은 말이라 헷갈렸다 */}
+            점심 · 휴식 <span className="annual__week-lunch-time">{rhythm.times.lunch}</span>
           </span>
         </span>
         {sessionRow('pm')}

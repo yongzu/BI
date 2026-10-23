@@ -9,11 +9,11 @@ import './CourseExplorer.css';
 /**
  * 커리큘럼 — 위 타입 머리글(한 줄 전체), 아래 왼쪽 세로 탭(타입 + 수업 수) · 오른쪽 v5 형식 수업 줄(2026-10-19).
  *
- * 탭(v6부터): 타입 이름 + 수업 수 — 고르기 전에 규모가 보인다. ↑/↓로도 옮긴다.
+ * 탭(v6부터): 타입 이름 + 수업 수 — 고르기 전에 규모가 보인다. ↑/↓로도 옮긴다. v15: 이름 아래 한글 한 줄(short).
  *   고른 칸을 가리키는 막대는 하나이고, 연간 구조 탭처럼 고른 칸 자리로 미끄러져 간다(사용자 지시 2026-10-19).
  * 오른쪽(사용자 지시 2026-10-19: v6 카드 · 옆 패널 → v5로 되돌림):
  * - 타입 머리글: 이름 · 진행 방식 · 수업 수, 아래 타입 설명.
- * - 수업 한 줄: 영문 이름 + 전문가 캡슐 / 한글 이름 / 기르는 역량 태그. 누르면 아래로 상세가 펼쳐진다.
+ * - 수업 한 줄: 영문 이름 / 한글 이름 · 전문가 / 기르는 역량 태그. 누르면 아래로 상세가 펼쳐진다.
  * - 펼치는 수업은 하나 — 다른 수업을 누르면 펼쳐 있던 수업이 접히고, 누른 줄은 화면의 같은 자리에 머문다(keepInPlace).
  */
 type Props = { types: CourseType[]; profiles: Record<string, CourseProfile> };
@@ -62,6 +62,27 @@ export function CourseExplorer({ types, profiles }: Props) {
     return () => ro.disconnect();
   }, [tab]);
 
+  // 좁은 화면(탭이 가로 줄): 고른 탭이 줄 밖이면 안으로 끌어오고, 오른쪽에 탭이 더 있으면 끝을 흐린다(data-more) —
+  // 넘길 수 있다는 단서가 없어 Workshop · Event가 안 보였다(v15 휴리스틱 평가 2026-10-23)
+  useEffect(() => {
+    const list = tabsRef.current;
+    const el = tabRefs.current[tab];
+    if (!list || !el || getComputedStyle(list).flexDirection !== 'row') return;
+    if (el.offsetLeft < list.scrollLeft || el.offsetLeft + el.offsetWidth > list.scrollLeft + list.clientWidth) {
+      list.scrollTo({ left: el.offsetLeft - list.clientWidth / 2 + el.offsetWidth / 2, behavior: 'smooth' });
+    }
+  }, [tab]);
+  useEffect(() => {
+    const list = tabsRef.current;
+    if (!list) return;
+    const mark = () => { list.dataset.more = String(list.scrollLeft + list.clientWidth < list.scrollWidth - 1); };
+    mark();
+    list.addEventListener('scroll', mark, { passive: true });
+    const ro = new ResizeObserver(mark);
+    ro.observe(list);
+    return () => { list.removeEventListener('scroll', mark); ro.disconnect(); };
+  }, []);
+
   // 수업 줄 · 머리글: 네 타입을 한 칸에 겹쳐 두고, 탭을 바꾸면 고른 타입이 바로 아래에서 투명하게 떠올라 진해진다(CSS,
   // 사용자 지시 2026-10-20 — 예전 세로 트랙이 화면 밖에서 미끄러져 들어오던 움직임은 너무 컸다). 보이는 창의 높이는 고른 타입에
   // 맞춘다 — 탭을 바꾸는 동안만 높이도 함께 움직이고(data-moving), 수업을 여닫을 땐 창이 줄을 바로 따라간다
@@ -72,9 +93,15 @@ export function CourseExplorer({ types, profiles }: Props) {
     ] as const;
     const place = () => {
       // 수업 패널의 높이는 가장 긴 수업을 펼친 높이로 고정한다(사용자 지시 2026-10-20 — 여닫을 때마다 아래 여백이 바뀌어
-      // 화면이 움직였다). 닫힌 줄 높이의 합 + 가장 긴 상세 + 펼친 줄의 넓어진 위 여백. 폭이 바뀌면(글이 다시 감기면) 다시 잰다
+      // 화면이 움직였다). 닫힌 줄 높이의 합 + 가장 긴 상세 + 펼친 줄의 넓어진 위 여백. 폭이 바뀌면(글이 다시 감기면) 다시 잰다.
+      // v15(2026-10-23): 수업이 하나라도 열려 있을 때만 고정한다 — 늘 고정하면 다 접었을 때 목록 아래 1,000px 넘게 비었다.
+      // 열린 수업을 바꾸는 동안은 그대로 고정이라 화면이 움직이지 않고, 마지막 수업을 접으면 접히는 만큼 원래 높이로 돌아온다
       panelRefs.current.forEach((panel) => {
         if (!panel) return;
+        if (!panel.querySelector('.course-row[data-open="true"]')) {
+          panel.style.minHeight = '';
+          return;
+        }
         const rows = [...panel.querySelectorAll<HTMLElement>('.course-row')];
         let closed = 0;
         let detail = 0;
@@ -99,7 +126,7 @@ export function CourseExplorer({ types, profiles }: Props) {
     const ro = new ResizeObserver(place);
     for (const [, , items] of pairs) items.forEach((el) => el && ro.observe(el));
     return () => ro.disconnect();
-  }, [tab]);
+  }, [tab, open]);
   const switchTab = (next: number) => {
     if (next === tab) return;
     for (const stage of [stageRef.current, headStageRef.current]) {
@@ -203,6 +230,7 @@ export function CourseExplorer({ types, profiles }: Props) {
             >
               <span className="course-tab__name">{t.name}</span>
               {!t.extra && <span className="course-tab__count">{t.courses.length}</span>}
+              <span className="course-tab__short">{t.short}</span>
             </button>,
           ])}
         </div>
@@ -220,6 +248,7 @@ export function CourseExplorer({ types, profiles }: Props) {
                 data-active={tab === i}
                 inert={tab !== i}
               >
+                {t.note && <Text typography="Body" color="secondary" className="course-empty">{t.note}</Text>}
                 <ul className="course-rows">
                   {t.courses.map((course) => (
                     <CourseRow
@@ -249,13 +278,12 @@ function CourseRow({ course, type, profile, open, onToggle }: RowProps) {
     <li id={`course-row-${course.slug}`} className="course-row" data-open={open}>
       <button type="button" className="course-row__hit" aria-expanded={open} aria-controls={panelId} onClick={(e) => onToggle(e.currentTarget.closest<HTMLElement>('.course-row'))}>
         <span className="course-row__text">
-          <span className="course-row__title">
-            <span className="course-row__name">{course.en}</span>
-            {profile.experts.map((ex) => (
-              <span key={ex.name} className="course-row__tag">{ex.name}</span>
-            ))}
+          <span className="course-row__name">{course.en}</span>
+          {/* 전문가는 캡슐 대신 한글 이름 옆 글자로 — 캡슐은 역량에만(v15: 같은 캡슐에 사람과 역량이 섞여 구분되지 않았다) */}
+          <span className="course-row__meta">
+            {course.ko}
+            <span className="course-row__experts"> · 전문가 {profile.experts.map((ex) => ex.name).join(', ')}</span>
           </span>
-          <span className="course-row__meta">{course.ko}</span>
         </span>
         <span className="course-row__tags">
           {course.tags.map((tag) => (

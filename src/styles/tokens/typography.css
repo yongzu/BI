@@ -44,7 +44,7 @@
   --typo-label-size: 1rem;                              /* 16 */
   --typo-body-size: 1rem;                               /* 16 */
   --typo-meta-size: 0.875rem;                           /* 14 */
-  --typo-caption-size: 0.75rem;                         /* 12 */
+  --typo-caption-size: 0.8125rem;                       /* 13 — v15: 12px 한글은 옅은 회색과 겹쳐 읽기 힘들었다(2026-10-23) */
 }
 
 /* ---------- Semantic styles (consumed by <Text />) ---------- */

@@ -5,7 +5,7 @@ import { AnnualTimeline } from '../components/AnnualTimeline/AnnualTimeline';
 import { CourseExplorer } from '../components/CourseExplorer/CourseExplorer';
 import { ApplyButton } from '../components/ApplyButton/ApplyButton';
 import GradientASCII from '../components/GradientASCII/GradientASCII';
-import { BackToTop, SiteHeader } from '../components/SiteHeader/SiteHeader';
+import { BackToTop, External, SiteHeader } from '../components/SiteHeader/SiteHeader';
 import { VersionLog } from '../components/VersionLog/VersionLog';
 import { SkillReveal } from '../components/SkillReveal/SkillReveal';
 import { DeviceMap } from '../components/DeviceMap/DeviceMap';
@@ -137,7 +137,7 @@ export function ProgramsPage() {
 
   return (
     <>
-      <SiteHeader />
+      <SiteHeader cta={{ href: applyPeriod.href, label: applyPeriod.cta }} />
       <BackToTop />
       <main className="page">
         {/* ---------- Hero ---------- (v9의 포인터 깊이 · 스크롤 포털은 v10에서 뺐다 — 사용자 지시 2026-10-19) */}
@@ -187,8 +187,10 @@ export function ProgramsPage() {
             {/* 과정 개요 대신 지원 기간 + 지원하기 — 토스뱅크 디자인 채용 히어로를 따름(사용자 지시 2026-10-03) */}
             {/* v6: 기간 옆에 모집 상태를 글자로(파동이 기간 줄을 캔버스로 다시 그리므로 배지 면 대신 흐린 글자) */}
             <div className="hero__apply">
+              {/* v15(2026-10-23): 모집 상태를 먼저 · 진하게, 지난 모집 기간은 그 아래 보조로 — 기간이 더 눈에 띄어 지금 모집 중으로 읽혔다 */}
               <Text typography="Label" className="hero__period">
-                {applyPeriod.label}<span className="hero__status"> · {applyPeriod.status}</span>
+                <span className="hero__status">{applyPeriod.status}</span>
+                <span className="hero__dates">모집 기간 {applyPeriod.label}</span>
               </Text>
               <ApplyButton href={applyPeriod.href}>{applyPeriod.cta}</ApplyButton>
             </div>
@@ -262,6 +264,17 @@ export function ProgramsPage() {
           <div className="group">
             <GroupLabel>with Toss</GroupLabel>
             <CareerRows />
+          </div>
+          {/* 맨 끝 신청 줄(v15, 2026-10-23) — 다 읽은 뒤 신청하려면 맨 위로 돌아가야 했다. 10/19에 뺀 마무리 블록(히어로 문장 · 기간 · 버튼)
+              대신 한 줄: 모집 상태 · 알림 신청 · 모집 안내 */}
+          <div className="apply-row">
+            <Text typography="Title" className="apply-row__status">{applyPeriod.status}</Text>
+            <div className="apply-row__actions">
+              <ApplyButton href={applyPeriod.href}>{applyPeriod.cta}</ApplyButton>
+              <a className="link apply-row__link" href="https://www.phi.design/admissions" target="_blank" rel="noreferrer">
+                모집 안내 <External />
+              </a>
+            </div>
           </div>
         </section>
 

@@ -46,6 +46,13 @@
 }
 .toc__link:hover .toc__label,
 .toc__link:focus-visible .toc__label { opacity: 1; }
+/* 지금 섹션의 이름은 늘 보인다(v15, 2026-10-23 — 이름 없는 대시만으로는 어디인지 몰랐다). 다른 선을 가리키는 동안엔 그 이름에 자리를 내준다.
+   카드 위를 지날 때도 읽히게 흰 바탕 캡슐. 양옆 여백이 이름을 담을 만큼 넓을 때만(1280px 이상) — 그보다 좁으면 본문을 가린다 */
+@media (min-width: 1280px) {
+  .toc__link.is-active .toc__label { opacity: 1; }
+  .toc:has(.toc__link:not(.is-active):is(:hover, :focus-visible)) .toc__link.is-active .toc__label { opacity: 0; }
+}
+.toc__label { padding: var(--space-4) var(--space-8); border-radius: 999px; background: var(--color-bg-default); box-shadow: 0 0 0 1px var(--color-border); }
 .toc__link:focus-visible { outline: none; }
 .toc__link:focus-visible .toc__line { outline: 2px solid var(--color-focus-ring); outline-offset: 3px; }
 

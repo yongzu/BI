@@ -10,7 +10,9 @@
      본문 한 줄(약 26px)만큼 더 늘렸다(사용자 지시 2026-10-20, 280 → 306px) */
   --sr-card-h: clamp(226px, calc((100svh - 288px) / 2), 306px);
   --sr-gap: 16px;
-  --sr-rest: 0.45; /* 카드의 기본 진하기 — 마우스를 올린 카드만 1(사용자 지시 2026-10-20) */
+  /* 카드의 기본 진하기. v15(2026-10-23): 0.45 → 1 — 옅은 카드의 본문은 대비 2:1 남짓이라 마우스 없이(터치) 읽을 수 없었다.
+     마우스를 올린 카드는 떠오르는 그림자 · 빛으로 강조한다(사용자 지시 2026-10-20의 '올린 카드만 진하게'를 강조로 바꿈) */
+  --sr-rest: 1;
   position: relative;
   /* 섹션 가운데 열을 벗어나 화면 폭 전체 */
   width: 100vw;
@@ -47,7 +49,76 @@
   width: 100%;
   height: 100%;
   perspective: 900px;
+  cursor: var(--cursor-pointer);
   transition: opacity 320ms var(--ease);
+}
+/* 위 오른쪽 '+' — 누르면 전문이 열린다는 표시이자 키보드 버튼(v15). 누를 자리 40px */
+.sr-card__open {
+  position: absolute;
+  top: var(--space-12);
+  right: var(--space-12);
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  cursor: var(--cursor-pointer);
+}
+.sr-card__plus {
+  position: relative;
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  background: var(--color-bg-subtle);
+  transition: background var(--duration) var(--ease);
+}
+.sr-card__plus::before,
+.sr-card__plus::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 10px;
+  height: 1.5px;
+  border-radius: 1px;
+  background: var(--color-text-primary);
+  translate: -50% -50%;
+}
+.sr-card__plus::after { rotate: 90deg; }
+.sr-card:hover .sr-card__plus { background: var(--color-text-primary); }
+.sr-card:hover .sr-card__plus::before,
+.sr-card:hover .sr-card__plus::after { background: var(--color-bg-default); }
+.sr-card__open:focus-visible { outline: 2px solid var(--color-focus-ring); outline-offset: -4px; }
+
+/* 전문 대화 상자(v15) — 카드와 같은 글자, 가운데 흰 판 */
+.sr-dialog {
+  width: min(560px, calc(100vw - 32px));
+  max-height: calc(100svh - 64px);
+  margin: auto;
+  padding: 0;
+  border: 0;
+  border-radius: 24px;
+  background: var(--color-bg-default);
+  box-shadow: 0 40px 80px -32px rgba(0, 0, 0, 0.35);
+  overscroll-behavior: contain;
+}
+.sr-dialog::backdrop { background: rgba(0, 0, 0, 0.32); }
+.sr-dialog__inner { display: flex; flex-direction: column; gap: var(--space-4); padding: var(--space-40) var(--space-40) var(--space-32); }
+.sr-dialog__close {
+  align-self: flex-end;
+  margin-top: var(--space-24);
+  padding: var(--space-12) var(--space-20);
+  border-radius: 999px;
+  background: var(--color-bg-subtle);
+  font-size: var(--typo-label-size);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-primary);
+  cursor: var(--cursor-pointer);
+}
+.sr-dialog__close:hover { background: var(--color-border); }
+.sr-dialog__close:focus-visible { outline: 2px solid var(--color-focus-ring); outline-offset: 2px; }
+@media (max-width: 720px) {
+  .sr-dialog__inner { padding: var(--space-28) var(--space-24) var(--space-24); }
 }
 .sr-card__plate {
   position: absolute;
@@ -92,6 +163,7 @@
 }
 .sr-card__ko { font-size: var(--typo-title-size); line-height: 1.25; font-weight: var(--font-weight-bold); letter-spacing: var(--tracking-heading); color: var(--color-text-primary); word-break: keep-all; }
 .sr-card__en { font-size: var(--typo-meta-size); line-height: 1.4; font-weight: var(--font-weight-medium); color: var(--color-text-tertiary); }
+.sr-card__text > :is(.sr-card__ko, .sr-card__en) { margin-right: var(--space-32); } /* 위 오른쪽 '+' 자리 */
 .sr-card__body { margin-top: var(--space-16); font-size: var(--typo-body-size); line-height: 1.65; color: var(--color-text-secondary); word-break: keep-all; }
 
 /* 무대가 붙어 있는 동안에도 목차(오른쪽 내비게이션)는 그대로 맨 위에 둔다(사용자 지시 2026-10-20 — 예전엔 이 구간에서 걷었다) */

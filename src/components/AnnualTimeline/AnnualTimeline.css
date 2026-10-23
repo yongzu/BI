@@ -65,8 +65,10 @@
 }
 .history__card-name { font-weight: var(--font-weight-bold); color: var(--color-text-primary); }
 
-/* 주간 리듬: 흰 면 위 요일 다섯 칸 × 오전 · 점심 · 오후 */
-.annual__rhythm { display: flex; flex-direction: column; gap: var(--space-12); margin-top: var(--space-8); padding: var(--space-20); border-radius: 20px; background: var(--color-bg-default); }
+/* 주간 리듬: 요일 다섯 칸 × 오전 · 점심 · 오후.
+   v15(2026-10-23): 흰 판을 뺐다 — 회색 패널 > 흰 판 > 회색 칸 3겹이라 상자가 정보보다 먼저 보였다. 이제 회색 패널 위에 바로
+   수업 칸(흰 면) · 빈 칸(가는 테두리) */
+.annual__rhythm { display: flex; flex-direction: column; gap: var(--space-12); margin-top: var(--space-8); }
 .annual__week { container-type: inline-size; display: flex; flex-direction: column; gap: var(--space-4); }
 .annual__week-row { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: var(--space-4); }
 .annual__week-day { padding-bottom: var(--space-4); text-align: center; font-size: var(--typo-caption-size); font-weight: var(--font-weight-bold); color: var(--color-text-secondary); }
@@ -79,7 +81,7 @@
   border-radius: 8px;
   box-shadow: inset 0 0 0 1px var(--color-border);
 }
-.annual__week-cell[data-on='true'] { background: var(--color-bg-subtle); box-shadow: none; }
+.annual__week-cell[data-on='true'] { background: var(--color-bg-default); box-shadow: none; }
 .annual__week-time { font-size: var(--typo-caption-size); line-height: 1.3; font-weight: var(--font-weight-medium); color: var(--color-text-tertiary); }
 .annual__week-name { font-size: var(--typo-meta-size); line-height: 1.3; font-weight: var(--font-weight-bold); color: var(--color-text-primary); }
 .annual__week-lunch {
@@ -132,12 +134,13 @@
   pointer-events: none;
   transition: transform 560ms var(--h-ease), width 560ms var(--h-ease);
 }
-.history__tab-name { font-size: var(--typo-lead-size); line-height: 1.3; font-weight: var(--font-weight-bold); letter-spacing: var(--tracking-body); color: var(--color-text-tertiary); opacity: 0.6; transition: color var(--duration) var(--ease), opacity var(--duration) var(--ease); }
-.history__tab-period { font-size: var(--typo-body-size); line-height: 1.3; font-variant-numeric: tabular-nums; color: var(--color-text-tertiary); opacity: 0.6; transition: color var(--duration) var(--ease), opacity var(--duration) var(--ease); }
-.history__tab[aria-selected='true'] .history__tab-name { color: var(--color-text-primary); opacity: 1; }
-.history__tab[aria-selected='true'] .history__tab-period { color: var(--color-text-secondary); opacity: 1; }
+.history__tab-name { font-size: var(--typo-lead-size); line-height: 1.3; font-weight: var(--font-weight-bold); letter-spacing: var(--tracking-body); color: var(--color-text-tertiary); transition: color var(--duration) var(--ease); }
+.history__tab-period { font-size: var(--typo-body-size); line-height: 1.3; font-variant-numeric: tabular-nums; color: var(--color-text-tertiary); transition: color var(--duration) var(--ease); }
+/* 고르지 않은 칸에 겹치던 투명도 0.6은 뺐다 — 40% 글자와 겹쳐 대비 1.6:1이었다(v15, 2026-10-23). 고른 칸은 진한 글자 + 막대로 */
+.history__tab[aria-selected='true'] .history__tab-name { color: var(--color-text-primary); }
+.history__tab[aria-selected='true'] .history__tab-period { color: var(--color-text-secondary); }
 @media (hover: hover) {
-  .history__tab[aria-selected='false']:hover :is(.history__tab-name, .history__tab-period) { opacity: 1; }
+  .history__tab[aria-selected='false']:hover :is(.history__tab-name, .history__tab-period) { color: var(--color-text-secondary); }
 }
 .history__tab:focus-visible { outline: 2px solid var(--color-text-primary); outline-offset: 4px; border-radius: 6px; }
 
@@ -156,7 +159,6 @@
   .history__tab { gap: var(--space-4); padding: var(--space-24) var(--space-8) var(--space-8) 0; }
   .history__tab-name { font-size: var(--typo-body-size); }
   .history__tab-period { font-size: var(--typo-meta-size); }
-  .annual__rhythm { padding: var(--space-12); }
 }
 /* 아주 좁으면(휴대폰 세로) 한 칸이 80px 안팎 — 이름 · 기간을 한 단계 더 작게 */
 @media (max-width: 440px) {

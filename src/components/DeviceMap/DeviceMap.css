@@ -62,7 +62,7 @@
   cursor: var(--cursor-pointer);
   transition: background 360ms var(--dm-ease), color 360ms var(--dm-ease), transform 600ms cubic-bezier(0.34, 1.32, 0.64, 1);
 }
-.device-map__num { font-size: var(--typo-caption-size); font-variant-numeric: tabular-nums; opacity: 0.45; }
+.device-map__num { font-size: var(--typo-caption-size); font-variant-numeric: tabular-nums; color: var(--color-text-tertiary); } /* 투명도 0.45 → 3단계 글자색(v15 대비) */
 @media (hover: hover) { .device-map__node:hover { transform: translateX(4px); } }
 .device-map__node[aria-current='step'] { background: var(--color-text-primary); color: var(--color-bg-default); }
 .device-map__node:focus-visible { outline: 2px solid var(--color-text-primary); outline-offset: 2px; }

@@ -15,8 +15,14 @@
 
 .version-log__list {
   list-style: none;
-  margin: 0 calc(-1 * var(--space-16, 16px));
+  margin: var(--space-12, 12px) calc(-1 * var(--space-16, 16px)) 0;
 }
+/* 접힌 머리(v15) — 누르면 목록이 펼쳐진다. 기본 삼각형 대신 오른쪽의 + / − */
+.version-log__summary { display: flex; align-items: center; gap: var(--space-8, 8px); width: max-content; list-style: none; cursor: var(--cursor-pointer, pointer); }
+.version-log__summary::-webkit-details-marker { display: none; }
+.version-log__summary::after { content: '+'; color: var(--color-text-tertiary); }
+details[open] > .version-log__summary::after { content: '−'; }
+.version-log__summary:focus-visible { outline: 2px solid var(--color-text-primary); outline-offset: 4px; border-radius: 4px; }
 
 .version-log__row {
   display: grid;

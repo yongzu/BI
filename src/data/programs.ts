@@ -27,7 +27,7 @@ export const facts = [
  * 지원 링크는 따로 받은 주소가 없어 상단바 '2기 오픈 알림 신청'과 같은 주소를 임시로 쓴다.
  */
 export const applyPeriod = {
-  label: '7.9(Thu) ~ 8.6(Thu)',
+  label: '2026.7.9(목) – 8.6(목)', // v15: 한글 요일 · 대시 — 연간 구조 '2026.08 – 12'와 같은 표기(2026-10-23)
   href: 'https://www.phi.design/updates',
   // v6(2026-10-19): 1기 모집 기간이 지났으므로 상태를 말하고, 버튼은 이미 연결된 주소에 맞는 이름으로 —
   // 토스뱅크 디자인 채용이 종료 뒤 "마감되었어요" · "토스 채용 바로가기"로 바꾼 것을 따름
@@ -133,10 +133,14 @@ export type Course = {
 export type CourseType = {
   id: 'fundamental' | 'domain' | 'ritual' | 'study' | 'workshop' | 'event';
   name: string;
+  /** 탭 이름 아래 한글 한 줄 — 영어 분류명만으로는 뜻을 알기 어렵다(v15 휴리스틱 평가 2026-10-23) */
+  short: string;
   /** 코스 밖에서 열리는 분류(Workshop · Event) — 정해진 수업 목록 · 진행 방식이 없고, 탭에선 Study 밑 선 아래에 둔다 */
   extra?: true;
   cadence?: string;
   body: string;
+  /** 수업 목록이 없는 분류의 오른쪽 안내 — 빈 칸이 불러오기 실패처럼 보이지 않게(v15) */
+  note?: string;
   courses: Course[];
 };
 
@@ -144,6 +148,7 @@ export const courseTypes: CourseType[] = [
   {
     id: 'fundamental',
     name: 'Fundamental',
+    short: '기본기 · 4개월',
     cadence: '4개월 지속 · 매주 진행',
     body: '4개월 동안 매주 이어지며, 한 분야의 핵심 원리를 전문가와 함께 오래 다지는 수업입니다.\n사고방식 위주의 기본기를 학습할 때는 지식을 습득하는 것은 물론, 다양한 맥락에서의 적용이 필요하기 때문에 긴 호흡으로 진행합니다.',
     courses: [
@@ -155,6 +160,7 @@ export const courseTypes: CourseType[] = [
   {
     id: 'domain',
     name: 'Domain',
+    short: '주제별 · 1–2개월',
     cadence: '1–2개월 단위 · 주제별 구성',
     body: '1-2개월 단위로 구성되며, 기본기를 단기간에 습득할 수 있는 단위로 쪼개어서 경험하는 수업입니다.\n여러 주제를 들어보면서 나에게 더 맞는 주제가 있다면 이후에 심화하여 학습할 수 있습니다.',
     courses: [
@@ -166,6 +172,7 @@ export const courseTypes: CourseType[] = [
   {
     id: 'ritual',
     name: 'Ritual',
+    short: '월 1회 · 반복 훈련',
     cadence: '월 1회 · 하루 6시간',
     body: '한 달에 한 번, 하루 여섯 시간을 통째로 쓰는 수업입니다. 학습 목표에 따라 단기간에 집중적인 학습이 필요한 코스가 있고, 간격을 두고(spaced repetition) 다른 일과를 수행하면서 배우면 효과적인 코스가 있습니다. Ritual은 후자의 수업으로, 반복적인 훈련과 습관화가 필요한 종류의 내용을 배웁니다.',
     courses: [
@@ -178,6 +185,7 @@ export const courseTypes: CourseType[] = [
   {
     id: 'study',
     name: 'Study',
+    short: '학습자끼리',
     cadence: '전문가 없이 학습자끼리 진행',
     body: '전문가 없이 학습자끼리 학습하는 수업입니다. 궁극적으로 학습자들은 스스로 배울 수 있는 상태가 되어야 합니다.\nPhi에서는 전문가의 전문성은 물론 학습자의 자율적 학습도 배워야 할 대상으로 여기며, 이를 위해 Learning Design팀이 각종 지원을 제공합니다.',
     courses: [
@@ -189,14 +197,19 @@ export const courseTypes: CourseType[] = [
   {
     id: 'workshop',
     name: 'Workshop',
+    short: '코스 밖 워크숍',
     extra: true,
     body: '학기 중 코스 외 시간에 학습 능력 증진을 위해 제공되는 워크숍입니다.',
+    // 안내 문구는 '수업을 관통하는 접근'의 워크숍 설명(devices)에서 — 목록이 정해지면 courses로 옮긴다
+    note: '주제는 매 기수 학습자들의 상태를 반영해 정해집니다. 예를 들어 전문가의 암묵지를 분석하고 분해하는 법은 코스 밖 워크숍에서 따로 배웁니다.',
     courses: [],
   },
   {
     id: 'event',
     name: 'Event',
+    short: '행사',
     extra: true,
+    note: '행사 목록은 준비 중입니다.', // 자리 표시 — 실제 행사 목록을 받으면 바꾼다(2026-10-23)
     body: '외부인사 초청 강연이나 OT, 클로징 파티 등 코스를 시작하거나 끝맺음할 때, 혹은 특별한 이벤트가 있을 때 열리는 행사입니다.',
     courses: [],
   },
