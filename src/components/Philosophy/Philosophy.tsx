@@ -29,6 +29,8 @@ import './Philosophy.css';
  *   ② 나머지 동안 같은 높이에서 왼쪽 제자리로 옮겨 가며
  *   단락 칸이 함께 페이드인된다(스크롤을 따라). 큰 제목인 동안(① ~ ②)은 벡터 인터랙션 · 십자선을 꺼 둔다(setVectorZone).
  *   끊어 넘기기도 큰 제목 자리(0) → 단락들(1 … n) → 무대가 풀리는 자리(n + 1) 순서로 맞춘다.
+ * - 머묾(사용자 지시 2026-10-23 — 스크롤하다 보면 내용이 나오자마자 넘어갔다): 막 드러난 단락은 문장이 다 드러날 때까지(hold) 다음 단락으로
+ *   넘어가지 않는다. 그동안 더 내려도 단락은 그대로이고, 멈추면 그 단락 자리로 되돌린다. 넘어갈 땐 한 칸씩. 스크롤 자체는 가로채지 않는다.
  * 단락마다 스크롤 STEP(화면 높이 배수). 움직임 줄이기면 붙는 무대 없이 제목과 단락을 차례로 쌓는다(CSS).
  */
 type Props = { title: string; paragraphs: string[][] };
@@ -49,6 +51,8 @@ const SETTLE_MS = 140;
 const SNAP_S = 0.7;
 /** 한 단락 안 문장들이 차례로 드러나는 간격(초) */
 const SENTENCE_GAP = 0.9;
+/** 한 문장이 드러나 읽히는 시간(초) — 막 드러난 단락은 이만큼 머문 뒤에야 다음 단락으로 넘어간다 */
+const READ_S = 1.2;
 /** 문장 → ScrollReveal children: 글은 그대로, [ ]로 감싼 낱말은 벡터 낱말 — 본문은 박스만(앵커 없이, 사용자 지시 2026-10-23) */
 function sentence(text: string): ReactNode[] {
   return text.split(/(\[[^\]]+\])/).filter(Boolean).map((part, i) =>
@@ -74,6 +78,12 @@ export function Philosophy({ title, paragraphs }: Props) {
     let snapping = 0; // 맞춰 가는 동안(이 시각까지)은 스크롤 멈춤을 무시한다
     let idx = -1; // 마지막으로 맞춘 자리: 0 = 큰 제목, 1 … n = 단락, n + 1 = 무대가 풀리는 자리. -1 = 바깥
     let lastY = window.scrollY;
+    let atShown = 0; // 보이는 단락 — 스크롤이 가리키는 단락보다 늦을 수 있다(hold)
+    let wasOn = false;
+    let holdUntil = 0;
+    let holdTimer = 0;
+    // 단락 i가 다 드러나는 시간(ms): 문장이 SENTENCE_GAP초 간격으로 시작해 마지막 문장이 READ_S초 동안 드러난다
+    const hold = (i: number) => ((paragraphs[i].length - 1) * SENTENCE_GAP + READ_S) * 1000;
     // 맞출 자리(페이지 y): 0 = 무대가 붙는 순간(큰 제목), i = 단락 i - 1이 지금이 되는 지점, n + 1 = 무대가 풀리는 자리
     const geometry = () => {
       const r = track.getBoundingClientRect();
@@ -112,9 +122,29 @@ export function Philosophy({ title, paragraphs }: Props) {
       // 큰 제목인 동안은 벡터 인터랙션 · 십자선을 꺼 둔다
       setVectorZone(root, k >= 1);
       // 단락 글자는 ②가 시작되면 드러나기 시작한다
-      setShown(k > SHRINK && r.bottom > vh * 0.4);
+      const on = k > SHRINK && r.bottom > vh * 0.4;
+      setShown(on);
       const q = span > intro ? Math.min(0.999, Math.max(0, (-r.top - intro) / (span - intro))) : 0;
-      setAt(Math.floor(q * n));
+      const atT = Math.floor(q * n);
+      // 막 드러난 단락은 다 읽힐 때까지(hold) 다음으로 넘기지 않는다 — 한 번에 한 칸씩, 되돌아갈 땐 바로
+      const now = performance.now();
+      if (!on) {
+        atShown = atT;
+        holdUntil = 0;
+      } else if (!wasOn || atT < atShown) {
+        atShown = atT;
+        holdUntil = now + hold(atShown);
+      } else if (atT > atShown) {
+        if (now >= holdUntil) {
+          atShown += 1;
+          holdUntil = now + hold(atShown);
+        }
+        // 다 읽힐 때 다시 본다(그동안 스크롤이 멈춰 있어도)
+        window.clearTimeout(holdTimer);
+        holdTimer = window.setTimeout(onScroll, Math.max(0, holdUntil - now) + 16);
+      }
+      wasOn = on;
+      setAt(atShown);
     };
     const snap = () => {
       const y = window.scrollY;
@@ -137,6 +167,8 @@ export function Philosophy({ title, paragraphs }: Props) {
         if (target < 0) return; // 큰 제목에서 위로 — 무대 밖으로 나가게 둔다
       }
       target = Math.min(last, target);
+      // 막 드러난 단락을 읽는 중이면 그 단락 자리로 되돌린다(내용이 나오자마자 넘어가지 않게, 사용자 지시 2026-10-23)
+      if (atShown + 1 < target && performance.now() < holdUntil) target = atShown + 1;
       idx = target;
       const dist = Math.abs(a[target] - y);
       if (dist < 2) return;
@@ -158,6 +190,7 @@ export function Philosophy({ title, paragraphs }: Props) {
     return () => {
       cancelAnimationFrame(raf);
       window.clearTimeout(settle);
+      window.clearTimeout(holdTimer);
       window.removeEventListener('scroll', onScroll);
       window.removeEventListener('resize', onScroll);
       title.style.transform = '';

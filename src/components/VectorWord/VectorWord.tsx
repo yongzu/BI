@@ -30,13 +30,23 @@ const RESET = 'vector-reset';
 export function setVectorZone(zone: HTMLElement, on: boolean) {
   const off = zone.dataset.vector === 'off';
   if (on === !off) return;
-  if (on) delete zone.dataset.vector;
-  else {
+  if (on) {
+    delete zone.dataset.vector;
+    window.dispatchEvent(new Event(REPROBE)); // 켜지는 순간 포인터 아래 낱말을 바로 켠다(마우스가 멈춰 있어도)
+  } else {
     zone.dataset.vector = 'off';
     window.dispatchEvent(new Event(RESET));
   }
 }
 const zoneOff = (el: Element) => !!el.closest('[data-vector="off"]');
+
+/**
+ * 스크롤 중 벡터 보기(사용자 지시 2026-10-23 — 스크롤이 멈춰야 나왔다): 마우스가 가만있고 글이 움직이면 브라우저는 스크롤이 끝난 뒤에야
+ * pointerenter · leave를 보낸다. 그래서 스크롤하는 동안 VectorGuides가 매 프레임 포인터 아래를 직접 살펴(PROBE) 그 낱말을 켜고 나머지를 끈다 —
+ * 켜진 낱말은 박스도 지금 자리로 다시 잰다
+ */
+const PROBE = 'vector-probe';
+const REPROBE = 'vector-reprobe';
 
 /** 마우스를 쓰는 화면에서만 — 터치로 누르면 벡터 보기가 남아 글을 가린다 */
 const canHover = () => window.matchMedia('(hover: hover) and (pointer: fine)').matches;
@@ -69,26 +79,44 @@ export function VectorWord({ word, boxOnly = false }: { word: string; boxOnly?: 
   const ref = useRef<HTMLSpanElement>(null);
   const [px, setPx] = useState(0); // 1px이 몇 em인지 — 앵커 크기를 화면 px로 맞춘다. 0이면 꺼짐
 
-  // 영역이 꺼지면 켜져 있던 벡터 보기를 거둔다
-  useEffect(() => {
-    const reset = () => setPx(0);
-    window.addEventListener(RESET, reset);
-    return () => window.removeEventListener(RESET, reset);
-  }, []);
-
-  if (!glyph && !boxOnly) return <>{word}</>;
-
+  const on = useRef(false);
   const enter = () => {
     if (!canHover() || !ref.current || zoneOff(ref.current)) return;
+    on.current = true;
     setPx(1 / parseFloat(getComputedStyle(ref.current).fontSize));
     // 제목 낱말은 미리 뽑은 윤곽의 상자 그대로(정확), 본문 낱말은 캔버스로 잰 잉크 상자
     const outline = ref.current.querySelector('.vw__outline');
     vectorHover(outline ? outline.getBoundingClientRect() : inkRect(ref.current));
   };
   const leave = () => {
+    on.current = false;
     setPx(0);
     vectorHover(null);
   };
+  const latest = useRef({ enter, leave });
+  latest.current = { enter, leave };
+
+  // 영역이 꺼지면 켜져 있던 벡터 보기를 거둔다
+  useEffect(() => {
+    const reset = () => {
+      on.current = false;
+      setPx(0);
+    };
+    // 스크롤 중: 포인터 아래 낱말이면 켜고(박스 다시 재기), 아니면 끈다
+    const probe = (e: Event) => {
+      const hit = (e as CustomEvent<Element | null>).detail;
+      if (hit && hit === ref.current) latest.current.enter();
+      else if (on.current) latest.current.leave();
+    };
+    window.addEventListener(RESET, reset);
+    window.addEventListener(PROBE, probe);
+    return () => {
+      window.removeEventListener(RESET, reset);
+      window.removeEventListener(PROBE, probe);
+    };
+  }, []);
+
+  if (!glyph && !boxOnly) return <>{word}</>;
 
   if (boxOnly) {
     return (
@@ -146,6 +174,28 @@ export function VectorGuides({ zone }: { zone: RefObject<HTMLElement | null> }) 
       const rect = (e as CustomEvent<VectorTarget>).detail;
       setTarget((t) => (rect ? { rect, on: true } : t ? { ...t, on: false } : t));
     };
+    // 스크롤 중엔 포인터가 가만있어도 아래 글이 바뀐다 — 매 프레임 포인터 아래를 살펴 낱말 · 십자선을 맞춘다
+    let last: { x: number; y: number } | null = null;
+    let raf = 0;
+    const probe = () => {
+      raf = 0;
+      if (!last) return;
+      const hit = document.elementFromPoint(last.x, last.y);
+      const inside = !!hit && el.contains(hit);
+      const word = inside && !zoneOff(el) ? hit.closest('.vw') : null;
+      window.dispatchEvent(new CustomEvent<Element | null>(PROBE, { detail: word }));
+      const at = last;
+      setPointer((p) => (p && (p.on !== (inside && !zoneOff(el))) ? { ...at, on: inside && !zoneOff(el) } : p));
+    };
+    const schedule = () => {
+      if (!raf) raf = requestAnimationFrame(probe);
+    };
+    const track = (e: PointerEvent) => {
+      if (e.pointerType === 'mouse') last = { x: e.clientX, y: e.clientY };
+    };
+    window.addEventListener('pointermove', track, { passive: true });
+    window.addEventListener('scroll', schedule, { passive: true });
+    window.addEventListener(REPROBE, schedule);
     el.addEventListener('pointermove', move);
     el.addEventListener('pointerleave', leave);
     const reset = () => {
@@ -155,6 +205,10 @@ export function VectorGuides({ zone }: { zone: RefObject<HTMLElement | null> }) 
     window.addEventListener(EVENT, onTarget);
     window.addEventListener(RESET, reset);
     return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener('pointermove', track);
+      window.removeEventListener('scroll', schedule);
+      window.removeEventListener(REPROBE, schedule);
       window.removeEventListener(RESET, reset);
       el.removeEventListener('pointermove', move);
       el.removeEventListener('pointerleave', leave);
