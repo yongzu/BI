@@ -1,7 +1,8 @@
 /* 교육 철학(v18) — apple.com/kr/macbook-pro '성능' 섹션의 붙는 무대 + iPhone Duo 펼침 전환. 화면 폭 섹션 공통 양옆 여백(--side-wide). Tokens only.
    단락 수 × STEP 화면 높이의 길(.philosophy__track)에 화면 높이 무대가 붙고, 큰 제목 아래 단락들이 한 칸에 겹쳐 하나씩 보인다 */
 .philosophy { --ph-ease: cubic-bezier(0.22, 1, 0.36, 1); padding-top: var(--space-section); }
-.philosophy__track { position: relative; height: calc(var(--ph-n) * var(--ph-step) * 100svh); }
+/* 길 = 큰 제목이 줄어드는 몫(--ph-intro) + 단락 수 × STEP, 화면 높이 단위 */
+.philosophy__track { position: relative; height: calc((var(--ph-intro) + var(--ph-n) * var(--ph-step)) * 100svh); }
 .philosophy__stage {
   position: sticky;
   top: 0;
@@ -15,18 +16,8 @@
   overflow: hidden;
 }
 
-/* ---------- 제목 아래: 왼쪽 단락 · 오른쪽 Φ 모션 ----------
-   Φ는 크게, 화면 오른쪽 끝 밖으로 나가 잘린다(사용자 제공 이미지 2026-10-23) — 왼쪽 끝은 화면 폭의 --ph-motion-x 자리.
-   크기 · 위(top)는 Philosophy.tsx가 정한다: X자 장면에서 고리 위 끝 = 제목 위 끝, 아래 끝 = 본문 아래 끝.
-   잘리는 건 무대(.philosophy__stage overflow: hidden = 화면 폭). 단락은 Φ 앞에서 끝나게 폭을 줄이고, Φ보다 위에 둔다 */
-.philosophy__body { --ph-motion-x: 70vw; position: relative; width: 100%; }
-.philosophy__body .philosophy__paras { position: relative; z-index: 1; max-width: calc(var(--ph-motion-x) - var(--side-wide) - 48px); }
-.philosophy__motion {
-  position: absolute;
-  top: 0;
-  left: calc(var(--ph-motion-x) - var(--side-wide)); /* 본문 칸은 --side-wide에서 시작한다 */
-  width: clamp(320px, 46vw, 760px); /* 첫 그림 전 기본값 — Philosophy.tsx가 덮어쓴다 */
-}
+/* ---------- 제목 아래 단락(v19: 오른쪽 Φ 모션을 뺐다 — 단락이 본문 칸을 다 쓴다) ---------- */
+.philosophy__body { width: 100%; }
 
 /* ---------- 큰 제목: 본문보다 큰 글(Apple typography-headline-super 자리). 잉크 단색(사용자 지시 2026-10-23 — 그라데이션 뺌) ---------- */
 .philosophy__title {
@@ -63,14 +54,10 @@
 .philosophy__sentence.scroll-reveal { margin: 0; }
 
 /* ---------- 떠오름(Apple StaggeredFadeIn): 무대가 들어오면 제목 → 첫 단락 차례로 ---------- */
-.philosophy__title,
-.philosophy__body {
-  opacity: 0;
-  transform: translateY(32px);
-  transition: opacity 800ms var(--ease), transform 1000ms var(--ph-ease);
-}
-.philosophy__body { transition-delay: 220ms; }
-.philosophy[data-shown='true'] :is(.philosophy__title, .philosophy__body) { opacity: 1; transform: none; }
+/* 제목은 떠오르지 않는다(사용자 지시 2026-10-23) — 대신 화면을 넘치는 크기에서 제자리로 줄어든다(Philosophy.tsx, transform) */
+.philosophy__title { transform-origin: 0 0; will-change: transform; }
+/* 단락 칸은 제목이 왼쪽 제자리로 옮겨 가는 동안 스크롤을 따라 페이드인(Philosophy.tsx가 opacity · transform을 직접 준다) */
+.philosophy__body { will-change: opacity, transform; }
 
 /* ---------- 단락 전환: iPhone Duo 펼침(영상 8 ~ 11초), 위아래로(사용자 지시 2026-10-23 — 좌우 → 상하) ----------
    지금(now): 펼쳐져 또렷. 지난(past): 흐려지며 살짝 작아지고 위로 기울며 빠진다.
@@ -99,16 +86,13 @@
 
 @media (max-width: 720px) {
   .philosophy__stage { gap: var(--space-32); }
-  /* 휴대폰: 잘리는 큰 Φ 대신 단락 위의 작은 Φ */
-  .philosophy__body { display: flex; flex-direction: column-reverse; align-items: flex-start; gap: var(--space-24); }
-  .philosophy__body .philosophy__paras { max-width: none; }
-  .philosophy__motion { position: static; width: 120px; }
   .philosophy__title { white-space: normal; }
   .philosophy__para { gap: var(--space-28); }
 }
 /* 움직임 줄이기: 붙는 무대 없이 제목과 단락을 차례로 쌓는다 */
 @media (prefers-reduced-motion: reduce) {
   .philosophy__track { height: auto; }
+  .philosophy__title { transform: none !important; }
   .philosophy__stage { position: static; height: auto; }
   .philosophy__paras { gap: var(--space-48); }
   .philosophy__title, .philosophy__body, .philosophy__para {

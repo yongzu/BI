@@ -22,6 +22,22 @@ export type VectorTarget = DOMRect | null;
 const EVENT = 'vector-hover';
 export const vectorHover = (target: VectorTarget) => window.dispatchEvent(new CustomEvent<VectorTarget>(EVENT, { detail: target }));
 
+/**
+ * 영역의 벡터 인터랙션 끄기 · 켜기(v19 — 큰 제목이 줄어드는 동안은 꺼 둔다, 사용자 지시 2026-10-23).
+ * 영역에 data-vector="off"를 달고, 켜져 있던 벡터 보기 · 십자선 · 박스를 모두 거둔다(흐려지며)
+ */
+const RESET = 'vector-reset';
+export function setVectorZone(zone: HTMLElement, on: boolean) {
+  const off = zone.dataset.vector === 'off';
+  if (on === !off) return;
+  if (on) delete zone.dataset.vector;
+  else {
+    zone.dataset.vector = 'off';
+    window.dispatchEvent(new Event(RESET));
+  }
+}
+const zoneOff = (el: Element) => !!el.closest('[data-vector="off"]');
+
 /** 마우스를 쓰는 화면에서만 — 터치로 누르면 벡터 보기가 남아 글을 가린다 */
 const canHover = () => window.matchMedia('(hover: hover) and (pointer: fine)').matches;
 
@@ -53,10 +69,17 @@ export function VectorWord({ word, boxOnly = false }: { word: string; boxOnly?: 
   const ref = useRef<HTMLSpanElement>(null);
   const [px, setPx] = useState(0); // 1px이 몇 em인지 — 앵커 크기를 화면 px로 맞춘다. 0이면 꺼짐
 
+  // 영역이 꺼지면 켜져 있던 벡터 보기를 거둔다
+  useEffect(() => {
+    const reset = () => setPx(0);
+    window.addEventListener(RESET, reset);
+    return () => window.removeEventListener(RESET, reset);
+  }, []);
+
   if (!glyph && !boxOnly) return <>{word}</>;
 
   const enter = () => {
-    if (!canHover() || !ref.current) return;
+    if (!canHover() || !ref.current || zoneOff(ref.current)) return;
     setPx(1 / parseFloat(getComputedStyle(ref.current).fontSize));
     // 제목 낱말은 미리 뽑은 윤곽의 상자 그대로(정확), 본문 낱말은 캔버스로 잰 잉크 상자
     const outline = ref.current.querySelector('.vw__outline');
@@ -104,24 +127,35 @@ export function VectorWord({ word, boxOnly = false }: { word: string; boxOnly?: 
 /**
  * 영역(zone)마다 하나 — 포인터를 따라다니는 십자선 · 좌표, 벡터 보기 대상의 바운딩 박스 · 안내선 · 좌표.
  * 좌표는 화면 기준(px — 사용자 제공 이미지). 포인터 십자선은 짙은 점선 + 교차점 검은 네모 + 오른쪽 아래 좌표. 마우스를 쓰는 화면에서만.
+ * 영역에 들어오고 나갈 때 · 박스가 생기고 없어질 때 뚝 끊기지 않게 마지막 자리를 둔 채 흐려지며 사라진다(사용자 지시 2026-10-23, data-on → CSS).
  */
 export function VectorGuides({ zone }: { zone: RefObject<HTMLElement | null> }) {
-  const [pointer, setPointer] = useState<{ x: number; y: number } | null>(null);
-  const [target, setTarget] = useState<VectorTarget>(null);
+  const [pointer, setPointer] = useState<{ x: number; y: number; on: boolean } | null>(null);
+  const [target, setTarget] = useState<{ rect: DOMRect; on: boolean } | null>(null);
 
   useEffect(() => {
     const el = zone.current;
     if (!el) return;
     const move = (e: PointerEvent) => {
       if (e.pointerType !== 'mouse' || !canHover()) return;
-      setPointer({ x: e.clientX, y: e.clientY });
+      setPointer({ x: e.clientX, y: e.clientY, on: !zoneOff(el) });
     };
-    const leave = () => setPointer(null);
-    const onTarget = (e: Event) => setTarget((e as CustomEvent<VectorTarget>).detail);
+    // 나가면 마지막 자리에 둔 채 흐려진다
+    const leave = () => setPointer((p) => (p ? { ...p, on: false } : p));
+    const onTarget = (e: Event) => {
+      const rect = (e as CustomEvent<VectorTarget>).detail;
+      setTarget((t) => (rect ? { rect, on: true } : t ? { ...t, on: false } : t));
+    };
     el.addEventListener('pointermove', move);
     el.addEventListener('pointerleave', leave);
+    const reset = () => {
+      setPointer((p) => (p ? { ...p, on: false } : p));
+      setTarget((t) => (t ? { ...t, on: false } : t));
+    };
     window.addEventListener(EVENT, onTarget);
+    window.addEventListener(RESET, reset);
     return () => {
+      window.removeEventListener(RESET, reset);
       el.removeEventListener('pointermove', move);
       el.removeEventListener('pointerleave', leave);
       window.removeEventListener(EVENT, onTarget);
@@ -129,21 +163,21 @@ export function VectorGuides({ zone }: { zone: RefObject<HTMLElement | null> }) 
   }, [zone]);
 
   if (!pointer && !target) return null;
-  const r = target;
+  const r = target?.rect;
   return createPortal(
     <div className="vguides" aria-hidden="true">
       {pointer && (
-        <>
+        <div className="vguides__group vguides__group--cross" data-on={pointer.on}>
           <span className="vguides__h vguides__h--cross" style={{ top: pointer.y }} />
           <span className="vguides__v vguides__v--cross" style={{ left: pointer.x }} />
           <span className="vguides__dot" style={{ left: pointer.x, top: pointer.y }} />
           <span className="vguides__pointer" style={{ left: pointer.x, top: pointer.y }}>
             {Math.round(pointer.x)}, {Math.round(pointer.y)}
           </span>
-        </>
+        </div>
       )}
       {r && (
-        <>
+        <div className="vguides__group" data-on={target.on}>
           <span className="vguides__h" style={{ top: r.top }} />
           <span className="vguides__h" style={{ top: r.bottom }} />
           <span className="vguides__v" style={{ left: r.left }} />
@@ -154,7 +188,7 @@ export function VectorGuides({ zone }: { zone: RefObject<HTMLElement | null> }) 
           ))}
           <span className="vguides__label" style={{ top: r.top }}>({Math.round(r.left)},{Math.round(r.top)})</span>
           <span className="vguides__label" style={{ top: r.bottom }}>({Math.round(r.right)},{Math.round(r.bottom)})</span>
-        </>
+        </div>
       )}
     </div>,
     document.body,

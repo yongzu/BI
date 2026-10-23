@@ -1,8 +1,7 @@
-import { Fragment, useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
+import { Fragment, useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import ScrollReveal from '../ScrollReveal/ScrollReveal';
 import { scrollToTarget } from '../../smoothScroll';
-import { PhiMotion } from '../PhiMotion/PhiMotion';
-import { VectorGuides, VectorWord } from '../VectorWord/VectorWord';
+import { VectorGuides, VectorWord, setVectorZone } from '../VectorWord/VectorWord';
 import './Philosophy.css';
 
 /**
@@ -15,20 +14,33 @@ import './Philosophy.css';
  * - 단락이 바뀔 땐 iPhone Duo 소개 영상(youtube bxSGfpoFP30, 8 ~ 11초)의 펼침 — 나가는 단락은 흐려지며 비키고,
  *   들어오는 단락은 위 경첩에서 3D로 젖혀진 채 접혀 있다가 아래로 펼쳐지며 흐림이 걷힌다(사용자 지시 — 좌우가 아니라 위아래로).
  *   스크롤 지점을 넘으면 시간으로 움직인다(되돌리면 거꾸로). 제목은 잉크 단색, 단락은 v17과 같은 큰 글(44px).
- * - 벡터형 인재(사용자 제공 phi.design 화면 녹화 · 코드): 한 줄 제목 아래 왼쪽 단락 · 오른쪽 Φ 모션그래픽(PhiMotion). 섹션 전체에서
- *   포인터를 십자선 · 좌표가 따라다니고(VectorGuides), 제목 낱말과 본문의 [사고방식] · [벡터형 인재] · [역량과 태도] · Φ 고리는
+ * - 벡터형 인재(사용자 제공 phi.design 화면 녹화 · 코드): 한 줄 제목 아래 단락. 섹션 전체에서
+ *   포인터를 십자선 · 좌표가 따라다니고(VectorGuides), 제목 낱말과 본문의 [사고방식] · [벡터형 인재] · [역량과 태도]는
  *   마우스를 올리면 벡터 보기(VectorWord — 윤곽 · 최소한의 앵커 · 바운딩 박스 · 안내선 · 좌표).
  * - 본문은 react-bits ScrollReveal(사용자 제공 설정: chars · fade · stagger 0.05 · smoothing 2 · baseOpacity 0.1 · blur 4).
  * - 단락마다 끊어 넘긴다(사용자 지시 2026-10-23 — 스크롤에 따라 반쯤 흐린 글이 남았다): 무대가 붙어 있는 동안 스크롤이 멈추면
  *   단락 자리로 맞춰 간다. 지금 단락에서 SNAP_PX 넘게 내려왔으면 다음 단락, 올라갔으면 이전 단락, 아니면 제자리로.
  *   마지막 단락에서 더 내리면 무대가 풀리는 자리로 보내 다음 섹션으로 이어진다. 바깥에서 들어오면 위에선 첫 단락, 아래에선 마지막 단락으로.
  *   글은 스크롤 위치(scrub)가 아니라 단락이 자리 잡으면 시간으로 끝까지 드러난다 — 문장은 차례로(SENTENCE_GAP초 간격).
+ * - v19(사용자 지시 2026-10-23): 오른쪽 Φ 모션그래픽(PhiMotion)을 뺐다 — v18엔 단락 오른쪽에 화면 밖으로 잘리는 큰 Φ가 있었다.
+ * - v19 몰입(사용자 지시 2026-10-23): 무대 앞에 INTRO 화면 높이만큼의 길을 더 두고, 그동안 제목이 화면을 넘칠 만큼 크게(화면 폭의 INTRO_WIDTH배)
+ *   화면 가운데 있다가 스크롤을 따라 제자리 크기 · 자리로 줄어든다. 제목엔 떠오름(StaggeredFadeIn)을 쓰지 않는다.
+ *   두 단계(사용자 지시 2026-10-23): ① SHRINK 몫 동안 화면 가로 가운데 · 제목 본래 높이(세로 가운데 선)에 선 채 제 크기로 줄고,
+ *   ② 나머지 동안 같은 높이에서 왼쪽 제자리로 옮겨 가며
+ *   단락 칸이 함께 페이드인된다(스크롤을 따라). 큰 제목인 동안(① ~ ②)은 벡터 인터랙션 · 십자선을 꺼 둔다(setVectorZone).
+ *   끊어 넘기기도 큰 제목 자리(0) → 단락들(1 … n) → 무대가 풀리는 자리(n + 1) 순서로 맞춘다.
  * 단락마다 스크롤 STEP(화면 높이 배수). 움직임 줄이기면 붙는 무대 없이 제목과 단락을 차례로 쌓는다(CSS).
  */
 type Props = { title: string; paragraphs: string[][] };
 
 /** 한 단락이 쓰는 스크롤 길이(화면 높이 배수) */
 const STEP = 1.2;
+/** 큰 제목이 줄어드는 스크롤 길이(화면 높이 배수) */
+const INTRO = 1;
+/** 처음 제목 폭 = 화면 폭 × 이 값(화면을 넘친다) */
+const INTRO_WIDTH = 1.7;
+/** 몰입 길 중 가운데에서 줄어드는 몫 — 나머지는 왼쪽 제자리로 옮겨 가며 단락이 페이드인 */
+const SHRINK = 0.6;
 /** 지금 단락 자리에서 이만큼(px) 넘게 움직이고 멈추면 다음 · 이전 단락으로 넘긴다 */
 const SNAP_PX = 40;
 /** 스크롤이 멈췄다고 보는 시간(ms) */
@@ -37,13 +49,6 @@ const SETTLE_MS = 140;
 const SNAP_S = 0.7;
 /** 한 단락 안 문장들이 차례로 드러나는 간격(초) */
 const SENTENCE_GAP = 0.9;
-/** Φ 고리가 X자 장면(한 바퀴의 처음 · 끝)에서 캔버스 안에 차지하는 세로 자리 — 위 끝 16.4%, 높이 66.75%(scene.bounds 실측) */
-const X_POSE_TOP = 0.164;
-const X_POSE_H = 0.6675;
-/** 같은 장면의 왼쪽 끝(캔버스 폭 대비) — 고리 왼쪽 끝을 제목 끝에서 TITLE_GAP 띄운다 */
-const X_POSE_LEFT = 0.164;
-const TITLE_GAP = 64;
-
 /** 문장 → ScrollReveal children: 글은 그대로, [ ]로 감싼 낱말은 벡터 낱말 — 본문은 박스만(앵커 없이, 사용자 지시 2026-10-23) */
 function sentence(text: string): ReactNode[] {
   return text.split(/(\[[^\]]+\])/).filter(Boolean).map((part, i) =>
@@ -55,96 +60,90 @@ export function Philosophy({ title, paragraphs }: Props) {
   const ref = useRef<HTMLElement>(null);
   const [shown, setShown] = useState(false);
   const [at, setAt] = useState(0); // 지금 단락
-  const titleRef = useRef<HTMLHeadingElement>(null);
-  const bodyRef = useRef<HTMLDivElement>(null);
-  const parasRef = useRef<HTMLDivElement>(null);
-  const motionRef = useRef<HTMLDivElement>(null);
-
-  // Φ 크기 · 자리: X자 장면에서 고리 위 끝 = 제목 위 끝, 아래 끝 = 본문 아래 끝(사용자 지시 2026-10-23).
-  // 왼쪽 끝은 CSS(화면 폭 70%) — 고리가 제목 끝에 붙으면 비켜 둔다. 오른쪽은 화면 밖으로 잘린다. 휴대폰(720px 이하)은 CSS의 작은 Φ 그대로
-  useLayoutEffect(() => {
-    const [title, body, paras, motion] = [titleRef.current, bodyRef.current, parasRef.current, motionRef.current];
-    if (!title || !body || !paras || !motion) return;
-    const small = window.matchMedia('(max-width: 720px)');
-    const place = () => {
-      if (small.matches) {
-        motion.style.width = motion.style.top = motion.style.left = '';
-        return;
-      }
-      // 변형(떠오름)과 상관없이 배치 자리로 잰다 — 제목 · 본문 칸은 무대 안, 단락은 본문 칸 안
-      const top = title.offsetTop - body.offsetTop;
-      const bottom = paras.offsetTop + paras.offsetHeight;
-      const size = (bottom - top) / X_POSE_H;
-      motion.style.width = `${size}px`;
-      motion.style.top = `${top - X_POSE_TOP * size}px`;
-      // 가로: 기본은 화면 폭 70%(CSS), 고리 왼쪽 끝이 제목 끝에 붙으면 TITLE_GAP만큼 오른쪽으로
-      motion.style.left = '';
-      const range = document.createRange();
-      range.selectNodeContents(title);
-      const titleRight = range.getBoundingClientRect().right - body.getBoundingClientRect().left;
-      const ringLeft = motion.offsetLeft + X_POSE_LEFT * size;
-      if (ringLeft < titleRight + TITLE_GAP) motion.style.left = `${titleRight + TITLE_GAP - X_POSE_LEFT * size}px`;
-    };
-    place();
-    const ro = new ResizeObserver(place);
-    ro.observe(paras);
-    ro.observe(title);
-    small.addEventListener('change', place);
-    return () => {
-      ro.disconnect();
-      small.removeEventListener('change', place);
-    };
-  }, []);
 
   useEffect(() => {
     const root = ref.current;
     if (!root) return;
     const track = root.querySelector<HTMLElement>('.philosophy__track')!;
+    const title = root.querySelector<HTMLElement>('.philosophy__title')!;
+    const body = root.querySelector<HTMLElement>('.philosophy__body')!;
     const n = paragraphs.length;
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     let raf = 0;
     let settle = 0;
     let snapping = 0; // 맞춰 가는 동안(이 시각까지)은 스크롤 멈춤을 무시한다
-    let idx = -1; // 마지막으로 맞춘 자리: 0 … n-1 = 단락, n = 무대가 풀리는 자리. -1 = 바깥
-    // 단락 자리(페이지 y): 단락 i가 지금이 되는 지점 = 무대 위 끝 + i × (붙는 길이 ÷ n), n번째는 무대가 풀리는 자리
-    const anchors = () => {
+    let idx = -1; // 마지막으로 맞춘 자리: 0 = 큰 제목, 1 … n = 단락, n + 1 = 무대가 풀리는 자리. -1 = 바깥
+    let lastY = window.scrollY;
+    // 맞출 자리(페이지 y): 0 = 무대가 붙는 순간(큰 제목), i = 단락 i - 1이 지금이 되는 지점, n + 1 = 무대가 풀리는 자리
+    const geometry = () => {
       const r = track.getBoundingClientRect();
+      const vh = window.innerHeight;
       const top = window.scrollY + r.top;
-      const span = r.height - window.innerHeight;
-      return Array.from({ length: n + 1 }, (_, i) => Math.round(top + (span * i) / n) + (i === n ? 0 : 1));
+      const span = r.height - vh; // 무대가 붙어 있는 동안의 스크롤 길이
+      const intro = INTRO * vh;
+      const seg = (span - intro) / n;
+      const anchors = [top, ...Array.from({ length: n }, (_, i) => Math.round(top + intro + seg * i) + 1), top + span];
+      return { r, vh, span, intro, seg, anchors };
     };
     const tick = () => {
       raf = 0;
-      const r = track.getBoundingClientRect();
-      const vh = window.innerHeight;
-      // 무대 위 끝이 화면 60% 선에 닿으면 제목 · 첫 단락이 떠오른다. 다시 그 아래로 내려가면 숨는다
-      setShown(r.top < vh * 0.6 && r.bottom > vh * 0.4);
-      const span = r.height - vh; // 무대가 붙어 있는 동안의 스크롤 길이
-      const p = span > 0 ? Math.min(0.999, Math.max(0, -r.top / span)) : 0;
-      setAt(Math.floor(p * n));
+      const { r, vh, span, intro } = geometry();
+      // 몰입: 0 = 화면을 넘치는 큰 제목(화면 가운데) → SHRINK = 가운데에서 제 크기 → 1 = 왼쪽 제자리
+      const k = reduced ? 1 : Math.min(1, Math.max(0, -r.top / intro));
+      const ease = (x: number) => (x < 0.5 ? 4 * x * x * x : 1 - (-2 * x + 2) ** 3 / 2); // easeInOutCubic
+      const eA = ease(Math.min(1, k / SHRINK));
+      const eB = ease(Math.max(0, (k - SHRINK) / (1 - SHRINK)));
+      if (!reduced) {
+        const w = title.offsetWidth;
+        const h = title.offsetHeight;
+        const vw = window.innerWidth;
+        const s0 = (vw * INTRO_WIDTH) / w;
+        const sc = s0 ** (1 - eA); // 크기는 비율로 줄어야 고르게 보인다
+        // ① 그 크기로 화면 가로 가운데에, 세로는 제목 본래 자리의 가운데 선에(사용자 지시 2026-10-23 — 화면 세로 가운데가 아니라)
+        // ② 제 크기 가로 가운데 → 제자리(0). 세로는 제 크기가 되면 이미 제자리라 가로로만 옮겨 간다
+        const cx = (size: number) => vw / 2 - (size * w) / 2 - title.offsetLeft;
+        const tx = eB > 0 ? cx(1) * (1 - eB) : cx(sc);
+        const ty = eB > 0 ? 0 : (h / 2) * (1 - sc);
+        title.style.transform = k >= 1 ? '' : `translate(${tx.toFixed(1)}px, ${ty.toFixed(1)}px) scale(${sc.toFixed(4)})`;
+        // 단락 칸은 ②를 따라 페이드인(아래 24px에서 제자리로)
+        body.style.opacity = eB >= 1 ? '' : eB.toFixed(3);
+        body.style.transform = eB >= 1 ? '' : `translateY(${((1 - eB) * 24).toFixed(1)}px)`;
+      }
+      // 큰 제목인 동안은 벡터 인터랙션 · 십자선을 꺼 둔다
+      setVectorZone(root, k >= 1);
+      // 단락 글자는 ②가 시작되면 드러나기 시작한다
+      setShown(k > SHRINK && r.bottom > vh * 0.4);
+      const q = span > intro ? Math.min(0.999, Math.max(0, (-r.top - intro) / (span - intro))) : 0;
+      setAt(Math.floor(q * n));
     };
     const snap = () => {
-      if (reduced || performance.now() < snapping) return;
-      const a = anchors();
       const y = window.scrollY;
-      if (y < a[0] - 2 || y > a[n] + 2) {
+      const down = y >= lastY;
+      lastY = y;
+      if (reduced || performance.now() < snapping) return;
+      const { vh, anchors: a } = geometry();
+      const last = n + 1;
+      if (y < a[0] - 2 || y > a[last] + 2) {
         idx = -1; // 무대 밖 — 맞추지 않는다
         return;
       }
       let target: number;
       if (idx < 0) {
-        // 바깥에서 들어왔다: 위에서 내려왔으면 첫 단락, 아래에서 올라왔으면 마지막 단락
-        target = y - a[0] < a[n] - y ? 0 : n - 1;
+        // 바깥에서 들어왔다: 내려오는 중이면 첫 단락(제목이 끝까지 줄어든다), 올라오는 중이면 마지막 단락
+        target = down ? 1 : n;
       } else {
         const d = y - a[idx];
         target = d > SNAP_PX ? idx + 1 : d < -SNAP_PX ? idx - 1 : idx;
-        if (target < 0) return; // 첫 단락에서 위로 — 무대 밖으로 나가게 둔다
+        if (target < 0) return; // 큰 제목에서 위로 — 무대 밖으로 나가게 둔다
       }
-      target = Math.min(n, target);
+      target = Math.min(last, target);
       idx = target;
-      if (Math.abs(a[target] - y) < 2) return;
-      snapping = performance.now() + SNAP_S * 1000 + 120;
-      scrollToTarget(a[target], { duration: SNAP_S });
+      const dist = Math.abs(a[target] - y);
+      if (dist < 2) return;
+      // 먼 거리(큰 제목 ↔ 첫 단락)는 조금 더 길게
+      const dur = Math.min(1.1, Math.max(SNAP_S, 0.5 + (dist / vh) * 0.5));
+      snapping = performance.now() + dur * 1000 + 120;
+      scrollToTarget(a[target], { duration: dur });
     };
     const onScroll = () => {
       if (!raf) raf = requestAnimationFrame(tick);
@@ -154,11 +153,15 @@ export function Philosophy({ title, paragraphs }: Props) {
     window.addEventListener('scroll', onScroll, { passive: true });
     window.addEventListener('resize', onScroll);
     onScroll();
+    // 개발용: window.__philosophyTick()로 지금 스크롤 자리의 장면을 바로 그린다(검증 · 스크린샷 — 숨은 창에선 프레임이 돌지 않는다)
+    if (import.meta.env.DEV) (window as unknown as Record<string, unknown>).__philosophyTick = tick;
     return () => {
       cancelAnimationFrame(raf);
       window.clearTimeout(settle);
       window.removeEventListener('scroll', onScroll);
       window.removeEventListener('resize', onScroll);
+      title.style.transform = '';
+      body.style.opacity = body.style.transform = '';
     };
   }, [paragraphs.length]);
 
@@ -172,14 +175,14 @@ export function Philosophy({ title, paragraphs }: Props) {
       className="philosophy"
       aria-labelledby="philosophy-title"
       data-shown={shown}
-      style={{ '--ph-n': paragraphs.length, '--ph-step': STEP } as CSSProperties}
+      style={{ '--ph-n': paragraphs.length, '--ph-step': STEP, '--ph-intro': INTRO } as CSSProperties}
     >
       {/* 섹션 전체가 십자선 영역 — 포인터를 늘 십자선 · 좌표가 따라다닌다(phi.design data-hero-crosshair-zone) */}
       <VectorGuides zone={ref} />
       <div className="philosophy__track">
         <div className="philosophy__stage">
           {/* 제목은 한 줄(사용자 지시 2026-10-23) */}
-          <h2 ref={titleRef} id="philosophy-title" className="philosophy__title">
+          <h2 id="philosophy-title" className="philosophy__title">
             {title.split(' ').map((w, i) => (
               <Fragment key={w}>
                 {i > 0 && ' '}
@@ -187,9 +190,8 @@ export function Philosophy({ title, paragraphs }: Props) {
               </Fragment>
             ))}
           </h2>
-          {/* 제목 아래: 왼쪽 단락 · 오른쪽 Φ 모션(사용자 제공 이미지 배치 — 단락 높이 가운데) */}
-          <div ref={bodyRef} className="philosophy__body">
-            <div ref={parasRef} className="philosophy__paras">
+          <div className="philosophy__body">
+            <div className="philosophy__paras">
                 {paragraphs.map((sentences, i) => (
                   <div key={i} className="philosophy__para" data-state={i < at ? 'past' : i > at ? 'next' : 'now'}>
                     {sentences.map((s, j) => (
@@ -217,9 +219,6 @@ export function Philosophy({ title, paragraphs }: Props) {
                     ))}
                   </div>
                 ))}
-            </div>
-            <div ref={motionRef} className="philosophy__motion">
-              <PhiMotion />
             </div>
           </div>
         </div>
