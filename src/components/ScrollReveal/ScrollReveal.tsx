@@ -1,5 +1,8 @@
 /* ScrollReveal — react-bits(David Haz) 원본을 TypeScript로 옮겼다. https://reactbits.dev/text-animations/scroll-reveal (MIT + Commons Clause)
-   BI 추가(2026-10-20): 바깥 태그를 고를 수 있게 `as`(기본 h2 — 원본과 같다), enter에서 재생을 늦추는 `delay`(초). 나머지 동작은 원본 그대로 */
+   BI 추가(2026-10-20): 바깥 태그를 고를 수 있게 `as`(기본 h2 — 원본과 같다), enter에서 재생을 늦추는 `delay`(초). 나머지 동작은 원본 그대로
+   BI 추가(2026-10-23, v18 교육 철학): ① 글과 요소가 섞인 children — 글은 원본처럼 나누고 요소(벡터 낱말 등)는 한 조각으로 드러낸다.
+   ② `progress`(0 → 1)를 주면 스크롤 트리거 대신 바깥이 진행을 정한다(붙는 무대 위처럼 글이 화면에서 움직이지 않는 곳) —
+   scrub처럼 그 값을 따라가고, smoothing(초)만큼 늦게 따라붙는다 */
 import { Children, useEffect, useLayoutEffect, useMemo, useRef, useState, type ElementType, type ReactNode, type RefObject } from 'react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
@@ -85,6 +88,8 @@ type Props = {
   as?: ElementType;
   /** BI 추가: enter에서 화면에 들어온 뒤 재생을 늦추는 시간(초) */
   delay?: number;
+  /** BI 추가: 바깥이 정하는 진행(0 → 1). 주면 스크롤 트리거를 만들지 않는다 */
+  progress?: number;
   id?: string;
 };
 
@@ -109,10 +114,14 @@ const ScrollReveal = ({
   wordAnimationEnd = 'bottom bottom',
   as: Tag = 'h2',
   delay = 0,
+  progress,
   id
 }: Props) => {
   const containerRef = useRef<HTMLElement>(null);
   const textRef = useRef<HTMLSpanElement>(null);
+  const controlled = progress !== undefined;
+  const stateRef = useRef<{ p: number } | null>(null);
+  const renderRef = useRef<(() => void) | null>(null);
 
   const text = useMemo(() => {
     const parts = Children.toArray(children);
@@ -120,25 +129,38 @@ const ScrollReveal = ({
   }, [children]);
 
   const splitText = useMemo(() => {
-    if (text === null) return null;
-    return text.split(/(\s+)/).map((word, index) =>
-      word.trim() === '' ? (
-        word
+    const split = (str: string, prefix: string) =>
+      str.split(/(\s+)/).map((word, index) =>
+        word.trim() === '' ? (
+          word
+        ) : (
+          <span className="scroll-reveal-word" key={`${prefix}${index}`}>
+            {splitBy === 'chars' ? (
+              Array.from(word).map((char, charIndex) => (
+                <span className="scroll-reveal-piece" key={charIndex}>
+                  {char}
+                </span>
+              ))
+            ) : (
+              <span className="scroll-reveal-piece">{word}</span>
+            )}
+          </span>
+        )
+      );
+    if (text !== null) return split(text, '');
+    // BI 추가: 글과 요소가 섞이면 글만 나누고 요소는 한 조각으로
+    const parts = Children.toArray(children);
+    if (!parts.some(part => typeof part === 'string')) return null;
+    return parts.map((part, i) =>
+      typeof part === 'string' || typeof part === 'number' ? (
+        split(String(part), `${i}-`)
       ) : (
-        <span className="scroll-reveal-word" key={index}>
-          {splitBy === 'chars' ? (
-            Array.from(word).map((char, charIndex) => (
-              <span className="scroll-reveal-piece" key={charIndex}>
-                {char}
-              </span>
-            ))
-          ) : (
-            <span className="scroll-reveal-piece">{word}</span>
-          )}
+        <span className="scroll-reveal-word" key={`el${i}`}>
+          <span className="scroll-reveal-piece">{part}</span>
         </span>
       )
     );
-  }, [text, splitBy]);
+  }, [text, splitBy, children]);
 
   const [mounted, setMounted] = useState(false);
 
@@ -213,7 +235,11 @@ const ScrollReveal = ({
       }
       render();
 
-      if (mode === 'enter') {
+      if (controlled) {
+        // BI 추가: 바깥이 진행을 정한다 — 아래 effect가 state를 progress 쪽으로 옮긴다
+        stateRef.current = state;
+        renderRef.current = render;
+      } else if (mode === 'enter') {
         let played = false;
         const play = () => {
           if (played) return;
@@ -285,6 +311,8 @@ const ScrollReveal = ({
       resizeObserver?.observe(textEl);
 
       return () => {
+        stateRef.current = null;
+        renderRef.current = null;
         resizeObserver?.disconnect();
         pieces.forEach(piece => {
           piece.style.opacity = '';
@@ -319,8 +347,25 @@ const ScrollReveal = ({
     smoothing,
     rotationEnd,
     wordAnimationEnd,
-    delay
+    delay,
+    controlled
   ]);
+
+  // BI 추가: 바깥 진행을 따라간다(smoothing초 만큼 늦게 따라붙는다)
+  useEffect(() => {
+    const state = stateRef.current;
+    const render = renderRef.current;
+    if (progress === undefined || !state || !render) return;
+    // 앞으로 드러날 땐 delay초 뒤에(문장을 차례로), 되돌릴 땐 바로
+    gsap.to(state, {
+      p: progress,
+      duration: smoothing > 0 ? smoothing : 0.001,
+      delay: progress > state.p ? delay : 0,
+      ease: 'power2.out',
+      overwrite: true,
+      onUpdate: render,
+    });
+  }, [progress, smoothing, delay, mounted]);
 
   return (
     <Tag ref={containerRef} id={id} className={`scroll-reveal ${containerClassName}`} aria-label={text ?? undefined}>

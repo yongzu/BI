@@ -1,0 +1,10 @@
+/* Φ 모션그래픽(v18) — 정사각 자리, 캔버스는 scene.ts가 그 안에 꽉 차게 맞춘다 */
+.phi-motion {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  aspect-ratio: 1;
+  cursor: crosshair;
+}
+.phi-motion[data-failed] { display: none; }

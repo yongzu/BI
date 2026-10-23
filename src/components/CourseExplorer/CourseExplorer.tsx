@@ -21,9 +21,6 @@ type Props = { types: CourseType[]; profiles: Record<string, CourseProfile> };
 /** 넓은 화면에서 왼쪽 탭이 붙는 높이(px) — CSS .course-tabs top과 같다. 머리글은 목록보다 56px 위에서 끝나므로
  *  목록 맨 위를 여기 맞추면 머리글이 화면 위로 다 빠진다 */
 const TABS_TOP = 56;
-/** 실제 붙는 높이 — 바깥이 --ce-tabs-top을 주면 그 값(v17: 1년제 프로그램 줄의 붙은 머리 아래), 아니면 TABS_TOP */
-const tabsTop = (el: HTMLElement | null) =>
-  (el && parseFloat(getComputedStyle(el).getPropertyValue('--ce-tabs-top'))) || TABS_TOP;
 /** 펼친 줄의 위 여백이 늘어나는 만큼(px) — CSS .course-row[data-open] .course-row__hit padding-top 28 − 닫힌 16 */
 const OPEN_PAD_EXTRA = 12;
 /** 수업을 연 채 다른 수업을 누를 때 목록 맨 위로 가는 스크롤 시간(초) */
@@ -146,7 +143,7 @@ export function CourseExplorer({ types, profiles }: Props) {
   const pickTab = (next: number) => {
     switchTab(next);
     const heads = headStageRef.current;
-    if (heads) scrollToTarget(Math.max(0, window.scrollY + heads.getBoundingClientRect().top - tabsTop(heads)));
+    if (heads) scrollToTarget(Math.max(0, window.scrollY + heads.getBoundingClientRect().top - TABS_TOP));
   };
 
   // 다른 섹션(역량 카드)에서 수업을 열면: 그 타입 탭을 고르고 그 수업을 펼쳐 그 줄로 간다
@@ -192,7 +189,7 @@ export function CourseExplorer({ types, profiles }: Props) {
     // 위 수업을 바로 닫고 누른 줄을 제자리에 두던 방식(A안)은 뚝 끊기고 머리글까지 보여 되돌렸다(사용자 지시 2026-10-20).
     // 그 대신 목록 맨 위로 가는 스크롤을 빠르게(SWITCH_SCROLL초, 끝이 부드러운 곡선) — 바로 건너뛰지도, 느리게 흐르지도 않게
     if (open && open !== slug && layout) {
-      scrollToTarget(Math.max(0, window.scrollY + layout.getBoundingClientRect().top - tabsTop(layout)), { duration: SWITCH_SCROLL });
+      scrollToTarget(Math.max(0, window.scrollY + layout.getBoundingClientRect().top - TABS_TOP), { duration: SWITCH_SCROLL });
     } else if (row) keepInPlace(row, 900); // 접힘(820ms)이 끝날 때까지
     setOpen((prev) => (prev === slug ? null : slug));
   };

@@ -295,3 +295,54 @@
 - 나머지 평가 반영: 영문 부제 빼고 제목 아래 답 한 줄(Lead 20px) · 제목 40 → 32px · 줄 제목 h2(button을 감쌈) · 줄 주소 #pillars · #curriculum ·
   #annual · #career · #admissions(열면 주소가 바뀌고, 주소로 들어오면 열린 채 그 줄로) · 접힌 내용 hidden="until-found" + beforematch(페이지 찾기로 열림) ·
   커리큘럼 수업 줄 ∨ → +/− · 연간 구조에 '1기(2026년 8월 개강) 기준', 학비와 지원에 '2027년 2월 15일 개강'.
+
+## 2026-10-23 — v18 (v16 + v3 목차 · v17 교육 철학)
+
+- v15 최종 · v16 · v17 모두 커밋 · 푸시(main 33e6c6d, 태그 v16 = 3e7da59 · v17 = 33e6c6d). versions.json v17 `path: v17/`.
+- 사용자 판단: v16 ~ v17의 전체 구성은 아직 아니다. v18 = v16 바탕(ProgramRows · CourseExplorer · ProgramsPage · programs.ts를 3e7da59로 되돌림)
+  + v3의 내비게이션(오른쪽 위 고정 세로 목차, Toc.tsx · Toc.css를 태그 v3에서 그대로) + 교육 철학은 v17(한 화면 한 단락) + 과정 개요는 뺌.
+- 목차: 교육 철학 · 역량과 태도 · 커리큘럼 · 연간 구조 · 채용 연계 · 학비와 지원. 줄 항목을 누르면 그 줄을 열고(PROGRAM_OPEN_EVENT) 이동.
+  레일(.page-shell .toc-rail)은 교육 철학 ~ 신청 줄 — 히어로에선 숨고 그 뒤로 보인다. 위치는 v3의 top 13px → 60px(v15의 고정 신청 버튼 아래).
+- 과정 개요: v16의 연간 구조 줄 안 다섯 칸(facts)을 뺐다. 데이터 facts는 남김.
+- (수정, 사용자 지시) v18 바탕을 v16 → **v15 최종(ea0cb48)**으로 바꿈: ProgramsPage.tsx · programs.css를 ea0cb48로 되돌리고, 과정 개요(OverviewReveal) 자리에
+  v17 교육 철학(Philosophy), 목차는 v3 세로 목차(top 60px). 목차 항목은 역량과 태도부터(교육 철학 · 과정 개요 없음) — 교육 철학은 목차 레일(.page-shell) 밖이라
+  그 동안 목차가 숨고 역량과 태도부터 나타난다. ProgramRows는 이 페이지에서 쓰지 않는다(파일은 남김). programs.ts는 philosophy 데이터 때문에 v16 판 유지.
+- 교육 철학 다시(사용자 지시 2026-10-23): '교육 철학' 라벨을 빼고 큰 제목 'Fundamental Over Tools'(44 → 92px, 잉크 그라데이션 글자) — 본문(20 → 28px)보다 크게.
+  apple.com/kr/macbook-pro '성능' 섹션 인터랙션: 붙는 무대에 제목이 머물고 아래 단락이 스크롤 지점마다 바뀜, 무대가 들어오면 제목 → 첫 단락 차례로 떠오름(StaggeredFadeIn).
+  단락 전환은 iPhone Duo 소개 영상(bxSGfpoFP30) 8 ~ 11초의 펼침 — 나가는 단락: 흐림 14px · 오른쪽으로 기울며 작아짐 / 들어오는 단락: 왼쪽 경첩에서
+  rotateY(-48deg) · scaleX(.7) · 흐림 16px로 접혀 있다 펼쳐짐(1.1초). 스크롤 지점을 넘으면 시간으로 움직이고 되돌리면 거꾸로. v17의 낱말 채우기는 뺐다.
+- 교육 철학 수정(사용자 지시 2026-10-23): 제목 그라데이션 → 잉크 단색(--color-text-primary) · 단락 글자 28px → v17과 같은 44px(clamp 28 ~ 44, 폭 22em)
+  · 단락 전환은 좌우 → 위아래: 경첩을 위에(transform-origin center top), 다음 단락 rotateX(48deg) scaleY(.7) + 흐림 16px → 펼침,
+  지난 단락 rotateX(-14deg) · 위로 6% · 흐림 14px.
+- 교육 철학 · 벡터형 인재(사용자 지시 2026-10-23, 참고: 사용자 화면 녹화 = phi.design 첫 화면 'Fundamentals Over Tools'):
+  · '사고방식' 테두리 캡슐 뺌. 제목은 'Fundamental / Over Tools' 두 줄, 그 오른쪽에 Φ 모션그래픽(components/PhiMotion — v13 HeroLogo3D의
+    phi.design 원본 고리 장면을 되살림, scene.setOutline: 흰 몸통 + 뒷면 부풀린 껍질 윤곽).
+  · 벡터 인터랙션(components/VectorWord): 제목 세 낱말 · 본문 [사고방식] · [벡터형 인재] · [역량과 태도] · Φ 고리. 마우스를 올리면 글자 면이 비고
+    실제 윤곽선 · 기준점(원) · 조절점(네모), 바운딩 박스 + 모서리 손잡이, 박스 네 변을 화면 끝까지 늘인 점선 안내선, 왼쪽 끝 좌표, 포인터 옆 좌표(VectorGuides 하나가 그림).
+    윤곽은 Pretendard-Bold.otf에서 미리 뽑음(scripts/vector-glyphs.mjs → src/data/vectorGlyphs.json, devDependency opentype.js). 마우스 화면에서만.
+  · 본문: react-bits ScrollReveal(사용자 제공 설정 — scrub · chars · fade · stagger 0.05 · smoothing 2 · baseOpacity 0.1 · blur 4 · rotation 0).
+    붙는 무대 위라 ScrollTrigger 대신 단락 진행을 progress로 준다(ScrollReveal에 BI 추가: progress prop · 글과 요소가 섞인 children).
+    지금 단락의 앞 60% 스크롤 동안 문장 순서대로 드러난다.
+- 벡터 인터랙션 다듬기(사용자 지시 2026-10-23, 참고: phi.design #manifesto 코드):
+  · 앵커 최소화 — 조절점 없이 곡선 위 점만, 앞뒤 모두 직선인 모서리는 네모 · 곡선 점은 원, 같은 윤곽에서 0.13em보다 가까운 점은 뺌(모서리 우선).
+    예: Over 82 → 31, 사고방식 119 → 47(scripts/vector-glyphs.mjs MIN_GAP).
+  · 제목 한 줄(nowrap, 1440에서 949px). 그 아래 왼쪽 단락 · 오른쪽 Φ 모션(단락 높이 가운데, 폭 clamp 160 ~ 320px) — 720px 이하는 Φ가 단락 위로.
+  · 섹션 전체가 십자선 영역: 포인터를 늘 가로 · 세로 십자선(화면 끝까지)과 페이지 좌표가 따라다닌다(VectorGuides zone). 낱말 · Φ에 올리면
+    바운딩 박스 · 안내선 · 왼쪽 좌표가 더해진다.
+  · 전환은 phi.design 코드 값: 글자 채움 → 윤곽 0.15초, 앵커 0.25초 페이드.
+- 포인터 십자선(사용자 제공 이미지): 짙은 점선(rgba 20 · 0.55) + 교차점 7px 검은 네모 + 오른쪽 아래(16, 18px) 화면 좌표, 본문 글꼴 11px.
+  좌표는 모두 화면 기준으로 통일(바운딩 박스 라벨 포함).
+- 본문 낱말([사고방식] · [벡터형 인재] · [역량과 태도])은 VectorWord boxOnly — 글자는 그대로, 바운딩 박스 · 안내선만(앵커 · 윤곽 없음).
+  그래서 vectorGlyphs.json엔 제목 세 낱말만 남겼다.
+- 본문 박스 낱말: 마우스를 올리면 글자도 윤곽선 · 흰 속(-webkit-text-stroke 1px, color 흰색, 0.15초) — 앵커는 여전히 없음(사용자 지시 2026-10-23).
+- 박스를 개체에 딱 맞게(사용자 지시 2026-10-23): 제목 낱말 = 미리 뽑은 윤곽 경로의 상자, 본문 낱말 = 같은 글꼴로 캔버스에서 잰 잉크 상자
+  (measureText actualBoundingBox — 줄 높이 · 끝 자간 여백 없음). 예: Tools 211 × 107 → 206 × 61, 사고방식 145 × 53 → 144 × 40.
+- Φ 모션 박스는 실시간: scene.bounds()가 두 고리의 관 겉면 점(7개마다 하나)을 화면에 투영해 지금 그려진 고리의 상자를 재고,
+  마우스를 올린 동안 프레임마다 박스 · 안내선 · 좌표를 다시 그린다(예: 201 × 189 → 258 × 232, 캔버스 288). 개발용 window.__phiMotion(ms).
+- 본문 박스 낱말 윤곽: -webkit-text-stroke → 여덟 방향 1px text-shadow + 흰 속 — 한글 자모가 겹치는 자리의 안쪽 선 없이 바깥 테두리만(사용자 지시 2026-10-23).
+- 교육 철학 단락을 끊어 넘김(사용자 지시 2026-10-23 — 스크롤 위치에 따라 반쯤 흐린 글이 남았다):
+  · 무대가 붙어 있는 동안 스크롤이 0.14초 멈추면 단락 자리로 0.7초에 맞춰 간다. 지금 자리에서 40px 넘게 내렸으면 다음 단락, 올렸으면 이전 단락.
+    마지막 단락에서 더 내리면 무대가 풀리는 자리로(다음 섹션으로 이어짐), 첫 단락에서 위로는 그냥 나간다. 바깥에서 들어오면 가까운 끝 단락으로.
+  · 글은 scrub(스크롤 위치) 대신 단락이 자리 잡으면 시간으로 끝까지 드러남 — 문장마다 0.9초 차이, 2초 동안(ScrollReveal progress + delay).
+- Φ 모션을 크게, 화면 오른쪽 밖으로 잘리게(사용자 제공 이미지 2026-10-23): 본문 칸 안 absolute — 왼쪽 끝 70vw, 폭 clamp(320px, 46vw, 760px), 단락 높이 가운데. 무대 overflow로 화면 끝에서 잘림. 단락은 Φ 앞에서 끝나게 max-width, Φ보다 위(z). 1440에서 Φ 662px(1008 ~ 1670). 720px 이하는 단락 위의 작은 Φ(120px).
+- Φ 크기 · 자리(사용자 지시 2026-10-23): X자 장면(한 바퀴 처음 · 끝)에서 고리 위 끝 = 제목 위 끝, 아래 끝 = 본문 아래 끝 — scene.bounds 실측 비율(위 16.4%, 높이 66.75%)로 Philosophy.tsx가 폭 · top을 계산(1440: 917px, 고리 144 ~ 756px). 고리 왼쪽 끝이 제목 끝에 붙으면 64px 비켜 둔다(1440: 1213px). 오른쪽은 화면 밖으로 잘림.
