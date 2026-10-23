@@ -203,7 +203,7 @@ export function CourseExplorer({ types, profiles }: Props) {
             <header key={t.id} ref={(el) => { headRefs.current[i] = el; }} className="course-group__head" data-active={tab === i} aria-hidden={tab !== i}>
               <div className="course-group__title">
                 <h4 className="course-group__name">{t.name}</h4>
-                {!t.extra && <span className="course-group__meta">{t.cadence} · {t.courses.length}개 수업</span>}
+                {t.cadence && <span className="course-group__meta">{t.cadence} · {t.courses.length}개 {t.unit ?? '수업'}</span>}
               </div>
               <Text typography="Body" color="secondary" className="course-group__body">{t.body}</Text>
             </header>
@@ -229,6 +229,7 @@ export function CourseExplorer({ types, profiles }: Props) {
               onClick={() => pickTab(i)}
             >
               <span className="course-tab__name">{t.name}</span>
+              {/* 코스 밖 분류(Workshop · Event) 탭엔 수를 붙이지 않는다(사용자 지시 2026-10-23) */}
               {!t.extra && <span className="course-tab__count">{t.courses.length}</span>}
               <span className="course-tab__short">{t.short}</span>
             </button>,
@@ -282,7 +283,7 @@ function CourseRow({ course, type, profile, open, onToggle }: RowProps) {
           {/* 전문가는 캡슐 대신 한글 이름 옆 글자로 — 캡슐은 역량에만(v15: 같은 캡슐에 사람과 역량이 섞여 구분되지 않았다) */}
           <span className="course-row__meta">
             {course.ko}
-            <span className="course-row__experts"> · 전문가 {profile.experts.map((ex) => ex.name).join(', ')}</span>
+            <span className="course-row__experts"> · {[type.people ?? '전문가', profile.experts.map((ex) => ex.name).join(', ')].filter(Boolean).join(' ')}</span>
           </span>
         </span>
         <span className="course-row__tags">
@@ -323,7 +324,8 @@ function CourseDetail({ course, type, profile }: { course: Course; type: CourseT
           </section>
         )}
 
-        <section className="course-detail__section">
+        {/* 학습 목표가 없는 수업(Workshop)은 이 칸을 뺀다(2026-10-23) */}
+        {profile.after.length > 0 && <section className="course-detail__section">
           <h5 className="course-detail__heading">학습 목표</h5>
           <div className="course-goals" role="table" aria-label="학습 전후 비교">
             <div className="course-goals__row course-goals__row--head" role="row">
@@ -337,7 +339,7 @@ function CourseDetail({ course, type, profile }: { course: Course; type: CourseT
               </div>
             ))}
           </div>
-        </section>
+        </section>}
       </div>
 
       <aside className="course-detail__side">

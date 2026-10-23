@@ -30,11 +30,12 @@ import './programs.css';
 const toc: TocItem[] = [
   // 목차는 섹션 다섯 개를 한 층위로 — 역량과 태도의 하위 항목은 없애고, 수업을 관통하는 접근은
   // 커리큘럼 아래에서 빼 같은 층위로(사용자 지시 2026-09-30)
+  // 순서는 페이지 섹션과 같다(사용자 지시 2026-10-23)
   { id: 'overview', label: '과정 개요' }, // 맨 위(사용자 지시 2026-10-04)
-  { id: 'curriculum-annual', label: '연간 구조' }, // 과정 개요 바로 아래(사용자 지시 2026-10-19)
+  { id: 'pillars', label: '역량과 태도' }, // 역량 · Phi OS를 합침(2026-10-20)
   { id: 'curriculum', label: '커리큘럼' },
-  { id: 'pillars', label: '역량과 태도' }, // 커리큘럼 아래(사용자 지시 2026-10-19). 역량 · Phi OS를 합침(2026-10-20)
   { id: 'devices', label: '수업을 관통하는 접근' },
+  { id: 'curriculum-annual', label: '연간 구조' },
   { id: 'career', label: '채용 연계' }, // 맨 아래(사용자 지시 2026-10-19)
 ];
 
@@ -209,14 +210,17 @@ export function ProgramsPage() {
             왼쪽 두 칸 소개 글 · 오른쪽 두 칸 과정 개요 다섯 줄 ---------- */}
         <OverviewReveal id="overview" title="1 Year Programs" paragraphs={heroMore} factsTitle="과정 개요" facts={facts} />
 
-        {/* ---------- 연간 구조 — 과정 개요 바로 아래, 화면 폭 전체(사용자 지시 2026-10-19) ---------- */}
-        <section id="curriculum-annual" className="section section--wide">
-          <SectionHeader
-            title="연간 구조"
-            lead="2026년 8월 개강부터 2027년 8월 졸업까지, 두 학기와 방학 캠프, 졸업 프로젝트로 이어지는 1년입니다."
+        {/* 섹션 순서(사용자 지시 2026-10-23): 과정 개요 → 역량과 태도 → 커리큘럼 → 수업을 관통하는 접근 → 연간 구조 → 채용 연계 */}
+
+        {/* ---------- 역량과 태도 — 과정 개요 바로 아래(사용자 지시 2026-10-23, 예전엔 커리큘럼 아래) ---------- */}
+        <section id="pillars" className="section container">
+          {/* v11: toss.im "상품 판매와 정산" 연출 — 큰 옅은 글씨가 검정으로 채워지고, 작아지며 위로, 화면 폭 카드 다섯 장이 올라온다 */}
+          {/* 역량과 태도를 합쳤다(사용자 지시 2026-10-20) — 역량 다섯 장 아래 Phi OS(태도) 다섯 장 */}
+          <SkillReveal
+            title="역량과 태도"
+            lead="어떤 환경에서도 스스로 답을 찾을 수 있는 사고방식을 만들기 위해, Phi는 다섯 가지 역량을 기르고 다섯 가지 태도(Phi OS)를 중요시합니다. 수업과 장치는 이 역량을 기르고 태도를 연습하는 자리입니다."
+            groups={[{ label: '역량', items: competencies }, { label: 'Phi OS', items: attitudes }]}
           />
-          {/* v7: 위 시기 패널 · 아래 진행 바(toss.im/company History). v6의 안내 표 문구는 시기마다 왼쪽 사실로 옮겼다 */}
-          <AnnualTimeline stages={stages} />
         </section>
 
         {/* ---------- 커리큘럼 ---------- */}
@@ -231,17 +235,6 @@ export function ProgramsPage() {
           </div>
         </section>
 
-        {/* ---------- 배우는 역량 — 커리큘럼 아래(사용자 지시 2026-10-19) ---------- */}
-        <section id="pillars" className="section container">
-          {/* v11: toss.im "상품 판매와 정산" 연출 — 큰 옅은 글씨가 검정으로 채워지고, 작아지며 위로, 화면 폭 카드 다섯 장이 올라온다 */}
-          {/* 역량과 태도를 합쳤다(사용자 지시 2026-10-20) — 역량 다섯 장 아래 Phi OS(태도) 다섯 장 */}
-          <SkillReveal
-            title="역량과 태도"
-            lead="어떤 환경에서도 스스로 답을 찾을 수 있는 사고방식을 만들기 위해, Phi는 다섯 가지 역량을 기르고 다섯 가지 태도(Phi OS)를 중요시합니다. 수업과 장치는 이 역량을 기르고 태도를 연습하는 자리입니다."
-            groups={[{ label: '역량', items: competencies }, { label: 'Phi OS', items: attitudes }]}
-          />
-        </section>
-
         {/* ---------- 수업을 관통하는 접근 ---------- */}
         {/* 다른 화면 폭 섹션과 같은 폭 · 제목 한 줄(사용자 지시 2026-10-20) */}
         <section id="devices" className="section section--wide">
@@ -254,6 +247,16 @@ export function ProgramsPage() {
             {/* '핵심 수업 장치' 라벨은 배우는 자리 라벨 셋이 대신한다(2026-10-05) */}
             <DeviceMap items={devices} outcomes={deviceOutcomes} />
           </div>
+        </section>
+
+        {/* ---------- 연간 구조 — 수업을 관통하는 접근 다음, 채용 연계 앞(사용자 지시 2026-10-23, 예전엔 과정 개요 바로 아래). 화면 폭 전체 ---------- */}
+        <section id="curriculum-annual" className="section section--wide">
+          <SectionHeader
+            title="연간 구조"
+            lead="2026년 8월 개강부터 2027년 8월 졸업까지, 두 학기와 방학 캠프, 졸업 프로젝트로 이어지는 1년입니다."
+          />
+          {/* v7: 위 시기 패널 · 아래 진행 바(toss.im/company History). v6의 안내 표 문구는 시기마다 왼쪽 사실로 옮겼다 */}
+          <AnnualTimeline stages={stages} />
         </section>
 
         {/* ---------- 채용 연계 — 맨 아래(사용자 지시 2026-10-19). 마지막의 마무리 블록(히어로 문장 · 기간 · 버튼)은 뺐다 ---------- */}
