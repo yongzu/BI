@@ -18,6 +18,10 @@
 /* ---------- Page shell & TOC rail ----------
    셸은 히어로 다음부터(과정 개요의 위 끝). 레일은 셸 전체 높이의 보이지 않는 띠 — Toc.tsx가 이 띠가 화면에 들어오는지로
    목차를 보이고 감춘다(과정 개요가 올라오면 나타나고, 히어로로 돌아가면 사라진다). 목차 자체는 화면에 고정(Toc.css) */
+/* 화면 폭을 다 쓰는 요소(히어로 배경 · 과정 개요 등 width: 100vw)가 가로 스크롤을 만들지 않게 — 100vw엔 스크롤바 폭이 들어 있다.
+   예전엔 SkillReveal.css(.page:has(.skill-reveal))가 잘라 줬는데, 역량과 태도를 바꾸며 그 규칙이 함께 빠져 가로 스크롤이 생겼다(2026-10-24).
+   clip은 스크롤 상자를 만들지 않아 붙는(sticky) 칸들이 그대로 붙는다 */
+.page { overflow-x: clip; }
 .page-shell { position: relative; }
 .toc-rail {
   position: absolute;
@@ -126,19 +130,6 @@
 }
 .section--last { padding-bottom: var(--space-group); } /* v15: 섹션 간격(최대 432px) → 그룹 간격 — 맨 끝 신청 줄 뒤 큰 빈 곳을 줄였다 */
 
-/* 맨 끝 신청 줄(v15) — 위 가는 선, 왼쪽 모집 상태 · 오른쪽 알림 신청 + 모집 안내 */
-.apply-row {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-24);
-  margin-top: var(--space-group);
-  padding-top: var(--space-40);
-  border-top: 1px solid var(--color-border);
-}
-.apply-row__actions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-24); }
-.apply-row__link { font-size: var(--typo-label-size); font-weight: var(--font-weight-medium); }
 /* 화면 폭 전체 섹션(연간 구조 · 커리큘럼, 사용자 지시 2026-10-19 · 10-20) — 1200 열 대신 과정 개요 · 배우는 역량과 같은 양옆 여백 */
 .section--wide { width: 100%; padding-inline: var(--side-wide); }
 /* 히어로 → 첫 섹션 간격 = 다른 섹션 사이와 같은 --space-section(사용자 지시 2026-10-04). 히어로가 내용 높이만큼만
@@ -166,7 +157,7 @@
 .annual { margin-top: var(--space-48); }
 /* 연간 구조는 자기 섹션의 머리글 아래 — 다른 섹션의 첫 그룹과 같은 간격으로 */
 .section-header + .annual,
-.section-header + .history { margin-top: var(--space-after-header); }
+.section-header + .annual-map { margin-top: var(--space-after-header); }
 
 /* ---------- Courses: 필터 · 목록 · 상세는 components/CourseExplorer ---------- */
 

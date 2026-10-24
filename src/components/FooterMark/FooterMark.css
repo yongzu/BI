@@ -1,0 +1,9 @@
+/* 푸터 맨 아래 'Fundamental Over Tools' — 푸터 글줄 폭에 꽉 차게(2026-10-24). Tokens only. */
+.footer-mark {
+  display: block;
+  width: 100%;
+  height: auto;
+  margin-top: var(--space-64);
+  overflow: visible;
+  fill: var(--color-text-primary);
+}

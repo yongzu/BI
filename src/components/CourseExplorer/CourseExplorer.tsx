@@ -9,7 +9,7 @@ import './CourseExplorer.css';
 /**
  * 커리큘럼 — 위 타입 머리글(한 줄 전체), 아래 왼쪽 세로 탭(타입 + 수업 수) · 오른쪽 v5 형식 수업 줄(2026-10-19).
  *
- * 탭(v6부터): 타입 이름 + 수업 수 — 고르기 전에 규모가 보인다. ↑/↓로도 옮긴다. v15: 이름 아래 한글 한 줄(short).
+ * 탭(v6부터): 타입 이름 + 수업 수 — 고르기 전에 규모가 보인다. ↑/↓로도 옮긴다. v15의 이름 아래 한글 한 줄(short)은 2026-10-24에 뺐다.
  *   고른 칸을 가리키는 막대는 하나이고, 연간 구조 탭처럼 고른 칸 자리로 미끄러져 간다(사용자 지시 2026-10-19).
  * 오른쪽(사용자 지시 2026-10-19: v6 카드 · 옆 패널 → v5로 되돌림):
  * - 타입 머리글: 이름 · 진행 방식 · 수업 수, 아래 타입 설명.
@@ -25,6 +25,12 @@ const TABS_TOP = 56;
 const OPEN_PAD_EXTRA = 12;
 /** 수업을 연 채 다른 수업을 누를 때 목록 맨 위로 가는 스크롤 시간(초) */
 const SWITCH_SCROLL = 0.45;
+/** 요소가 화면에 조금이라도 보이는지 */
+const inView = (el: HTMLElement | null) => {
+  if (!el) return false;
+  const r = el.getBoundingClientRect();
+  return r.bottom > 0 && r.top < window.innerHeight;
+};
 
 export function CourseExplorer({ types, profiles }: Props) {
   const [tab, setTab] = useState(0);
@@ -95,11 +101,13 @@ export function CourseExplorer({ types, profiles }: Props) {
       // 수업 패널의 높이는 가장 긴 수업을 펼친 높이로 고정한다(사용자 지시 2026-10-20 — 여닫을 때마다 아래 여백이 바뀌어
       // 화면이 움직였다). 닫힌 줄 높이의 합 + 가장 긴 상세 + 펼친 줄의 넓어진 위 여백. 폭이 바뀌면(글이 다시 감기면) 다시 잰다.
       // v15(2026-10-23): 수업이 하나라도 열려 있을 때만 고정한다 — 늘 고정하면 다 접었을 때 목록 아래 1,000px 넘게 비었다.
-      // 열린 수업을 바꾸는 동안은 그대로 고정이라 화면이 움직이지 않고, 마지막 수업을 접으면 접히는 만큼 원래 높이로 돌아온다
+      // 열린 수업을 바꾸는 동안은 그대로 고정이라 화면이 움직이지 않는다.
+      // 2026-10-24(사용자 지시): 마지막 수업을 접어도 목록이 화면에 보이는 동안은 높이를 그대로 둔다 — 맨 아래 수업을 여닫을 때
+      // 아래 섹션이 올라갔다 내려갔다 했다. 목록이 화면 밖으로 나가면 그때 원래 높이로 돌아온다(아래 스크롤 감시)
       panelRefs.current.forEach((panel) => {
         if (!panel) return;
         if (!panel.querySelector('.course-row[data-open="true"]')) {
-          panel.style.minHeight = '';
+          if (!inView(layoutRef.current)) panel.style.minHeight = '';
           return;
         }
         const rows = [...panel.querySelectorAll<HTMLElement>('.course-row')];
@@ -118,7 +126,12 @@ export function CourseExplorer({ types, profiles }: Props) {
       for (const [stage, track, items] of pairs) {
         const item = items[tab];
         if (!stage || !track || !item) continue;
-        stage.style.height = `${item.offsetHeight}px`; // 네 타입이 한 칸에 겹쳐 있어 트랙은 옮기지 않는다(CSS)
+        // 머리글 창은 가장 긴 머리글 높이로 고정한다(사용자 지시 2026-10-24) — 설명이 두 줄 · 세 줄인 분류를 오갈 때
+        // 아래 탭 · 수업 줄이 한 줄만큼 오르내렸다. 수업 줄 창은 고른 타입 높이 그대로
+        const height = stage === headStageRef.current
+          ? Math.max(...items.map((el) => el?.offsetHeight ?? 0))
+          : item.offsetHeight;
+        stage.style.height = `${height}px`; // 네 타입이 한 칸에 겹쳐 있어 트랙은 옮기지 않는다(CSS)
       }
     };
     place();
@@ -127,6 +140,18 @@ export function CourseExplorer({ types, profiles }: Props) {
     for (const [, , items] of pairs) items.forEach((el) => el && ro.observe(el));
     return () => ro.disconnect();
   }, [tab, open]);
+  // 목록이 화면 밖으로 나가면 접힌 패널의 붙잡아 둔 높이를 놓는다 — 보이지 않을 때 줄어 아무것도 움직여 보이지 않는다
+  // (목록이 화면 위로 지나갔으면 브라우저 스크롤 고정이 보던 자리를 지켜 준다). 패널 크기가 바뀌면 위 ResizeObserver가 창 높이를 다시 맞춘다
+  useEffect(() => {
+    const release = () => {
+      if (inView(layoutRef.current)) return;
+      panelRefs.current.forEach((panel) => {
+        if (panel?.style.minHeight && !panel.querySelector('.course-row[data-open="true"]')) panel.style.minHeight = '';
+      });
+    };
+    window.addEventListener('scroll', release, { passive: true });
+    return () => window.removeEventListener('scroll', release);
+  }, []);
   const switchTab = (next: number) => {
     if (next === tab) return;
     for (const stage of [stageRef.current, headStageRef.current]) {
@@ -211,8 +236,10 @@ export function CourseExplorer({ types, profiles }: Props) {
         </div>
       </div>
       <div ref={layoutRef} className="course-layout">
-        <div ref={tabsRef} className="course-tabs" role="tablist" aria-orientation="vertical" aria-label="수업 유형" onKeyDown={onTabKey}>
+        <div ref={tabsRef} className="course-tabs" role="tablist" aria-orientation="vertical" aria-label="프로그램 구조" onKeyDown={onTabKey}>
           <span ref={barRef} className="course-tabs__indicator" aria-hidden="true" />
+          {/* 탭 위 설명(사용자 지시 2026-10-24) — 화면 읽기 프로그램엔 tablist 이름으로 전한다 */}
+          <span className="course-tabs__label" aria-hidden="true">프로그램 구조</span>
           {types.map((t, i) => [
             // 코스 밖 분류(Workshop · Event)는 Study 밑에 선을 긋고 구분한다(사용자 지시 2026-10-23)
             t.extra && !types[i - 1]?.extra && <span key={`${t.id}-divider`} className="course-tabs__divider" role="presentation" />,
@@ -231,7 +258,7 @@ export function CourseExplorer({ types, profiles }: Props) {
               <span className="course-tab__name">{t.name}</span>
               {/* 코스 밖 분류(Workshop · Event) 탭엔 수를 붙이지 않는다(사용자 지시 2026-10-23) */}
               {!t.extra && <span className="course-tab__count">{t.courses.length}</span>}
-              <span className="course-tab__short">{t.short}</span>
+              {/* 이름 아래 한글 한 줄(short)은 뺐다(사용자 지시 2026-10-24) — 분류 머리글이 이미 설명한다 */}
             </button>,
           ])}
         </div>

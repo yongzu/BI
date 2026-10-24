@@ -7,15 +7,15 @@
   align-items: start;
 }
 
-/* ---------- 지도: 화면에 붙어 있다 ---------- */
+/* ---------- 지도: 화면에 붙어 있다. 폭은 5열 → 3열(절반), 장치는 한 줄에 하나(사용자 지시 2026-10-24 — 연간 구조 목록과 같은 폭) ---------- */
 .device-map__map {
-  grid-column: span 5;
+  grid-column: span 3;
   position: sticky;
   top: 120px;
   display: flex;
   flex-direction: column;
   gap: var(--space-16);
-  padding: var(--space-28);
+  padding: var(--space-20);
   border-radius: 28px;
   background: var(--color-bg-subtle);
 }
@@ -46,7 +46,7 @@
 .device-map__place[data-active='true']::before { background: var(--color-text-primary); box-shadow: none; }
 .device-map__place-name { color: var(--color-text-tertiary); transition: color var(--duration) var(--ease); }
 .device-map__place[data-active='true'] .device-map__place-name { color: var(--color-text-primary); }
-.device-map__nodes { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-8); }
+.device-map__nodes { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-8); }
 .device-map__node {
   display: flex;
   align-items: center;
@@ -70,7 +70,7 @@
 .device-map__now-label { margin-right: var(--space-8); font-size: var(--typo-caption-size); font-weight: var(--font-weight-bold); color: var(--color-text-tertiary); }
 
 /* ---------- 설명: 왼쪽 선이 지금 읽는 장치를 짚는다 ---------- */
-.device-map__list { position: relative; grid-column: 7 / span 6; display: flex; flex-direction: column; }
+.device-map__list { position: relative; grid-column: 5 / -1; display: flex; flex-direction: column; min-width: 0; } /* 지도가 좁아진 만큼 설명이 넓어진다 — 글 줄 폭은 620px로 묶는다 */
 /* 지금 장치를 가리키는 막대 하나 — 그 설명 자리로 위아래로 미끄러져 간다(자리 · 길이는 DeviceMap.tsx가 잰다, 사용자 지시 2026-10-20).
    연간 구조 탭 막대와 같은 움직임 */
 .device-map__bar {
@@ -106,8 +106,12 @@
   transition: background var(--duration) var(--ease), color var(--duration) var(--ease);
 }
 .device-step[data-active='true'] .device-step__num { background: var(--color-text-primary); color: var(--color-bg-default); }
-.device-step__body { margin-top: var(--space-8); }
+.device-step__body { max-width: 620px; margin-top: var(--space-8); }
 
+/* 본문이 1040px보다 좁아지면 3열 지도가 비좁다 — 4열로(연간 구조 목록과 같이) */
+@media (max-width: 1100px) {
+  .device-map__map { grid-column: span 4; }
+}
 /* 좁은 화면: 지도 없이 설명 줄만(자리 라벨이 묶음을 알린다) */
 @media (max-width: 900px) {
   .device-map__map { display: none; }

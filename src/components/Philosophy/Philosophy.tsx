@@ -18,6 +18,7 @@ import './Philosophy.css';
  *   포인터를 십자선 · 좌표가 따라다니고(VectorGuides), 제목 낱말과 본문의 [사고방식] · [벡터형 인재] · [역량과 태도]는
  *   마우스를 올리면 벡터 보기(VectorWord — 윤곽 · 최소한의 앵커 · 바운딩 박스 · 안내선 · 좌표).
  * - 본문은 react-bits ScrollReveal(사용자 제공 설정: chars · fade · stagger 0.05 · smoothing 2 · baseOpacity 0.1 · blur 4).
+ *   2026-10-24: 흐림 4 → 2, 드러나는 시간 · 문장 간격 · 머무는 시간 모두 절반(두 배 빠르게, 사용자 지시).
  * - 단락마다 끊어 넘긴다(사용자 지시 2026-10-23 — 스크롤에 따라 반쯤 흐린 글이 남았다): 무대가 붙어 있는 동안 스크롤이 멈추면
  *   단락 자리로 맞춰 간다. 지금 단락에서 SNAP_PX 넘게 내려왔으면 다음 단락, 올라갔으면 이전 단락, 아니면 제자리로.
  *   마지막 단락에서 더 내리면 무대가 풀리는 자리로 보내 다음 섹션으로 이어진다. 바깥에서 들어오면 위에선 첫 단락, 아래에선 마지막 단락으로.
@@ -50,9 +51,9 @@ const SETTLE_MS = 140;
 /** 단락 자리로 맞춰 가는 시간(초) */
 const SNAP_S = 0.7;
 /** 한 단락 안 문장들이 차례로 드러나는 간격(초) */
-const SENTENCE_GAP = 0.9;
+const SENTENCE_GAP = 0.45; // 0.9 → 0.45 — 두 배 빠르게(사용자 지시 2026-10-24)
 /** 한 문장이 드러나 읽히는 시간(초) — 막 드러난 단락은 이만큼 머문 뒤에야 다음 단락으로 넘어간다 */
-const READ_S = 1.2;
+const READ_S = 0.6; // 1.2 → 0.6
 /** 문장 → ScrollReveal children: 글은 그대로, [ ]로 감싼 낱말은 벡터 낱말 — 본문은 박스만(앵커 없이, 사용자 지시 2026-10-23) */
 function sentence(text: string): ReactNode[] {
   return text.split(/(\[[^\]]+\])/).filter(Boolean).map((part, i) =>
@@ -237,12 +238,12 @@ export function Philosophy({ title, paragraphs }: Props) {
                         effect="fade"
                         stagger={0.05}
                         duration={0.8}
-                        smoothing={2}
+                        smoothing={1} // 한 문장이 드러나는 시간(초) — 2 → 1, 두 배 빠르게(사용자 지시 2026-10-24)
                         baseOpacity={0.1}
                         baseRotation={0}
                         baseOffset={0}
                         enableBlur
-                        blurStrength={4}
+                        blurStrength={2} // 4 → 2(사용자 지시 2026-10-24)
                         // 단락이 자리 잡으면 문장이 차례로 시간으로 끝까지 드러난다
                         progress={fill(i)}
                         delay={j * SENTENCE_GAP}

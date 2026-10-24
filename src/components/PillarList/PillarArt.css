@@ -1,0 +1,127 @@
+/* 역량과 태도 이미지 박스 그래픽(2026-10-24) — 모노톤: 어두운 면 위 흰 선 · 점 · 픽셀. 고른 장만 움직인다 */
+.pa-box {
+  --pa-bg: #1a1a1a; /* 모노톤 어두운 면 — 잉크(#333)보다 한 단계 깊게 */
+  --pa-fg: #ffffff;
+  --pa-ease: cubic-bezier(0.65, 0, 0.35, 1);
+  position: relative;
+  width: 100%;
+  max-width: 240px;
+  aspect-ratio: 240 / 315;
+  overflow: hidden;
+  border-radius: 40px;
+  background: var(--pa-bg);
+  isolation: isolate;
+}
+/* 세로 트랙 — 고른 장(--i)으로 넘어간다(토스 이미지 박스) */
+.pa-track { height: 100%; transform: translateY(calc(var(--i, 0) * -100%)); transition: transform 800ms var(--pa-ease); }
+.pa-slide { position: relative; height: 100%; overflow: hidden; }
+.pa-svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.pa-title {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 var(--space-24);
+  text-align: center;
+  font-size: var(--typo-lead-size);
+  line-height: 1.25;
+  font-weight: var(--font-weight-bold);
+  letter-spacing: var(--tracking-heading);
+  color: var(--pa-fg);
+  text-shadow: 0 0 24px var(--pa-bg), 0 0 8px var(--pa-bg);
+}
+/* 보이지 않는 장은 멈춘다 */
+.pa-slide:not([data-active='true']) * { animation-play-state: paused !important; }
+
+/* ---------- 01 Aesthetic Sense ---------- */
+.pa-thin { fill: none; stroke: var(--pa-fg); stroke-width: 0.75; opacity: 0.16; animation: pa-breathe 6s ease-in-out var(--d, 0s) infinite; }
+.pa-draw { fill: none; stroke: var(--pa-fg); stroke-width: 1.5; stroke-linecap: round; stroke-dasharray: 1; animation: pa-draw 6s var(--pa-ease) infinite; }
+.pa-eye { fill: var(--pa-fg); transform-box: fill-box; transform-origin: center; animation: pa-pulse 2s ease-in-out infinite; }
+@keyframes pa-breathe { 0%, 100% { opacity: 0.12; } 50% { opacity: 0.32; } }
+@keyframes pa-draw { 0% { stroke-dashoffset: 1; opacity: 0.9; } 60% { stroke-dashoffset: 0; } 88% { stroke-dashoffset: 0; opacity: 0.9; } 100% { stroke-dashoffset: 0; opacity: 0; } }
+@keyframes pa-pulse { 0%, 100% { transform: scale(1); opacity: 0.9; } 50% { transform: scale(1.8); opacity: 0.4; } }
+
+/* ---------- 02 Articulation ---------- */
+.pa-quote { fill: var(--pa-fg); opacity: 0.3; font-size: 88px; font-weight: 700; }
+.pa-line { fill: var(--pa-fg); opacity: 0.5; transform-box: fill-box; transform-origin: left center; animation: pa-type 6s steps(14, end) var(--d, 0s) infinite; }
+.pa-caret { fill: var(--pa-fg); animation: pa-blink 1s steps(1, end) infinite; }
+@keyframes pa-type { 0% { transform: scaleX(0); opacity: 0.5; } 14% { transform: scaleX(1); } 82% { transform: scaleX(1); opacity: 0.5; } 92%, 100% { transform: scaleX(1); opacity: 0; } }
+@keyframes pa-blink { 0%, 50% { opacity: 1; } 51%, 100% { opacity: 0; } }
+
+/* ---------- 03 Structural Thinking ---------- */
+.pa-edge { fill: none; stroke: var(--pa-fg); stroke-width: 1; opacity: 0.55; stroke-dasharray: 1; animation: pa-grow 5s var(--pa-ease) var(--d, 0s) infinite; }
+.pa-node { fill: var(--pa-bg); stroke: var(--pa-fg); stroke-width: 1; animation: pa-light 5s ease-out var(--d, 0s) infinite; }
+@keyframes pa-grow { 0% { stroke-dashoffset: 1; } 22%, 84% { stroke-dashoffset: 0; opacity: 0.55; } 100% { stroke-dashoffset: 0; opacity: 0; } }
+@keyframes pa-light { 0%, 6% { fill: var(--pa-bg); } 14%, 70% { fill: var(--pa-fg); } 90%, 100% { fill: var(--pa-bg); } }
+
+/* ---------- 04 Problem Definition ---------- */
+.pa-noise { fill: var(--pa-fg); opacity: var(--o, 0.15); animation: pa-flicker var(--t, 1.2s) steps(1, end) var(--d, 0s) infinite; }
+.pa-target { fill: var(--pa-fg); animation: pa-lock 4s ease-out infinite; }
+.pa-reticle { fill: none; stroke: var(--pa-fg); stroke-width: 1; animation: pa-narrow 4s var(--pa-ease) infinite; }
+@keyframes pa-flicker { 0%, 49% { opacity: var(--o, 0.15); } 50%, 100% { opacity: 0.03; } }
+@keyframes pa-lock { 0%, 45% { opacity: 0.2; } 60%, 90% { opacity: 1; } 100% { opacity: 0.2; } }
+@keyframes pa-narrow { 0% { transform: scale(2.6) rotate(-45deg); opacity: 0; } 15% { opacity: 0.9; } 55%, 88% { transform: scale(1) rotate(0deg); opacity: 0.9; } 100% { transform: scale(1); opacity: 0; } }
+
+/* ---------- 05 Reframing: 와이어 정육면체 ---------- */
+.pa-cube-stage { position: absolute; inset: 0; display: grid; place-items: center; perspective: 520px; }
+.pa-cube { --half: 48px; grid-area: 1 / 1; position: relative; width: calc(var(--half) * 2); height: calc(var(--half) * 2); transform-style: preserve-3d; animation: pa-spin 14s linear infinite; }
+.pa-cube--inner { --half: 22px; animation: pa-spin-back 9s linear infinite; }
+.pa-face { position: absolute; inset: 0; border: 1px solid color-mix(in srgb, var(--pa-fg) 55%, transparent); }
+.pa-cube--inner .pa-face { border-color: color-mix(in srgb, var(--pa-fg) 30%, transparent); background: color-mix(in srgb, var(--pa-fg) 4%, transparent); }
+.pa-face--front { transform: translateZ(var(--half)); }
+.pa-face--back { transform: rotateY(180deg) translateZ(var(--half)); }
+.pa-face--right { transform: rotateY(90deg) translateZ(var(--half)); }
+.pa-face--left { transform: rotateY(-90deg) translateZ(var(--half)); }
+.pa-face--top { transform: rotateX(90deg) translateZ(var(--half)); }
+.pa-face--bottom { transform: rotateX(-90deg) translateZ(var(--half)); }
+@keyframes pa-spin { from { transform: rotateX(-22deg) rotateY(0deg); } to { transform: rotateX(-22deg) rotateY(360deg); } }
+@keyframes pa-spin-back { from { transform: rotateX(30deg) rotateY(360deg) rotateZ(0deg); } to { transform: rotateX(30deg) rotateY(0deg) rotateZ(360deg); } }
+
+/* ---------- 06 Active Learning ---------- */
+.pa-dot { fill: var(--pa-fg); opacity: 0.22; }
+.pa-step { fill: var(--pa-fg); opacity: 0; animation: pa-trail 6s linear var(--d, 0s) infinite; }
+@keyframes pa-trail { 0% { opacity: 0; } 2% { opacity: 1; } 30% { opacity: 0.35; } 70% { opacity: 0.12; } 82%, 100% { opacity: 0; } }
+
+/* ---------- 07 Discovering Unknowns ---------- */
+.pa-tile__frame { fill: none; stroke: var(--pa-fg); stroke-width: 0.75; opacity: 0.22; }
+.pa-tile__fill { fill: var(--pa-fg); opacity: 0; animation: pa-reveal 9s var(--pa-ease) var(--d, 0s) infinite; }
+.pa-tile__q { fill: var(--pa-fg); opacity: 0.45; font-size: 14px; font-weight: 700; text-anchor: middle; }
+/* 한 번에 열에 서넛만 드러나게 — 너무 많이 · 밝게 드러나면 가운데 이름이 묻혔다 */
+@keyframes pa-reveal { 0% { transform: scaleX(0); opacity: 0; } 4% { transform: scaleX(1); opacity: 0.5; } 30% { transform: scaleX(1); opacity: 0.5; } 35%, 100% { transform: scaleX(0); opacity: 0; } }
+
+/* ---------- 08 Unpacking the Compression ---------- */
+.pa-layer { animation: pa-unpack 5s var(--pa-ease) var(--d, 0s) infinite alternate; }
+.pa-layer line { stroke: var(--pa-fg); stroke-width: 1; opacity: 0.6; }
+.pa-layer rect { fill: var(--pa-fg); opacity: 0.8; }
+.pa-layer .pa-layer__mark { opacity: 0.5; }
+@keyframes pa-unpack { 0%, 18% { transform: translateY(0); } 62%, 100% { transform: translateY(var(--dy, 0px)); } }
+
+/* ---------- 09 Dissatisfaction Sensor ---------- */
+.pa-grid { stroke: var(--pa-fg); stroke-width: 0.5; opacity: 0.08; }
+.pa-threshold { stroke: var(--pa-fg); stroke-width: 1; stroke-dasharray: 3 4; opacity: 0.45; }
+.pa-wave { animation: pa-scroll 6s linear infinite; }
+.pa-wave polyline { fill: none; stroke: var(--pa-fg); stroke-width: 1.25; stroke-linejoin: round; opacity: 0.85; }
+.pa-scan { stroke: var(--pa-fg); stroke-width: 1; opacity: 0.25; }
+.pa-alert { fill: none; stroke: var(--pa-fg); stroke-width: 1.25; opacity: 0; animation: pa-alert 6s linear infinite; }
+@keyframes pa-scroll { from { transform: translateX(0); } to { transform: translateX(-240px); } }
+/* 튐(파형의 150–166px)이 가운데 선(120px)을 지나는 때 — 6초 중 약 0.75–1.15초 */
+@keyframes pa-alert { 0%, 10% { opacity: 0; } 12%, 24% { opacity: 1; } 30%, 100% { opacity: 0; } }
+
+/* ---------- 10 Learning by Sharing ---------- */
+.pa-ripple { fill: none; stroke: var(--pa-fg); stroke-width: 1; animation: pa-ripple 3s ease-out var(--d, 0s) infinite; }
+.pa-link { stroke: var(--pa-fg); stroke-width: 0.75; stroke-dasharray: 2 4; opacity: 0.3; animation: pa-flow 1.2s linear infinite; }
+.pa-peer { fill: var(--pa-bg); stroke: var(--pa-fg); stroke-width: 1; animation: pa-peer 1s ease-out var(--d, 0s) infinite; }
+.pa-source { fill: var(--pa-fg); }
+@keyframes pa-ripple { 0% { transform: scale(0); opacity: 0.7; } 100% { transform: scale(1); opacity: 0; } }
+@keyframes pa-flow { to { stroke-dashoffset: -12; } }
+@keyframes pa-peer { 0%, 60% { fill: var(--pa-bg); } 75% { fill: var(--pa-fg); } 100% { fill: var(--pa-bg); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .pa-track { transition: none; }
+  .pa-box * { animation: none !important; }
+  .pa-draw, .pa-edge { stroke-dashoffset: 0; }
+  .pa-line { transform: none; }
+  .pa-step, .pa-tile__fill { opacity: 0.4; }
+}

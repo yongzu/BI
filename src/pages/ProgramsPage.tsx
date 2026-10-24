@@ -5,11 +5,13 @@ import { AnnualTimeline } from '../components/AnnualTimeline/AnnualTimeline';
 import { CourseExplorer } from '../components/CourseExplorer/CourseExplorer';
 import { ApplyButton } from '../components/ApplyButton/ApplyButton';
 import GradientASCII from '../components/GradientASCII/GradientASCII';
-import { BackToTop, External, SiteHeader } from '../components/SiteHeader/SiteHeader';
-import { VersionLog } from '../components/VersionLog/VersionLog';
-import { SkillReveal } from '../components/SkillReveal/SkillReveal';
+import { BackToTop, SiteHeader } from '../components/SiteHeader/SiteHeader';
+import { FooterMark } from '../components/FooterMark/FooterMark';
+import { PillarList } from '../components/PillarList/PillarList';
 import { DeviceMap } from '../components/DeviceMap/DeviceMap';
+import { CurriculumEntry } from '../components/CurriculumEntry/CurriculumEntry';
 import { Philosophy } from '../components/Philosophy/Philosophy';
+import { VectorHandoff } from '../components/VectorWord/VectorHandoff';
 import ScrollReveal from '../components/ScrollReveal/ScrollReveal';
 import { SCROLL_REVEAL } from '../components/ScrollReveal/preset';
 import { courseProfiles } from '../data/courseProfiles';
@@ -45,7 +47,7 @@ const toc: TocItem[] = [
 /** Blocks that rise in on scroll */
 // 히어로는 첫 화면 순서(흐린 제목 → 맑아짐 → 소개 · 기간)를 따로 가지므로 떠오르는 등장에서 뺀다
 // 섹션 제목 · 리드는 ScrollReveal이 맡으므로 뺐다(2026-10-20)
-const revealTargets = ['.group-label', '.group__lead', '.course-explorer', '.career-row', '.history', '.device-map'].join(', ');
+const revealTargets = ['.group-label', '.group__lead', '.career-row', '.annual-map', '.device-map', '.pillar-row'].join(', ');
 
 /* ------------------------------------------------------------------ */
 
@@ -81,7 +83,6 @@ const deviceOutcomes: Record<string, string> = {
   라이브데모: '전문가의 사고 과정을 직접 본다',
   피어크리틱: '동료와 평가 기준을 공유한다',
   셀프피드백: '스스로 성장 정도를 판단한다',
-  워크숍: '필요한 기술을 제때 보완한다',
   공유회: '설명하며 다시 배운다',
   저널링: '배움을 기록하고 다음 행동으로 잇는다',
 };
@@ -204,6 +205,8 @@ export function ProgramsPage() {
 
         {/* ---------- 교육 철학 — v18: 과정 개요 자리에 v17의 한 화면 한 단락(sui.io 큰 글). 목차 레일 밖이라 이 동안 목차는 숨어 있다 ---------- */}
         <Philosophy title={philosophy.title} paragraphs={philosophy.paragraphs} />
+        {/* 교육 철학 → 역량과 태도: 마지막 단락의 [역량과 태도] 벡터 낱말이 상자째 내려가 섹션 제목이 된다(사용자 지시 2026-10-24) */}
+        <VectorHandoff targetSelector="#pillars .section-header__title" />
 
         {/* 목차는 '역량과 태도'부터 나온다(사용자 지시 2026-10-04 · 10-23) — 레일이 역량과 태도와 함께 시작해 읽는 동안 붙어 있다가 푸터 앞에서 놓아준다.
             v18: v3의 오른쪽 위 세로 목차 */}
@@ -215,26 +218,28 @@ export function ProgramsPage() {
         {/* 섹션 순서(사용자 지시 2026-10-23): 과정 개요 → 역량과 태도 → 커리큘럼 → 수업을 관통하는 접근 → 연간 구조 → 채용 연계 */}
 
         {/* ---------- 역량과 태도 — 과정 개요 바로 아래(사용자 지시 2026-10-23, 예전엔 커리큘럼 아래) ---------- */}
-        <section id="pillars" className="section container">
-          {/* v11: toss.im "상품 판매와 정산" 연출 — 큰 옅은 글씨가 검정으로 채워지고, 작아지며 위로, 화면 폭 카드 다섯 장이 올라온다 */}
-          {/* 역량과 태도를 합쳤다(사용자 지시 2026-10-20) — 역량 다섯 장 아래 Phi OS(태도) 다섯 장 */}
-          <SkillReveal
+        <section id="pillars" className="section section--wide">{/* 화면 폭 섹션 — 다른 섹션과 같은 양옆 여백(사용자 지시 2026-10-24) */}
+          {/* toss.im/company '일하는 방식이 곧 성공 전략' 형식(사용자 지시 2026-10-24) — 왼쪽 붙는 이미지 박스(비움) · 오른쪽
+              묶음 제목 아래 01–05 줄. 예전 v11–v14 SkillReveal(큰 글씨 채움 · 가로로 흐르는 카드 열 장)은 바꿨다 */}
+          <SectionHeader
             title="역량과 태도"
-            lead="어떤 환경에서도 스스로 답을 찾을 수 있는 사고방식을 만들기 위해, Phi는 다섯 가지 역량을 기르고 다섯 가지 태도(Phi OS)를 중요시합니다. 수업과 장치는 이 역량을 기르고 태도를 연습하는 자리입니다."
-            groups={[{ label: '역량', items: competencies }, { label: 'Phi OS', items: attitudes }]}
+            lead={'어떤 환경에서도 스스로 답을 찾을 수 있는 사고방식을 만들기 위해, Phi는 다섯 가지 역량을 기르고 다섯 가지 태도(Phi OS)를 중요시합니다.\n수업과 장치는 이 역량을 기르고 태도를 연습하는 자리입니다.'} /* '중요시합니다.' 뒤에서 줄을 바꾼다(사용자 지시 2026-10-24) */
           />
+          <PillarList groups={[{ label: '역량', items: competencies }, { label: '태도 · Phi OS', items: attitudes }]} />
         </section>
 
         {/* ---------- 커리큘럼 ---------- */}
         {/* 화면 폭 전체(사용자 지시 2026-10-20, v14) */}
         <section id="curriculum" className="section section--wide">
-          {/* 리드는 첫 문장 뒤에서 줄을 바꾼다(사용자 지시 2026-10-20) */}
-          <SectionHeader title="커리큘럼" lead={'상기된 역량을 중심으로 설계된 1학기 수업들입니다.\n2학기는 1학기의 성취에 따라 학습 효과를 보완, 증폭할 수 있는 방향으로 준비됩니다.'} />
-
-          {/* 필터 · 수업 목록 · 상세를 한 화면에 — 클릭 없이 전체를 파악한다 */}
-          <div id="courses" className="group">
-            <CourseExplorer types={courseTypes} profiles={courseProfiles} />
-          </div>
+          {/* 들어가는 길(사용자 지시 2026-10-24): 큰 과목 분류 릴이 저절로 굴러가다 줄어들며 왼쪽 탭으로 */}
+          <CurriculumEntry types={courseTypes}>
+            {/* 섹션 제목 · 리드는 일단 뺐다(사용자 지시 2026-10-24) — 들어가는 길이 끝나면 바로 과목 분류 머리글 · 탭 · 수업 줄.
+                예전 리드(첫 문장 뒤 줄바꿈): '상기된 역량을 중심으로 설계된 1학기 수업들입니다.' / '2학기는 1학기의 성취에 따라 학습 효과를 보완, 증폭할 수 있는 방향으로 준비됩니다.' */}
+            {/* 필터 · 수업 목록 · 상세를 한 화면에 — 클릭 없이 전체를 파악한다 */}
+            <div id="courses" className="group">
+              <CourseExplorer types={courseTypes} profiles={courseProfiles} />
+            </div>
+          </CurriculumEntry>
         </section>
 
         {/* ---------- 수업을 관통하는 접근 ---------- */}
@@ -257,7 +262,7 @@ export function ProgramsPage() {
             title="연간 구조"
             lead="2026년 8월 개강부터 2027년 8월 졸업까지, 두 학기와 방학 캠프, 졸업 프로젝트로 이어지는 1년입니다."
           />
-          {/* v7: 위 시기 패널 · 아래 진행 바(toss.im/company History). v6의 안내 표 문구는 시기마다 왼쪽 사실로 옮겼다 */}
+          {/* 왼쪽 붙는 시기 목록 · 오른쪽 세로로 이어지는 네 시기 — 수업을 관통하는 접근과 같은 문법(사용자 지시 2026-10-24). 예전엔 가로로 넘기는 탭 */}
           <AnnualTimeline stages={stages} />
         </section>
 
@@ -270,17 +275,7 @@ export function ProgramsPage() {
             <GroupLabel>with Toss</GroupLabel>
             <CareerRows />
           </div>
-          {/* 맨 끝 신청 줄(v15, 2026-10-23) — 다 읽은 뒤 신청하려면 맨 위로 돌아가야 했다. 10/19에 뺀 마무리 블록(히어로 문장 · 기간 · 버튼)
-              대신 한 줄: 모집 상태 · 알림 신청 · 모집 안내 */}
-          <div className="apply-row">
-            <Text typography="Title" className="apply-row__status">{applyPeriod.status}</Text>
-            <div className="apply-row__actions">
-              <ApplyButton href={applyPeriod.href}>{applyPeriod.cta}</ApplyButton>
-              <a className="link apply-row__link" href="https://www.phi.design/admissions" target="_blank" rel="noreferrer">
-                모집 안내 <External />
-              </a>
-            </div>
-          </div>
+          {/* 맨 끝 신청 줄(1기 모집 마감 · 2기 오픈 알림 신청 · 모집 안내)은 뺐다(사용자 지시 2026-10-24) */}
         </section>
 
         </div>
@@ -293,8 +288,8 @@ export function ProgramsPage() {
         <Text typography="Label" color="tertiary">
           평일 10:00 - 18:00 (점심시간 13:00 - 14:00) · © 2026 Phi Institute of Design · <a href="#system" className="link">Design System</a>
         </Text>
-        {/* 지난 버전 페이지로 — 맨 아래(사용자 지시 2026-10-14). 뺐다가 되돌림(2026-10-20) — 번호와 핵심 변경만 */}
-        <VersionLog />
+        {/* 버전 기록은 뺐다(사용자 지시 2026-10-24). 맨 아래엔 푸터 폭에 꽉 찬 'Fundamental Over Tools' */}
+        <FooterMark />
       </footer>
     </>
   );

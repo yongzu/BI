@@ -45,6 +45,33 @@ export function scrollToTarget(target: number | HTMLElement, { immediate = false
   else target.scrollIntoView({ behavior: immediate ? 'auto' : 'smooth', block: 'start' });
 }
 
+/** 연출 중 막는 키 — 스크롤을 움직이는 키 */
+const SCROLL_KEYS = new Set(['ArrowDown', 'ArrowUp', 'PageDown', 'PageUp', 'Home', 'End', ' ']);
+/** capture 단계에서 막아 Lenis까지 가지 않게 한다 */
+const BLOCK = { capture: true, passive: false } as const;
+const blockInput = (e: Event) => { e.preventDefault(); e.stopPropagation(); };
+const blockKeys = (e: Event) => { if (SCROLL_KEYS.has((e as KeyboardEvent).key)) blockInput(e); };
+let locks = 0;
+/**
+ * 연출이 저절로 진행되는 동안 사용자의 스크롤 입력(휠 · 터치 · 스크롤 키)을 막는다 — 커리큘럼 들어가는 길(CurriculumEntry) ·
+ * 교육 철학 → 역량과 태도 이어 주기(VectorHandoff). 여럿이 겹쳐 걸어도 마지막 하나가 풀릴 때 풀린다.
+ * lenis.stop()은 쓰지 않는다 — html에 overflow: clip(index.css .lenis-stopped)이 붙어 스크롤바가 사라졌다 돌아오며
+ * 페이지 폭이 바뀌어, 끝난 직후 화면 전체가 한 번 다시 배치되며 지직거렸다(사용자 제보 2026-10-24)
+ */
+export function lockScrollInput(on: boolean) {
+  const before = locks;
+  locks = Math.max(0, locks + (on ? 1 : -1));
+  if (before === 0 && locks === 1) {
+    window.addEventListener('wheel', blockInput, BLOCK);
+    window.addEventListener('touchmove', blockInput, BLOCK);
+    window.addEventListener('keydown', blockKeys, BLOCK);
+  } else if (before === 1 && locks === 0) {
+    window.removeEventListener('wheel', blockInput, BLOCK);
+    window.removeEventListener('touchmove', blockInput, BLOCK);
+    window.removeEventListener('keydown', blockKeys, BLOCK);
+  }
+}
+
 /**
  * 여닫을 때 누른 박스를 화면의 같은 자리에 붙잡아 둔다(사용자 제보 2026-10-05: 워크숍을 닫으면 화면이 아래로 내려가는 듯했다).
  * 원인: 한 번에 모두 여닫히므로 누른 박스 위의 박스 · 줄들도 함께 늘거나 줄어, 스크롤 위치는 그대로인데 내용이 딸려 움직였다.

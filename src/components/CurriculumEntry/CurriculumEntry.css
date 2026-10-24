@@ -1,0 +1,43 @@
+/* 커리큘럼 들어가는 길(2026-10-24) — 붙는 무대에서 큰 분류 릴 → 저절로 굴러가 멈춤 → 줄어들며 왼쪽 탭으로. Tokens only. */
+
+/* 무대 길이 = 화면 한 장(+ 붙는 길이, 지금은 0). 실제 커리큘럼은 무대와 겹치게 끌어올린다(CurriculumEntry.tsx) */
+.ce-intro { height: calc(100vh * (1 + var(--ce-pin))); }
+.ce[data-intro='on'] .ce__content { margin-top: calc(-100vh + var(--ce-land)); }
+
+.ce-intro__stage {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  height: 100vh;
+  overflow: clip; /* 화면을 넘는 릴 위아래는 잘린다 — 영상처럼. 들어오는 동안 위 머리글을 덮지 않는다 */
+}
+
+/* 릴: 화면을 채우는 굵은 글자 더미. 줄 간격을 좁혀 덩어리로 읽힌다. 자리는 무대 맨 위 기준(transform으로 옮긴다) */
+.ce-intro__reel {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: flex;
+  flex-direction: column;
+  list-style: none;
+  will-change: transform, opacity;
+}
+.ce-intro__name {
+  width: max-content;
+  font-size: 28vh; /* 화면 밖으로 넘칠 만큼(사용자 지시 2026-10-24, 14vh → 28vh) — 넘친 부분은 무대가 자른다 */
+  line-height: 1.2; /* 실제 탭 이름과 같은 줄 높이 — 줄어든 높이가 탭 이름 높이와 딱 맞는다 */
+  font-weight: var(--font-weight-bold);
+  letter-spacing: -0.04em;
+  color: var(--color-text-primary);
+  transform-origin: 0 50%; /* 왼쪽 가운데 기준으로 줄어든다 — 가운데 높이가 그대로라 옆으로만 가는 것처럼 보인다 */
+  will-change: transform, opacity;
+}
+/* 줄 높이(1.2)는 탭과 맞추고, 덩어리로 보이게 위아래를 겹친다 */
+.ce-intro__name + .ce-intro__name { margin-top: -0.14em; }
+
+/* 무대 동안 실제 커리큘럼은 투명 — 줄어드는 동안 진해진다(진하기는 CurriculumEntry.tsx가 프레임마다 정한다).
+   탭 이름만 끝까지 숨긴다 — 무대 글자가 그 자리로 날아가 겹친 순간 서로 바뀐다(둘 다 바로, 겹쳐 있어 티 나지 않는다) */
+.ce[data-intro='on'] .ce__content { opacity: 0; pointer-events: none; }
+.ce[data-intro='on'][data-done='true'] .ce__content { opacity: 1; pointer-events: auto; }
+.ce[data-intro='on']:not([data-done='true']) .course-tab__name { visibility: hidden; }
+.ce[data-done='true'] .ce-intro__stage { visibility: hidden; }
