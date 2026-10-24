@@ -9,10 +9,10 @@
   display: flex;
   flex-direction: column;
   justify-content: center;
-  align-items: flex-start;
+  align-items: center; /* v21: 제목 · 단락 가운데 정렬(사용자 지시 2026-10-24) — 왼쪽 정렬이던 것 */
   gap: var(--space-48);
   height: 100svh;
-  padding-inline: var(--side-wide);
+  padding-inline: var(--gutter); /* v21: 제목이 화면 폭에 꽉 차게 --side-wide → --gutter(사용자 지시 2026-10-24) */
   overflow: hidden;
 }
 
@@ -21,7 +21,8 @@
 
 /* ---------- 큰 제목: 본문보다 큰 글(Apple typography-headline-super 자리). 잉크 단색(사용자 지시 2026-10-23 — 그라데이션 뺌) ---------- */
 .philosophy__title {
-  font-size: clamp(2.75rem, 6.2vw, 5.75rem); /* 44 → 92 — 1440에서 한 줄(약 1,010px)이 본문 폭(1,040px)에 들어간다 */
+  /* v21: 무대 글줄 폭에 꽉 차게 Philosophy.tsx가 재서 맞춘다(fit, 사용자 지시 2026-10-24) — 이 값은 재기 전 자리 */
+  font-size: 8.3vw;
   white-space: nowrap;
   line-height: 1.04;
   font-weight: var(--font-weight-bold);
@@ -30,13 +31,14 @@
 }
 
 /* ---------- 단락: v17과 같은 큰 글(28 → 44px, 사용자 지시 2026-10-23 — 20 → 28px로 줄였던 것을 되돌림) — 한 칸에 겹친다 ---------- */
-.philosophy__paras { display: grid; perspective: 1400px; } /* 펼침의 3D 깊이 */
+.philosophy__paras { display: grid; justify-items: center; perspective: 1400px; } /* 펼침의 3D 깊이 · v21 가운데 정렬 */
 .philosophy__para {
   grid-area: 1 / 1;
   display: flex;
   flex-direction: column;
   gap: var(--space-40);
   max-width: 22em;
+  text-align: center; /* v21(사용자 지시 2026-10-24) */
   font-size: clamp(1.75rem, 3.1vw, 2.75rem); /* 28 → 44 */
   transform-origin: center top; /* 경첩은 위 — 위아래로 펼친다 */
 }
@@ -46,7 +48,7 @@
   letter-spacing: var(--tracking-heading);
   color: var(--color-text-secondary);
   word-break: keep-all;
-  text-wrap: pretty;
+  text-wrap: balance; /* v21: 가운데 정렬이라 줄 길이를 고르게 — pretty → balance */
 }
 /* 벡터 낱말([사고방식] 등)은 잉크로 — 테두리 캡슐은 뺐다. 마우스를 올리면 바운딩 박스 · 안내선만(앵커 없이, 사용자 지시 2026-10-23) */
 .philosophy__sentence .vw:not([data-on='true']) { color: var(--color-text-primary); } /* 올렸을 땐 흰 속 · 윤곽(VectorWord.css) */
@@ -54,9 +56,10 @@
 .philosophy__sentence.scroll-reveal { margin: 0; }
 
 /* ---------- 떠오름(Apple StaggeredFadeIn): 무대가 들어오면 제목 → 첫 단락 차례로 ---------- */
-/* 제목은 떠오르지 않는다(사용자 지시 2026-10-23) — 대신 화면을 넘치는 크기에서 제자리로 줄어든다(Philosophy.tsx, transform) */
-.philosophy__title { transform-origin: 0 0; will-change: transform; }
-/* 단락 칸은 제목이 왼쪽 제자리로 옮겨 가는 동안 스크롤을 따라 페이드인(Philosophy.tsx가 opacity · transform을 직접 준다) */
+/* 제목은 떠오르지 않는다(사용자 지시 2026-10-23) — v21: 화면 가운데 작은 크기에서 꽉 찬 폭으로 커진 뒤 제자리로 올라간다(Philosophy.tsx, transform).
+   가운데를 축으로 키운다 */
+.philosophy__title { transform-origin: 50% 50%; will-change: transform; }
+/* 단락 칸은 제목이 제자리로 옮겨 가는 동안 스크롤을 따라 페이드인(Philosophy.tsx가 opacity · transform을 직접 준다) */
 .philosophy__body { will-change: opacity, transform; }
 
 /* ---------- 단락 전환: iPhone Duo 펼침(영상 8 ~ 11초), 위아래로(사용자 지시 2026-10-23 — 좌우 → 상하) ----------
@@ -86,7 +89,6 @@
 
 @media (max-width: 720px) {
   .philosophy__stage { gap: var(--space-32); }
-  .philosophy__title { white-space: normal; }
   .philosophy__para { gap: var(--space-28); }
 }
 /* 움직임 줄이기: 붙는 무대 없이 제목과 단락을 차례로 쌓는다 */

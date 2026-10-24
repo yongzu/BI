@@ -32,18 +32,23 @@ import './Philosophy.css';
  *   끊어 넘기기도 큰 제목 자리(0) → 단락들(1 … n) → 무대가 풀리는 자리(n + 1) 순서로 맞춘다.
  * - 머묾(사용자 지시 2026-10-23 — 스크롤하다 보면 내용이 나오자마자 넘어갔다): 막 드러난 단락은 문장이 다 드러날 때까지(hold) 다음 단락으로
  *   넘어가지 않는다. 그동안 더 내려도 단락은 그대로이고, 멈추면 그 단락 자리로 되돌린다. 넘어갈 땐 한 칸씩. 스크롤 자체는 가로채지 않는다.
+ * - v21 몰입 뒤집기(사용자 지시 2026-10-24 — 큰 제목이 줄며 왼쪽으로 가던 것을): 제목이 화면 가운데에서 작게(화면 폭의 INTRO_WIDTH배) 시작해
+ *   ① GROW 몫 동안 화면 가운데에 선 채 화면 폭에 꽉 차게(양옆 --gutter만 남기고) 커지고, ② 나머지 동안 제자리(위)로 올라가며 단락 칸이 페이드인된다.
+ *   제자리 크기는 꽉 찬 폭이라 글꼴 크기를 재서 맞춘다(fit — 크기 바꿀 때 · 글꼴이 들어온 뒤). 제목 · 단락은 가운데 정렬(CSS).
  * 단락마다 스크롤 STEP(화면 높이 배수). 움직임 줄이기면 붙는 무대 없이 제목과 단락을 차례로 쌓는다(CSS).
  */
 type Props = { title: string; paragraphs: string[][] };
 
 /** 한 단락이 쓰는 스크롤 길이(화면 높이 배수) */
 const STEP = 1.2;
-/** 큰 제목이 줄어드는 스크롤 길이(화면 높이 배수) */
+/** 제목이 커지는 스크롤 길이(화면 높이 배수) */
 const INTRO = 1;
-/** 처음 제목 폭 = 화면 폭 × 이 값(화면을 넘친다) */
-const INTRO_WIDTH = 1.7;
-/** 몰입 길 중 가운데에서 줄어드는 몫 — 나머지는 왼쪽 제자리로 옮겨 가며 단락이 페이드인 */
-const SHRINK = 0.6;
+/** 처음 제목 폭 = 화면 폭 × 이 값 — v21: 1.7(화면을 넘친다) → 0.3(가운데 작게, 사용자 지시 2026-10-24) */
+const INTRO_WIDTH = 0.3;
+/** 처음 제목 폭의 하한(px) — 좁은 화면에서 읽히지 않을 만큼 작아지지 않게 */
+const INTRO_MIN = 260;
+/** 몰입 길 중 가운데에서 커지는 몫 — 나머지는 제자리(위)로 올라가며 단락이 페이드인 */
+const GROW = 0.6;
 /** 지금 단락 자리에서 이만큼(px) 넘게 움직이고 멈추면 다음 · 이전 단락으로 넘긴다 */
 const SNAP_PX = 40;
 /** 스크롤이 멈췄다고 보는 시간(ms) */
@@ -70,6 +75,7 @@ export function Philosophy({ title, paragraphs }: Props) {
     const root = ref.current;
     if (!root) return;
     const track = root.querySelector<HTMLElement>('.philosophy__track')!;
+    const stage = root.querySelector<HTMLElement>('.philosophy__stage')!;
     const title = root.querySelector<HTMLElement>('.philosophy__title')!;
     const body = root.querySelector<HTMLElement>('.philosophy__body')!;
     const n = paragraphs.length;
@@ -96,34 +102,37 @@ export function Philosophy({ title, paragraphs }: Props) {
       const anchors = [top, ...Array.from({ length: n }, (_, i) => Math.round(top + intro + seg * i) + 1), top + span];
       return { r, vh, span, intro, seg, anchors };
     };
+    // 제목을 무대 글줄 폭(양옆 --gutter 안)에 꽉 차게 — 글꼴 크기에 폭이 비례하니 한 번 재서 맞춘다(사용자 지시 2026-10-24)
+    const fit = () => {
+      const cs = getComputedStyle(stage);
+      const avail = stage.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+      const fs = parseFloat(getComputedStyle(title).fontSize);
+      if (title.offsetWidth > 0) title.style.fontSize = `${((fs * avail) / title.offsetWidth).toFixed(2)}px`;
+    };
     const tick = () => {
       raf = 0;
       const { r, vh, span, intro } = geometry();
-      // 몰입: 0 = 화면을 넘치는 큰 제목(화면 가운데) → SHRINK = 가운데에서 제 크기 → 1 = 왼쪽 제자리
+      // 몰입(v21): 0 = 화면 가운데 작은 제목 → GROW = 가운데에서 꽉 찬 폭 → 1 = 제자리(위)
       const k = reduced ? 1 : Math.min(1, Math.max(0, -r.top / intro));
       const ease = (x: number) => (x < 0.5 ? 4 * x * x * x : 1 - (-2 * x + 2) ** 3 / 2); // easeInOutCubic
-      const eA = ease(Math.min(1, k / SHRINK));
-      const eB = ease(Math.max(0, (k - SHRINK) / (1 - SHRINK)));
+      const eA = ease(Math.min(1, k / GROW));
+      const eB = ease(Math.max(0, (k - GROW) / (1 - GROW)));
       if (!reduced) {
         const w = title.offsetWidth;
         const h = title.offsetHeight;
-        const vw = window.innerWidth;
-        const s0 = (vw * INTRO_WIDTH) / w;
-        const sc = s0 ** (1 - eA); // 크기는 비율로 줄어야 고르게 보인다
-        // ① 그 크기로 화면 가로 가운데에, 세로는 제목 본래 자리의 가운데 선에(사용자 지시 2026-10-23 — 화면 세로 가운데가 아니라)
-        // ② 제 크기 가로 가운데 → 제자리(0). 세로는 제 크기가 되면 이미 제자리라 가로로만 옮겨 간다
-        const cx = (size: number) => vw / 2 - (size * w) / 2 - title.offsetLeft;
-        const tx = eB > 0 ? cx(1) * (1 - eB) : cx(sc);
-        const ty = eB > 0 ? 0 : (h / 2) * (1 - sc);
-        title.style.transform = k >= 1 ? '' : `translate(${tx.toFixed(1)}px, ${ty.toFixed(1)}px) scale(${sc.toFixed(4)})`;
-        // 단락 칸은 ②를 따라 페이드인(아래 24px에서 제자리로)
+        const s0 = Math.max(window.innerWidth * INTRO_WIDTH, Math.min(w, INTRO_MIN)) / w;
+        const sc = s0 ** (1 - eA); // 크기는 비율로 커져야 고르게 보인다
+        // 제목은 가로 가운데에 놓여 있어(CSS) 가운데를 축으로 키우면 된다. 세로는 ① 화면 가운데 → ② 제자리(무대가 붙어 있어 무대 위 = 화면 위)
+        const ty = (vh / 2 - (title.offsetTop + h / 2)) * (1 - eB);
+        title.style.transform = k >= 1 ? '' : `translate(0, ${ty.toFixed(1)}px) scale(${sc.toFixed(4)})`;
+        // 단락 칸은 ②를 따라 페이드인 — v21: 제목과 함께 올라온다(제목 밑에 붙어, 24px 더 아래에서 제자리로). 따로 두면 올라오는 제목과 겹쳤다
         body.style.opacity = eB >= 1 ? '' : eB.toFixed(3);
-        body.style.transform = eB >= 1 ? '' : `translateY(${((1 - eB) * 24).toFixed(1)}px)`;
+        body.style.transform = eB >= 1 ? '' : `translateY(${(ty + (1 - eB) * 24).toFixed(1)}px)`;
       }
       // 큰 제목인 동안은 벡터 인터랙션 · 십자선을 꺼 둔다
       setVectorZone(root, k >= 1);
       // 단락 글자는 ②가 시작되면 드러나기 시작한다
-      const on = k > SHRINK && r.bottom > vh * 0.4;
+      const on = k > GROW && r.bottom > vh * 0.4;
       setShown(on);
       const q = span > intro ? Math.min(0.999, Math.max(0, (-r.top - intro) / (span - intro))) : 0;
       const atT = Math.floor(q * n);
@@ -183,9 +192,14 @@ export function Philosophy({ title, paragraphs }: Props) {
       window.clearTimeout(settle);
       settle = window.setTimeout(snap, SETTLE_MS);
     };
+    const onResize = () => {
+      fit();
+      onScroll();
+    };
     window.addEventListener('scroll', onScroll, { passive: true });
-    window.addEventListener('resize', onScroll);
-    onScroll();
+    window.addEventListener('resize', onResize);
+    onResize();
+    document.fonts.ready.then(() => ref.current && onResize()); // 글꼴이 들어오면 폭이 바뀐다
     // 개발용: window.__philosophyTick()로 지금 스크롤 자리의 장면을 바로 그린다(검증 · 스크린샷 — 숨은 창에선 프레임이 돌지 않는다)
     if (import.meta.env.DEV) (window as unknown as Record<string, unknown>).__philosophyTick = tick;
     return () => {
@@ -193,8 +207,8 @@ export function Philosophy({ title, paragraphs }: Props) {
       window.clearTimeout(settle);
       window.clearTimeout(holdTimer);
       window.removeEventListener('scroll', onScroll);
-      window.removeEventListener('resize', onScroll);
-      title.style.transform = '';
+      window.removeEventListener('resize', onResize);
+      title.style.transform = title.style.fontSize = '';
       body.style.opacity = body.style.transform = '';
     };
   }, [paragraphs.length]);
