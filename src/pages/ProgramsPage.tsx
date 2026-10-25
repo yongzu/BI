@@ -234,8 +234,11 @@ export function ProgramsPage() {
         <section id="curriculum" className="section section--wide">
           {/* 들어가는 길(사용자 지시 2026-10-24): 큰 과목 분류 릴이 저절로 굴러가다 줄어들며 왼쪽 탭으로 */}
           <CurriculumEntry types={courseTypes}>
-            {/* 섹션 제목 · 리드는 일단 뺐다(사용자 지시 2026-10-24) — 들어가는 길이 끝나면 바로 과목 분류 머리글 · 탭 · 수업 줄.
-                예전 리드(첫 문장 뒤 줄바꿈): '상기된 역량을 중심으로 설계된 1학기 수업들입니다.' / '2학기는 1학기의 성취에 따라 학습 효과를 보완, 증폭할 수 있는 방향으로 준비됩니다.' */}
+            {/* 섹션 제목 · 리드를 과목 분류 머리글 자리에 되살렸다(사용자 지시 2026-10-25) — 분류 이름 · 설명은 고른 탭 아래로 옮겼다(CourseExplorer) */}
+            <SectionHeader
+              title="커리큘럼"
+              lead={'상기된 역량을 중심으로 설계된 1학기 수업들입니다.\n2학기는 1학기의 성취에 따라 학습 효과를 보완, 증폭할 수 있는 방향으로 준비됩니다.'}
+            />
             {/* 필터 · 수업 목록 · 상세를 한 화면에 — 클릭 없이 전체를 파악한다 */}
             <div id="courses" className="group">
               <CourseExplorer types={courseTypes} profiles={courseProfiles} />

@@ -87,20 +87,39 @@
 .course-tabs__label { padding: 0 var(--space-20) var(--space-8); font-size: var(--typo-meta-size); line-height: 1.4; font-weight: var(--font-weight-medium); color: var(--color-nav); }
 .course-tabs__divider { flex: none; width: calc((100% - var(--space-20)) / 2); height: 1px; margin: var(--space-12) 0 var(--space-12) var(--space-20); background: var(--color-border); }
 
+/* 고른 탭만 이름 아래로 진행 방식(작은 글씨) · 압축 설명이 펼쳐진다(사용자 지시 2026-10-25) — 예전 위 타입 머리글을 옮겨 줄였다.
+   높이 0fr → 1fr로 열리고 글은 살짝 늦게 진해진다. 나머지 탭은 이름 · 수 한 줄 그대로 */
+.course-tab__brief {
+  flex-basis: 100%;
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 480ms var(--ce-ease);
+}
+.course-tab__brief-inner {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  min-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition: opacity 200ms var(--ease);
+}
+.course-tab[aria-selected='true'] .course-tab__brief { grid-template-rows: 1fr; }
+.course-tab[aria-selected='true'] .course-tab__brief-inner { opacity: 1; transition: opacity 360ms var(--ease) 160ms; }
+.course-tab__cadence { padding-top: var(--space-4); font-size: var(--typo-caption-size); line-height: 1.4; font-weight: var(--font-weight-bold); color: var(--color-text-tertiary); }
+.course-tab__summary { font-size: var(--typo-meta-size); line-height: 1.5; font-weight: var(--font-weight-regular); letter-spacing: var(--tracking-body); color: var(--color-text-secondary); }
+/* 좁은 화면에서만 — 탭 줄 아래 고른 분류의 글 */
+.course-tabs__brief { display: none; }
+
 /* ---------- 탭 패널: 타입을 바꾸면 바로 아래에서 짧게 떠오른다 ---------- */
-/* 머리글 · 수업 줄 모두 네 타입을 한 칸에 겹쳐 둔다(grid-area 1 / 1). 고른 타입만 보인다(사용자 지시 2026-10-20 — 예전엔 세로 트랙이
+/* 수업 줄은 타입들을 한 칸에 겹쳐 둔다(grid-area 1 / 1). 고른 타입만 보인다(사용자 지시 2026-10-20 — 예전엔 세로 트랙이
    화면 밖에서 760ms 미끄러져 들어와 움직임이 컸다). 나가는 타입은 제자리에서 빠르게 흐려지고, 들어오는 타입은 16px 아래에서
-   투명하게 시작해 올라오며 진해진다. 창(.course-stage · .course-heads)의 높이는 고른 타입에 맞추고(CourseExplorer.tsx), 탭을
+   투명하게 시작해 올라오며 진해진다. 창(.course-stage)의 높이는 고른 타입에 맞추고(CourseExplorer.tsx), 탭을
    바꾸는 동안(data-moving)만 높이가 따라 움직인다 — 수업을 여닫을 땐 창이 바로 따라간다. 세로만 잘라 줄의 회색 면은 양옆으로 나간다 */
 .course-stage { grid-column: span 9; min-width: 0; overflow: visible clip; }
-.course-track,
-.course-heads__track { display: grid; }
-.course-track > *,
-.course-heads__track > * { grid-area: 1 / 1; align-self: start; }
-.course-stage[data-moving],
-.course-heads[data-moving] { transition: height 480ms var(--ce-slide); }
-.course-heads { min-width: 0; overflow: visible clip; margin-bottom: var(--space-56); }
-.course-group__head,
+.course-track { display: grid; }
+.course-track > * { grid-area: 1 / 1; align-self: start; }
+.course-stage[data-moving] { transition: height 480ms var(--ce-slide); }
 .course-tabpanel {
   min-width: 0;
   opacity: 0;
@@ -109,7 +128,6 @@
   /* 나갈 때: 제자리에서 흐려진 뒤에야 아래 자리로 돌아가고 숨는다 */
   transition: opacity 200ms var(--ease), transform 0s 200ms, visibility 0s 200ms;
 }
-.course-group__head[data-active='true'],
 .course-tabpanel[data-active='true'] {
   opacity: 1;
   visibility: visible;
@@ -119,31 +137,6 @@
 }
 /* 역량 카드에서 수업을 열면 그 줄로 스크롤 — 위 고정 바에 가리지 않게 */
 .course-row { scroll-margin-top: 112px; }
-
-/* ---------- 대분류 머리글: 이름 · 메타 아래에 설명(사용자 지시 2026-10-05: 좌우 → 위아래, 섹션 머리글과 같게) ---------- */
-/* 위계(사용자 지시 2026-10-03): 이름은 다른 섹션의 그룹 제목과 같은 Title 크기(36 → 24, 2026-10-07) · 대분류 사이는 넓게(140),
-   머리글과 수업 사이는 좁게(24) — 수업이 제 머리글에 붙어 보인다. 대분류 위 잉크 선은 뺐다 */
-.course-group__head {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: var(--space-16);
-  /* 섹션 제목 · 탭 글자와 같은 왼쪽 선(사용자 지시 2026-10-20 — 예전엔 20px 들였다) */
-}
-.course-group__title { display: flex; flex-direction: column; gap: var(--space-8); }
-.course-group__name {
-  font-size: var(--typo-title-size);
-  line-height: 1.2;
-  font-weight: var(--font-weight-bold);
-  letter-spacing: var(--tracking-heading);
-  color: var(--color-text-primary);
-}
-.course-group__meta { font-size: var(--typo-meta-size); line-height: 1.4; font-weight: var(--font-weight-medium); color: var(--color-text-tertiary); }
-.course-group__body { max-width: none; } /* 최대 폭을 두지 않는다 — 머리글 폭에 한 줄로 들어가지 않을 때만 다음 줄로(사용자 지시 2026-10-20) */
-/* 데이터의 줄바꿈(\n)은 그 자리에서 줄을 바꾼다 — 문장 단위로 끊어 읽히게(사용자 지시 2026-10-20) */
-.course-group__body { white-space: pre-line; }
-/* 설명은 Lead 크기(사용자 지시 2026-10-20, 16 → 20) — 이름(24)과 수업 줄(16) 사이 */
-.course-group__head .course-group__body { font-size: var(--typo-lead-size); line-height: 1.5; }
 
 /* ---------- 수업 줄 ---------- */
 /* 회색 면이 글자 바깥으로 깔리도록 줄을 양옆으로 내민다 — 글자는 머리글과 같은 선에 선다 */
@@ -322,9 +315,11 @@
 .course-detail__facts dd { font-size: var(--typo-meta-size); line-height: 1.5; color: var(--color-text-primary); }
 
 @media (prefers-reduced-motion: reduce) {
-  .course-stage, .course-track, .course-heads, .course-heads__track, .course-group__head, .course-tabpanel { transition: none !important; }
-  .course-group__head, .course-tabpanel { transform: none; }
+  .course-stage, .course-track, .course-tabpanel { transition: none !important; }
+  .course-tabpanel { transform: none; }
   .course-tabs__indicator,
+  .course-tab__brief,
+  .course-tab__brief-inner,
   .course-tab > *,
   .course-row,
   .course-row__panel,
@@ -360,14 +355,13 @@
   .course-tabs[data-more='true'] { mask-image: linear-gradient(to right, #000 calc(100% - 48px), transparent); }
   .course-tabs__label { display: none; } /* 가로 줄에선 뺀다 — 탭 이름만 */
   .course-tabs__divider { width: 1px; height: 12px; align-self: center; margin: 0 var(--space-8); } /* 세로선도 절반(탭 글자 높이 24 → 12) */
+  .course-tab__brief { display: none; } /* 가로 탭 안엔 펼칠 자리가 없다 — 탭 줄 아래 한 곳에 */
+  .course-tabs__brief { grid-column: 1 / -1; display: flex; flex-direction: column; gap: var(--space-4); margin-top: var(--space-16); }
   .course-stage { grid-column: 1 / -1; margin-top: var(--space-28); }
-  .course-heads { margin-bottom: var(--space-28); }
-  .course-group__head .course-group__body { font-size: var(--typo-body-size); line-height: 1.6; }
 }
 /* 휴대폰: 태그는 이름 아래로 */
 @media (max-width: 720px) {
   .course-explorer { --ce-row-pad-x: 12px; }
-  .course-group__head { gap: var(--space-12); }
   .course-row__hit { grid-template-columns: minmax(0, 1fr) 20px; row-gap: var(--space-8); }
   .course-row__tags { grid-row: 2; grid-column: 1; justify-content: flex-start; }
   .course-row__name { font-size: var(--typo-title-size); } /* 휴대폰은 24px — 32px이면 긴 이름(Event)이 세 줄이 된다 */

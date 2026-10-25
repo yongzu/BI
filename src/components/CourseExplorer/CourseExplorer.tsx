@@ -7,19 +7,19 @@ import { COURSE_OPEN_EVENT } from './openCourse';
 import './CourseExplorer.css';
 
 /**
- * 커리큘럼 — 위 타입 머리글(한 줄 전체), 아래 왼쪽 세로 탭(타입 + 수업 수) · 오른쪽 v5 형식 수업 줄(2026-10-19).
+ * 커리큘럼 — 왼쪽 세로 탭(타입 + 수업 수) · 오른쪽 v5 형식 수업 줄(2026-10-19).
  *
  * 탭(v6부터): 타입 이름 + 수업 수 — 고르기 전에 규모가 보인다. ↑/↓로도 옮긴다. v15의 이름 아래 한글 한 줄(short)은 2026-10-24에 뺐다.
  *   고른 칸을 가리키는 막대는 하나이고, 연간 구조 탭처럼 고른 칸 자리로 미끄러져 간다(사용자 지시 2026-10-19).
+ *   고른 탭만 이름 아래로 진행 방식(brief, 작은 글씨)과 압축 설명(summary)이 펼쳐진다(사용자 지시 2026-10-25) — 예전 위 타입 머리글
+ *   (이름 · 진행 방식 · 수업 수 · 설명)은 뺐고, 그 자리엔 섹션 제목 '커리큘럼' · 리드가 선다(ProgramsPage).
  * 오른쪽(사용자 지시 2026-10-19: v6 카드 · 옆 패널 → v5로 되돌림):
- * - 타입 머리글: 이름 · 진행 방식 · 수업 수, 아래 타입 설명.
  * - 수업 한 줄: 영문 이름 / 한글 이름 · 전문가 / 기르는 역량 태그. 누르면 아래로 상세가 펼쳐진다.
  * - 펼치는 수업은 하나 — 다른 수업을 누르면 펼쳐 있던 수업이 접히고, 누른 줄은 화면의 같은 자리에 머문다(keepInPlace).
  */
 type Props = { types: CourseType[]; profiles: Record<string, CourseProfile> };
 
-/** 넓은 화면에서 왼쪽 탭이 붙는 높이(px) — CSS .course-tabs top과 같다. 머리글은 목록보다 56px 위에서 끝나므로
- *  목록 맨 위를 여기 맞추면 머리글이 화면 위로 다 빠진다 */
+/** 넓은 화면에서 왼쪽 탭이 붙는 높이(px) — CSS .course-tabs top과 같다 */
 const TABS_TOP = 56;
 /** 펼친 줄의 위 여백이 늘어나는 만큼(px) — CSS .course-row[data-open] .course-row__hit padding-top 28 − 닫힌 16 */
 const OPEN_PAD_EXTRA = 12;
@@ -42,9 +42,6 @@ export function CourseExplorer({ types, profiles }: Props) {
   const stageRef = useRef<HTMLDivElement>(null);
   const trackRef = useRef<HTMLDivElement>(null);
   const panelRefs = useRef<(HTMLElement | null)[]>([]);
-  const headStageRef = useRef<HTMLDivElement>(null);
-  const headTrackRef = useRef<HTMLDivElement>(null);
-  const headRefs = useRef<(HTMLElement | null)[]>([]);
   const layoutRef = useRef<HTMLDivElement>(null);
 
   // 고른 탭 자리로 막대를 옮긴다 — 넓은 화면은 왼쪽 세로 막대, 좁은 화면(탭이 가로 줄)은 아래 가로 막대
@@ -89,14 +86,10 @@ export function CourseExplorer({ types, profiles }: Props) {
     return () => { list.removeEventListener('scroll', mark); ro.disconnect(); };
   }, []);
 
-  // 수업 줄 · 머리글: 네 타입을 한 칸에 겹쳐 두고, 탭을 바꾸면 고른 타입이 바로 아래에서 투명하게 떠올라 진해진다(CSS,
+  // 수업 줄: 타입들을 한 칸에 겹쳐 두고, 탭을 바꾸면 고른 타입이 바로 아래에서 투명하게 떠올라 진해진다(CSS,
   // 사용자 지시 2026-10-20 — 예전 세로 트랙이 화면 밖에서 미끄러져 들어오던 움직임은 너무 컸다). 보이는 창의 높이는 고른 타입에
   // 맞춘다 — 탭을 바꾸는 동안만 높이도 함께 움직이고(data-moving), 수업을 여닫을 땐 창이 줄을 바로 따라간다
   useLayoutEffect(() => {
-    const pairs = [
-      [stageRef.current, trackRef.current, panelRefs.current],
-      [headStageRef.current, headTrackRef.current, headRefs.current],
-    ] as const;
     const place = () => {
       // 수업 패널의 높이는 가장 긴 수업을 펼친 높이로 고정한다(사용자 지시 2026-10-20 — 여닫을 때마다 아래 여백이 바뀌어
       // 화면이 움직였다). 닫힌 줄 높이의 합 + 가장 긴 상세 + 펼친 줄의 넓어진 위 여백. 폭이 바뀌면(글이 다시 감기면) 다시 잰다.
@@ -123,21 +116,14 @@ export function CourseExplorer({ types, profiles }: Props) {
         });
         panel.style.minHeight = `${Math.ceil(closed + detail + OPEN_PAD_EXTRA)}px`;
       });
-      for (const [stage, track, items] of pairs) {
-        const item = items[tab];
-        if (!stage || !track || !item) continue;
-        // 머리글 창은 가장 긴 머리글 높이로 고정한다(사용자 지시 2026-10-24) — 설명이 두 줄 · 세 줄인 분류를 오갈 때
-        // 아래 탭 · 수업 줄이 한 줄만큼 오르내렸다. 수업 줄 창은 고른 타입 높이 그대로
-        const height = stage === headStageRef.current
-          ? Math.max(...items.map((el) => el?.offsetHeight ?? 0))
-          : item.offsetHeight;
-        stage.style.height = `${height}px`; // 네 타입이 한 칸에 겹쳐 있어 트랙은 옮기지 않는다(CSS)
-      }
+      const stage = stageRef.current;
+      const item = panelRefs.current[tab];
+      if (stage && item) stage.style.height = `${item.offsetHeight}px`; // 타입들이 한 칸에 겹쳐 있어 트랙은 옮기지 않는다(CSS)
     };
     place();
     document.fonts?.ready.then(place); // 글꼴이 늦게 들어와 줄 높이가 바뀌어도 — 패널은 최소 높이에 묶여 크기 변화로는 못 잡는다
     const ro = new ResizeObserver(place);
-    for (const [, , items] of pairs) items.forEach((el) => el && ro.observe(el));
+    panelRefs.current.forEach((el) => el && ro.observe(el));
     return () => ro.disconnect();
   }, [tab, open]);
   // 목록이 화면 밖으로 나가면 접힌 패널의 붙잡아 둔 높이를 놓는다 — 보이지 않을 때 줄어 아무것도 움직여 보이지 않는다
@@ -154,8 +140,8 @@ export function CourseExplorer({ types, profiles }: Props) {
   }, []);
   const switchTab = (next: number) => {
     if (next === tab) return;
-    for (const stage of [stageRef.current, headStageRef.current]) {
-      if (!stage) continue;
+    const stage = stageRef.current;
+    if (stage) {
       stage.dataset.moving = 'true';
       window.clearTimeout(Number(stage.dataset.timer));
       stage.dataset.timer = String(window.setTimeout(() => { delete stage.dataset.moving; }, 600)); // 떠오름(120 + 480ms)이 끝날 때까지
@@ -163,12 +149,12 @@ export function CourseExplorer({ types, profiles }: Props) {
     setTab(next);
   };
 
-  // 왼쪽 과목 분류를 누르면 그 타입의 머리글이 보이게 — 머리글 위 끝을 탭이 붙는 높이(TABS_TOP)로(사용자 지시 2026-10-20).
-  // 머리글 창의 위 끝은 탭을 바꿔도 그대로라 트랙이 미끄러지는 동안에도 목표가 흔들리지 않는다
+  // 왼쪽 과목 분류를 누르면 그 타입의 첫 수업이 보이게 — 목록을 내려 읽던 중이면(목록 맨 위가 붙은 탭보다 위) 목록 맨 위를
+  // 탭이 붙는 높이(TABS_TOP)로. 예전엔 위 타입 머리글로 올라갔다(2026-10-20) — 머리글을 뺀 뒤(2026-10-25)엔 목록이 이미 보이면 그대로 둔다
   const pickTab = (next: number) => {
     switchTab(next);
-    const heads = headStageRef.current;
-    if (heads) scrollToTarget(Math.max(0, window.scrollY + heads.getBoundingClientRect().top - TABS_TOP));
+    const top = layoutRef.current?.getBoundingClientRect().top;
+    if (top !== undefined && top < TABS_TOP) scrollToTarget(Math.max(0, window.scrollY + top - TABS_TOP));
   };
 
   // 다른 섹션(역량 카드)에서 수업을 열면: 그 타입 탭을 고르고 그 수업을 펼쳐 그 줄로 간다
@@ -221,20 +207,6 @@ export function CourseExplorer({ types, profiles }: Props) {
 
   return (
     <div className="course-explorer">
-      {/* 고른 타입의 머리글은 탭 · 수업 줄 위에 한 줄 전체로(사용자 시안 이미지 2026-10-19) — 네 머리글의 세로 트랙 */}
-      <div ref={headStageRef} className="course-heads">
-        <div ref={headTrackRef} className="course-heads__track">
-          {types.map((t, i) => (
-            <header key={t.id} ref={(el) => { headRefs.current[i] = el; }} className="course-group__head" data-active={tab === i} aria-hidden={tab !== i}>
-              <div className="course-group__title">
-                <h4 className="course-group__name">{t.name}</h4>
-                {t.cadence && <span className="course-group__meta">{t.cadence} · {t.courses.length}개 {t.unit ?? '수업'}</span>}
-              </div>
-              <Text typography="Body" color="secondary" className="course-group__body">{t.body}</Text>
-            </header>
-          ))}
-        </div>
-      </div>
       <div ref={layoutRef} className="course-layout">
         <div ref={tabsRef} className="course-tabs" role="tablist" aria-orientation="vertical" aria-label="프로그램 구조" onKeyDown={onTabKey}>
           <span ref={barRef} className="course-tabs__indicator" aria-hidden="true" />
@@ -251,6 +223,7 @@ export function CourseExplorer({ types, profiles }: Props) {
               id={`course-tab-${t.id}`}
               aria-selected={tab === i}
               aria-controls={`course-panel-${t.id}`}
+              aria-describedby={`course-brief-${t.id}`}
               tabIndex={tab === i ? 0 : -1}
               className="course-tab"
               onClick={() => pickTab(i)}
@@ -258,10 +231,21 @@ export function CourseExplorer({ types, profiles }: Props) {
               <span className="course-tab__name">{t.name}</span>
               {/* 코스 밖 분류(Workshop · Event) 탭엔 수를 붙이지 않는다(사용자 지시 2026-10-23) */}
               {!t.extra && <span className="course-tab__count">{t.courses.length}</span>}
-              {/* 이름 아래 한글 한 줄(short)은 뺐다(사용자 지시 2026-10-24) — 분류 머리글이 이미 설명한다 */}
+              {/* 고른 탭만 이름 아래로 진행 방식 · 압축 설명이 펼쳐진다(사용자 지시 2026-10-25). 이름은 이름 · 수만, 이 글은 설명으로 읽힌다 */}
+              <span id={`course-brief-${t.id}`} className="course-tab__brief" aria-hidden="true">
+                <span className="course-tab__brief-inner">
+                  <span className="course-tab__cadence">{t.brief}</span>
+                  <span className="course-tab__summary">{t.summary}</span>
+                </span>
+              </span>
             </button>,
           ])}
         </div>
+        {/* 좁은 화면(탭이 가로 줄): 탭 안에 펼칠 자리가 없어 고른 분류의 글을 탭 줄 아래에 한 번 싣는다 */}
+        <p className="course-tabs__brief" aria-hidden="true">
+          <span className="course-tab__cadence">{types[tab].brief}</span>
+          <span className="course-tab__summary">{types[tab].summary}</span>
+        </p>
 
         <div ref={stageRef} className="course-stage">
           <div ref={trackRef} className="course-track">
