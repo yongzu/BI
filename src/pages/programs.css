@@ -48,8 +48,6 @@
   align-items: center;
   text-align: center;
 }
-/* 배경 GradientASCII(2026-10-20) — 히어로(1200 열)를 벗어나 화면 폭 전체 · 히어로 높이, 글자 뒤 */
-.hero__bg { position: absolute; z-index: 0; top: 0; bottom: 0; left: calc(50% - 50vw); width: 100vw; pointer-events: none; }
 .hero__atf { position: relative; z-index: 1; }
 /* 글자가 없던 첫 화면 동안 숨긴 제목 · 소개 · 기간이 부드럽게 떠오른다(예전엔 HeroRipple.css가 맡았다) */
 .hero :is(.hero__title, .hero__intro, .hero__period) { transition: opacity 900ms var(--ease-reveal), filter 900ms var(--ease-reveal), transform 900ms var(--ease-reveal); }
@@ -68,6 +66,8 @@
    내용 덩어리(로고 → 제목 → 소개 → 기간 → 지원하기)는 세로 가운데, 위아래 여백은 같게 — 위는 상단바(64) 아래로만.
    1920 × 1080 기준 값에 --hs를 곱한다: 로고 200 · 제목 140 · 제목–소개 140 · 소개–기간 48 · 기간–버튼 64 */
 .hero__atf:has(> .hero-logo) { padding-block: max(64px, 80 * var(--hs)) max(40px, 80 * var(--hs)); }
+/* Φ 마크(HeroMark, 2026-10-27)가 제목 위에 서므로 위 여백을 그만큼 덜어 첫 화면에 지원하기까지 들어오게 */
+.hero__atf:has(> .hero-mark) { padding-block: max(64px, 96 * var(--hs)) max(40px, 76 * var(--hs)); }
 /* 제목 140은 Display 토큰 자체가 같은 식(max(44px, 140 × --hs))이라 따로 덮어쓰지 않는다(2026-10-07) */
 .hero__title { color: var(--color-text-primary); }
 
@@ -117,7 +117,7 @@
 }
 .hero:is([data-intro='blur'], [data-intro='rise']) .apply-button { opacity: 0; transform: translateY(40px); pointer-events: none; }
 /* 'together' 첫 화면: 글이 다 떠오르면(onIntroEnd) 지원하기가 곧바로 이어서 떠오른다 */
-.hero[data-intro-style='together'] .apply-button { transition-delay: 0s, 0.1s, 0.1s; }
+.hero[data-intro-style='together'] .apply-button { transition-delay: 0s, 1.1s, 1.1s; } /* 모집 상태(900ms 뒤)가 나온 다음 — 맨 마지막(2026-10-27) */
 /* 'together' 첫 화면: 캔버스가 뜨기 전(글꼴 로딩)엔 글을 투명하게 — 자리는 그대로라 캔버스가 같은 자리에 옮겨 그린다 */
 .hero[data-intro='rise'] :is(.hero__title, .hero__intro, .hero__period) { opacity: 0; }
 

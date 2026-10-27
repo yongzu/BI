@@ -44,4 +44,7 @@
   background: linear-gradient(to bottom, transparent, var(--color-bg-default));
 }
 
-/* 줄 · 이미지 박스는 역량과 태도와 같은 PillarList(PillarList.css) */
+/* 줄 · 이미지 박스는 역량과 태도와 같은 PillarList(PillarList.css).
+   채용 연계는 줄이 둘뿐이라 고른 줄만 진하게 하지 않고 둘 다 검정(사용자 지시 2026-10-27) — 번호는 고른 줄과 같은 진한 회색 */
+.career-reveal .pillar-row :is(.pillar-row__name, .pillar-row__body) { color: var(--color-text-primary); }
+.career-reveal .pillar-row .pillar-row__num { color: var(--color-nav); }

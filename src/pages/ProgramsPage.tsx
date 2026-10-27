@@ -4,9 +4,8 @@ import { Toc, type TocItem } from '../components/Toc/Toc';
 import { AnnualTimeline } from '../components/AnnualTimeline/AnnualTimeline';
 import { CourseExplorer } from '../components/CourseExplorer/CourseExplorer';
 import { ApplyButton } from '../components/ApplyButton/ApplyButton';
+import { HeroMark, MOVE_MS, SETTLE_AT } from '../components/HeroMark/HeroMark';
 import { CareerReveal } from '../components/CareerReveal/CareerReveal';
-import GradientASCII from '../components/GradientASCII/GradientASCII';
-import { HERO_ASCII } from '../components/GradientASCII/heroPreset';
 import { BackToTop, SiteHeader } from '../components/SiteHeader/SiteHeader';
 import { FooterMark } from '../components/FooterMark/FooterMark';
 import { PillarList, type PillarItem } from '../components/PillarList/PillarList';
@@ -90,14 +89,15 @@ const careerItems: PillarItem[] = [
  * 'sequence' — 이전 방식(따로 남겨 둠): 제목만 떠올라 일렁인 뒤 소개(단어마다 블러) → 지원 기간 → 지원하기 차례로
  */
 const INTRO_STYLE: 'together' | 'sequence' = 'together';
-/** 히어로 글자가 나오기 시작하는 시각(초) — GradientASCII 인트로(INTRO_SECONDS 2.4)가 끝날 때 */
-const HERO_TEXT_AT = 2.4;
+/** 히어로 글자가 나오기 시작하는 시각(초) — 예전엔 GradientASCII 인트로(2.4초)가 끝날 때였다.
+ *  2026-10-27(사용자 지시 — 로고가 먼저 나오고 그 아래 내용이 나온다): Φ 마크(HeroMark)가 제자리로 다 올라온 뒤 */
+const HERO_TEXT_AT = (SETTLE_AT + MOVE_MS) / 1000 + 0.1;
 
 /* ------------------------------------------------------------------ */
 
 export function ProgramsPage() {
   useScrollReveal(revealTargets);
-  // 첫 화면: 배경(GradientASCII)의 인트로(빛이 퍼지며 글자가 풀림, 2.4초)가 끝난 뒤 글자들이 ScrollReveal로 나온다
+  // 첫 화면: Φ 마크(HeroMark)가 화면 가운데에서 맞춰져 제자리로 올라간 뒤 글자들이 ScrollReveal로 나온다
   // (사용자 지시 2026-10-20). 그동안 글자는 숨겨 두고(data-intro), 끝나면 드러내며 단어마다 흐림 → 또렷
   const [introDone, setIntroDone] = useState(() => window.matchMedia('(prefers-reduced-motion: reduce)').matches);
   useEffect(() => {
@@ -113,13 +113,11 @@ export function ProgramsPage() {
       <main className="page">
         {/* ---------- Hero ---------- (v9의 포인터 깊이 · 스크롤 포털은 v10에서 뺐다 — 사용자 지시 2026-10-19) */}
         <section className="hero container" aria-labelledby="hero-title" data-intro={introDone ? 'done' : INTRO_STYLE === 'together' ? 'rise' : 'blur'} data-intro-style={INTRO_STYLE}>
-          {/* 배경: react-bits GradientASCII(사용자 지시 2026-10-20, 주소의 값 그대로) — 물방울 파동 · 3D Φ 로고 대신.
-              화면 폭 전체 · 히어로 높이, 글자 뒤. 마우스가 지나가면 그 자리 글자가 잠깐 뒤섞인다 */}
-          <div className="hero__bg" aria-hidden="true">
-            <GradientASCII {...HERO_ASCII} />
-          </div>
+          {/* 배경 GradientASCII(2026-10-20 ~ 10-27)는 뺐다(사용자 지시 2026-10-27) — 흰 바탕 위에 Φ 마크 → 내용 차례로 */}
           {/* 첫 화면(한 화면 높이, 내용 세로 가운데) — '자세히 보기'는 그 아래 200px(사용자 지시 2026-10-04) */}
           <div className="hero__atf">
+            {/* Φ 마크: 화면 가운데에서 맞춰진 뒤 이 자리로 올라온다(사용자 지시 2026-10-27) */}
+            <HeroMark />
             {/* 제목은 'Programs' 한 단어(사용자 지시 2026-10-03). 제목 · 소개는 배경 인트로 뒤에 ScrollReveal로(2026-10-20) */}
             <ScrollReveal as="h1" id="hero-title" containerClassName="hero__title typo-display color-primary sr-plain" {...SCROLL_REVEAL} delay={HERO_TEXT_AT}>
               Programs
