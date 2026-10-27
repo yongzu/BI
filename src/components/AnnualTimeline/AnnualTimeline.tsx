@@ -4,11 +4,13 @@ import { Text } from '../Text/Text';
 import './AnnualTimeline.css';
 
 /**
- * 연간 구조 — 커리큘럼처럼 왼쪽 세로 탭 · 오른쪽 내용(사용자 지시 2026-10-27).
- * - 왼쪽: 시기 이름(+ 개강 · 수료 · 졸업 표시) 탭. 위에 붙어 있고(sticky), 고른 탭 아래에만 기간이 펼쳐진다. 막대 하나가 고른 탭으로 미끄러진다.
- * - 오른쪽: 네 시기가 위에서 아래로 이어진다 — 시기마다 질문 · 설명 · 기간과 핵심 사실 · 내용(1학기 주간 시간표, 캠프 · 수료 & 졸업 카드).
+ * 연간 구조 — 두 칸(사용자 지시 2026-10-27): 왼쪽은 글과 표, 오른쪽은 시간표나 상자.
+ * - 왼쪽(위에 붙어 있다, sticky): 시기 탭(이름 + 개강 · 수료 · 졸업 표시). 고른 탭 아래에 그 시기의 질문 · 설명 · 기간과 핵심 사실 표가 펼쳐진다.
+ *   막대 하나가 고른 탭(펼친 글까지)으로 미끄러진다.
+ * - 오른쪽: 시기마다 시간표(1 · 2학기) 또는 상자(캠프 · 수료 & 졸업)가 위에서 아래로 이어진다.
  * - 스크롤하면 화면 위쪽(탭 높이 + 화면 30%)을 지난 마지막 시기가 고른 탭이 되어 다음 내용으로 넘어간다. 탭을 누르면 그 시기로 스크롤한다.
- * - 좁은 화면은 탭 없이 시기 이름을 내용 위에 쓴다.
+ * - 좁은 화면은 탭 없이 시기마다 이름 · 글 · 표 · 시간표(상자)를 위에서 아래로 — 같은 글을 오른쪽 칸에도 두고 좁은 화면에서만 보인다.
+ * 같은 날 앞서는 왼쪽 탭(기간만) · 오른쪽에 글과 시간표를 함께 두었다.
  * 그 전(같은 날)엔 v11 시기 면을 세로로 쌓고 왼쪽에 진행 막대, 10-24엔 왼쪽 붙는 시기 목록이었다.
  */
 export type StageItem = { name: string; label: string; body: string };
@@ -19,7 +21,7 @@ export type StageRhythm = {
   hours: { from: number; to: number };
   lunch: { from: number; to: number; label: string };
   days: { day: string; blocks: WeekBlock[] }[];
-  link: { href: string; label: string };
+  link?: { href: string; label: string };
 };
 export type Stage = {
   name: string;
@@ -96,28 +98,25 @@ export function AnnualTimeline({ stages }: Props) {
 
   return (
     <div ref={rootRef} className="annual-x">
-      <div ref={tabsRef} className="annual-x__tabs" role="list" aria-label="연간 구조 시기">
+      {/* 왼쪽: 탭 + 고른 탭 아래 글과 표(넓은 화면) */}
+      <div ref={tabsRef} className="annual-x__tabs">
         <span ref={barRef} className="annual-x__bar" aria-hidden="true" />
         {stages.map((s, i) => (
-          <button
-            key={s.name}
-            type="button"
-            role="listitem"
-            className="annual-x__tab"
-            data-active={i === active}
-            aria-current={i === active ? 'step' : undefined}
-            onClick={() => go(i)}
-          >
-            <span className="annual-x__tab-name">{s.name}</span>
-            {s.marker && <span className="annual-x__tab-marker">{s.marker}</span>}
-            {/* 고른 탭 아래에만 기간 — 커리큘럼 탭 아래 설명처럼 펼쳐진다 */}
-            <span className="annual-x__tab-brief">
-              <span className="annual-x__tab-brief-inner">{s.period}</span>
-            </span>
-          </button>
+          <div key={s.name} className="annual-x__tab" data-active={i === active}>
+            <button type="button" className="annual-x__tab-head" aria-current={i === active ? 'step' : undefined} onClick={() => go(i)}>
+              <span className="annual-x__tab-name">{s.name}</span>
+              {s.marker && <span className="annual-x__tab-marker">{s.marker}</span>}
+            </button>
+            <div className="annual-x__tab-brief">
+              <div className="annual-x__tab-brief-inner">
+                <StageText stage={s} />
+              </div>
+            </div>
+          </div>
         ))}
       </div>
 
+      {/* 오른쪽: 시기마다 시간표 또는 상자 — 좁은 화면에선 이름 · 글 · 표도 여기 */}
       <div className="annual-x__panels">
         {stages.map((s, i) => (
           <section
@@ -125,28 +124,17 @@ export function AnnualTimeline({ stages }: Props) {
             id={`annual-${i + 1}`}
             className="annual-x__panel"
             data-active={i === active}
-            aria-labelledby={`annual-${i + 1}-title`}
+            aria-label={s.name}
             style={{ scrollMarginTop: TABS_TOP }}
           >
-            {/* 시기 이름은 넓은 화면에선 왼쪽 탭이 맡는다 — 여기선 좁은 화면에서만 보인다(읽기 도구엔 늘) */}
-            <div className="annual-x__name">
-              <Text as="h3" typography="Title" id={`annual-${i + 1}-title`}>{s.name}</Text>
-              {s.marker && <span className="annual-x__tab-marker">{s.marker}</span>}
-            </div>
-            <Text as="p" typography="Title" className="annual-x__question">“{s.question}”</Text>
-            <Text typography="Body" color="secondary" className="annual-x__body">{s.body}</Text>
-            <dl className="annual-x__facts">
-              <div>
-                <dt>기간</dt>
-                <dd>{s.period}</dd>
+            <div className="annual-x__mobile">
+              <div className="annual-x__name">
+                <Text as="span" typography="Title">{s.name}</Text>
+                {s.marker && <span className="annual-x__tab-marker">{s.marker}</span>}
               </div>
-              {s.facts.map(([k, val]) => (
-                <div key={k}>
-                  <dt>{k}</dt>
-                  <dd>{val}</dd>
-                </div>
-              ))}
-            </dl>
+              <StageText stage={s} />
+            </div>
+            {s.rhythm && <WeekRhythm rhythm={s.rhythm} />}
             {s.items && (
               <div className="history__cards">
                 {s.items.map((item) => (
@@ -158,10 +146,31 @@ export function AnnualTimeline({ stages }: Props) {
                 ))}
               </div>
             )}
-            {s.rhythm && <WeekRhythm rhythm={s.rhythm} />}
           </section>
         ))}
       </div>
+    </div>
+  );
+}
+
+/** 시기의 글과 표 — 질문 · 설명 · 기간과 핵심 사실 */
+function StageText({ stage: s }: { stage: Stage }) {
+  return (
+    <div className="annual-x__text">
+      <Text as="p" typography="Body" className="annual-x__question">“{s.question}”</Text>
+      <Text typography="Meta" color="secondary" className="annual-x__body">{s.body}</Text>
+      <dl className="annual-x__facts">
+        <div>
+          <dt>기간</dt>
+          <dd>{s.period}</dd>
+        </div>
+        {s.facts.map(([k, val]) => (
+          <div key={k}>
+            <dt>{k}</dt>
+            <dd>{val}</dd>
+          </div>
+        ))}
+      </dl>
     </div>
   );
 }
@@ -209,7 +218,8 @@ function WeekRhythm({ rhythm }: { rhythm: StageRhythm }) {
             data-kind={b.kind ?? 'session'}
             style={{ gridColumn: i + 2, gridRow: `${row(b.from)} / ${row(b.to)}` }}
           >
-            {b.kind !== 'free' && <span className="annual__week-time">{hh(b.from)} – {hh(b.to)}</span>}
+            {/* 시간은 한 줄로 — 두 칸 배치(2026-10-27)로 칸이 좁아져 띄어 쓴 대시 앞에서 줄이 바뀌었다 */}
+            {b.kind !== 'free' && <span className="annual__week-time">{hh(b.from)}–{hh(b.to)}</span>}
             <span className="annual__week-name">{b.label}</span>
           </span>
         )))}
@@ -230,7 +240,7 @@ function WeekRhythm({ rhythm }: { rhythm: StageRhythm }) {
         ))}
         <li>{rhythm.lunch.label} {hh(rhythm.lunch.from)}–{hh(rhythm.lunch.to)}</li>
       </ul>
-      <a className="annual__link" href={rhythm.link.href} target="_blank" rel="noreferrer">{rhythm.link.label}</a>
+      {rhythm.link && <a className="annual__link" href={rhythm.link.href} target="_blank" rel="noreferrer">{rhythm.link.label}</a>}
     </div>
   );
 }
