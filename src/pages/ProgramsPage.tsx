@@ -1,9 +1,10 @@
-import { useEffect, useState, type ReactNode } from 'react';
+import { useEffect, useState } from 'react';
 import { Text } from '../components/Text/Text';
 import { Toc, type TocItem } from '../components/Toc/Toc';
 import { AnnualTimeline } from '../components/AnnualTimeline/AnnualTimeline';
 import { CourseExplorer } from '../components/CourseExplorer/CourseExplorer';
 import { ApplyButton } from '../components/ApplyButton/ApplyButton';
+import { CareerReveal, type CareerRow } from '../components/CareerReveal/CareerReveal';
 import GradientASCII from '../components/GradientASCII/GradientASCII';
 import { BackToTop, SiteHeader } from '../components/SiteHeader/SiteHeader';
 import { FooterMark } from '../components/FooterMark/FooterMark';
@@ -47,7 +48,7 @@ const toc: TocItem[] = [
 /** Blocks that rise in on scroll */
 // 히어로는 첫 화면 순서(흐린 제목 → 맑아짐 → 소개 · 기간)를 따로 가지므로 떠오르는 등장에서 뺀다
 // 섹션 제목 · 리드는 ScrollReveal이 맡으므로 뺐다(2026-10-20)
-const revealTargets = ['.group-label', '.group__lead', '.career-row', '.annual-map', '.device-map', '.pillar-row'].join(', ');
+const revealTargets = ['.group-label', '.group__lead', '.annual-map', '.pillar-row'].join(', ');
 
 /* ------------------------------------------------------------------ */
 
@@ -67,45 +68,17 @@ function SectionHeader({ title, lead }: { title: string | string[]; lead?: strin
   );
 }
 
-/** Group label — 왼쪽 세로 막대는 없앴다(사용자 지시 2026-10-03) */
-function GroupLabel({ children, meta }: { children: ReactNode; meta?: string }) {
-  return (
-    <div className="group-label">
-      <Text as="h3" typography="Title">{children}</Text>
-      {meta && <Text as="span" typography="Label" color="tertiary">{meta}</Text>}
-    </div>
-  );
-}
 
 
 /**
- * 채용 연계 — v3의 두 단 줄 목록으로 되돌림(사용자 지시 2026-10-20, 화면 폭 전체). 왼쪽 토스 별도 채용 전형 · 오른쪽 우수 졸업자 입사 특전.
- * 줄마다 번호 · 제목 · 보조 문구, 설명은 늘 펼쳐져 있다(v3의 정적 목록 — 누르지 않는다). v7 ~ v14는 카드 두 장이었다
+ * 채용 연계 — 토스 별도 채용 전형 · 우수 졸업자 입사 특전. 2026-10-27(사용자 지시): 두 단 줄 목록(v3)을 아래에서 푸른 원이 떠오르는
+ * 무대(CareerReveal — toss.im/company 히어로를 뒤집음)로 바꿨다. v7 ~ v14는 카드 두 장이었다
  */
-const careerRows: { id: string; title: string; sub: string; body: string; note?: string }[] = [
+const careerRows: CareerRow[] = [
   { id: 'toss-hiring', title: '토스 별도 채용 전형', sub: '2027년 8월', body: '2027년 8월, Phi 1년제 1기 졸업자를 위한 토스의 별도 채용 전형이 마련됩니다.' },
   { id: 'toss-benefit', title: '우수 졸업자 입사 특전', sub: 'Benefit', body: '우수 졸업자에게는 채용 전형에 더해 별도의 입사 특전*이 제공됩니다.', note: '*채용 특전의 세부 내용은 현재 검토 중입니다.' },
 ];
 
-function CareerRows() {
-  return (
-    <div className="career-columns">
-      {careerRows.map((r, i) => (
-        <article key={r.id} className="career-row">
-          <Text as="span" typography="Label" color="tertiary" className="career-row__num">{String(i + 1).padStart(2, '0')}</Text>
-          <span className="career-row__titles">
-            <Text as="span" typography="Title">{r.title}</Text>
-            <Text as="span" typography="Label" color="tertiary">{r.sub}</Text>
-          </span>
-          <div className="career-row__body">
-            <Text typography="Body" color="secondary">{r.body}</Text>
-            {r.note && <Text typography="Label" color="tertiary">{r.note}</Text>}
-          </div>
-        </article>
-      ))}
-    </div>
-  );
-}
 
 /* ------------------------------------------------------------------ */
 
@@ -247,17 +220,13 @@ export function ProgramsPage() {
           <AnnualTimeline stages={stages} />
         </section>
 
-        {/* ---------- 채용 연계 — 맨 아래(사용자 지시 2026-10-19). 마지막의 마무리 블록(히어로 문장 · 기간 · 버튼)은 뺐다 ---------- */}
-        {/* 화면 폭 전체(사용자 지시 2026-10-20) — 다른 화면 폭 섹션과 같은 양옆 여백 */}
-        <section id="career" className="section section--wide section--last">
-          <SectionHeader title="채용 연계" lead="Phi의 1년제 프로그램 졸업자들은 토스의 별도 채용 전형에 지원할 수 있습니다." />
-          {/* v3: 두 단 줄 목록 — 설명까지 늘 보인다 */}
-          <div className="group">
-            <GroupLabel>with Toss</GroupLabel>
-            <CareerRows />
-          </div>
-          {/* 맨 끝 신청 줄(1기 모집 마감 · 2기 오픈 알림 신청 · 모집 안내)은 뺐다(사용자 지시 2026-10-24) */}
-        </section>
+        {/* ---------- 채용 연계 — 맨 아래(사용자 지시 2026-10-19). 2026-10-27: 아래에서 흐린 푸른 원이 떠오르며 토스로 이어진다는 걸 강조하는 무대 ---------- */}
+        <CareerReveal
+          eyebrow="채용 연계 · with Toss"
+          statement={<><span>Phi를 마치면,</span><span><span className="career-reveal__accent">토스</span>로 가는 길이 열립니다.</span></>}
+          lead="Phi의 1년제 프로그램 졸업자들은 토스의 별도 채용 전형에 지원할 수 있습니다."
+          rows={careerRows}
+        />
 
         </div>
       </main>

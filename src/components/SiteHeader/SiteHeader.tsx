@@ -5,7 +5,8 @@ import './SiteHeader.css';
 /**
  * Top bar in the Phi Brain toolbar style: wordmark left, quiet pill links and the CTA right.
  * The bar itself is fully transparent and scrolls away with the page, taking the menu links with it.
- * The Phi wordmark stays pinned top-left; past the hero a pinned copy of the CTA fades in top-right (v15, 2026-10-23).
+ * The Phi wordmark stays pinned top-left. The CTA scrolls away with the bar — its pinned top-right copy (v15, 2026-10-23)
+ * was removed (사용자 지시 2026-10-27).
  */
 // v15(2026-10-23): 메뉴가 모두 href="#"라 눌러도 맨 위로만 갔다 — phi.design의 실제 주소로 잇는다(지금 페이지 Programs는 그대로 맨 위)
 const links: [string, string][] = [
@@ -52,15 +53,7 @@ export function External() {
 }
 
 export function SiteHeader({ current = 'Programs', cta }: { current?: string; cta: { href: string; label: string } }) {
-  // 히어로를 지나면 오른쪽 위에 고정된 신청 버튼이 나타난다(v15, 2026-10-23 — 상단바와 함께 사라져 다 읽은 뒤 신청하려면
-  // 맨 위로 돌아가야 했다. 2026-10-12 '상단에만'을 바꿈). 목차는 2026-10-19부터 오른쪽 세로 가운데라 자리가 겹치지 않는다
-  const [pinned, setPinned] = useState(false);
-  useEffect(() => {
-    const update = () => setPinned(window.scrollY > window.innerHeight * 0.8);
-    update();
-    window.addEventListener('scroll', update, { passive: true });
-    return () => window.removeEventListener('scroll', update);
-  }, []);
+  // 신청 버튼은 상단바와 함께 올라가 사라진다 — 히어로를 지나면 오른쪽 위에 고정되던 복사본(v15)은 뺐다(사용자 지시 2026-10-27)
   return (
     <header className="site-header">
       <a href="#" className="site-header__brand" aria-label="Phi Institute of Design 홈">Phi</a>
@@ -72,9 +65,6 @@ export function SiteHeader({ current = 'Programs', cta }: { current?: string; ct
         ))}
       </nav>
       <a href={cta.href} className="site-header__cta" target="_blank" rel="noreferrer">
-        {cta.label} <External />
-      </a>
-      <a href={cta.href} className="site-header__cta site-header__cta--pinned" data-shown={pinned} tabIndex={pinned ? 0 : -1} aria-hidden={!pinned} target="_blank" rel="noreferrer">
         {cta.label} <External />
       </a>
     </header>

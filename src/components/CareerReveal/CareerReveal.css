@@ -1,0 +1,133 @@
+/* 채용 연계(2026-10-27) — 아래에서 떠오르는 흐린 푸른 원 + 토스로 이어진다는 문장. toss.im/company 히어로를 뒤집은 무대.
+   진행 값(--rise · --say · --lead · --rows · --rows2, 0 – 1)은 CareerReveal.tsx가 스크롤로 정한다 */
+.career-reveal {
+  --cr-blue: #0064ff; /* 토스 블루 */
+  --cr-blue-light: #3182f6;
+  --cr-blue-deep: #0047d6;
+  --cr-on-blue: #ffffff;
+}
+/* 길: 들어오는 한 화면 + 붙어 있는 1.6화면 */
+.career-reveal__track { height: 260svh; }
+.career-reveal__stage {
+  position: sticky;
+  top: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: var(--space-40);
+  height: 100svh;
+  padding: clamp(96px, 16svh, 168px) var(--side-wide) clamp(64px, 12svh, 128px);
+  overflow: hidden;
+  isolation: isolate;
+}
+
+/* ---------- 떠오르는 원: 화면 아래 밖에서 올라와 화면 46% 높이에 원 위 끝이 선다. 맨 아래는 흰 바탕으로 흐려 푸터와 이어진다 ---------- */
+.career-reveal__orb {
+  position: absolute;
+  z-index: -1;
+  top: 46%;
+  left: 50%;
+  width: max(130vw, 150svh);
+  aspect-ratio: 1;
+  transform: translate(-50%, calc((1 - var(--rise, 0)) * 72svh)) scale(calc(0.72 + 0.28 * var(--rise, 0)));
+  transform-origin: 50% 0;
+  opacity: calc(0.15 + 0.85 * var(--rise, 0));
+  pointer-events: none;
+  will-change: transform, opacity;
+}
+.career-reveal__stage::after {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  inset: auto 0 0;
+  height: 14svh;
+  background: linear-gradient(to bottom, transparent, var(--color-bg-default));
+  pointer-events: none;
+}
+/* 넓고 옅은 빛 — 원 둘레로 번진다 */
+.career-reveal__glow {
+  position: absolute;
+  inset: -14%;
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 50%, color-mix(in srgb, var(--cr-blue-light) 55%, transparent) 0%, transparent 62%);
+  filter: blur(40px);
+}
+/* 가운데 짙은 원 — 위쪽이 밝고 안으로 갈수록 깊다 */
+.career-reveal__core {
+  position: absolute;
+  inset: 6%;
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 30%, #5b9dff 0%, var(--cr-blue) 42%, var(--cr-blue-deep) 78%);
+  filter: blur(56px);
+}
+
+/* ---------- 위: 라벨 · 큰 문장 · 리드 — 가운데 정렬 ---------- */
+.career-reveal__head { display: flex; flex-direction: column; align-items: center; gap: var(--space-20); text-align: center; }
+.career-reveal__eyebrow {
+  font-size: var(--typo-meta-size);
+  line-height: 1.4;
+  font-weight: var(--font-weight-bold);
+  letter-spacing: var(--tracking-body);
+  color: var(--color-text-tertiary);
+  opacity: var(--say, 0);
+}
+.career-reveal__statement {
+  display: flex;
+  flex-direction: column;
+  font-size: clamp(2.25rem, 5.4vw, 4.75rem);
+  line-height: 1.2;
+  font-weight: var(--font-weight-bold);
+  letter-spacing: var(--tracking-heading);
+  word-break: keep-all;
+  color: var(--color-text-primary);
+}
+/* 두 줄이 차례로 떠오른다 — 둘째 줄은 조금 늦게(같은 --say를 늦춰 쓴다) */
+.career-reveal__statement > span { display: block; opacity: var(--say, 0); transform: translateY(calc((1 - var(--say, 0)) * 32px)); }
+.career-reveal__statement > span + span { opacity: clamp(0, calc(var(--say, 0) * 1.6 - 0.6), 1); transform: translateY(calc((1 - var(--say, 0)) * 48px)); }
+.career-reveal__accent { color: var(--cr-blue); }
+.career-reveal__lead {
+  max-width: var(--lead-width);
+  font-size: var(--typo-lead-size);
+  line-height: 1.5;
+  color: var(--color-text-secondary);
+  word-break: keep-all;
+  opacity: var(--lead, 0);
+  transform: translateY(calc((1 - var(--lead, 0)) * 16px));
+}
+
+/* ---------- 아래: 원 안쪽의 두 줄 — 흰 글, 가운데 칸 두 단 ---------- */
+.career-reveal__rows {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-56);
+  width: 100%;
+  max-width: 1040px;
+  margin-inline: auto;
+  list-style: none;
+  color: var(--cr-on-blue);
+}
+.career-reveal__row {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+  padding-top: var(--space-20);
+  border-top: 1px solid color-mix(in srgb, var(--cr-on-blue) 40%, transparent);
+  opacity: var(--k, 0);
+  transform: translateY(calc((1 - var(--k, 0)) * 28px));
+}
+.career-reveal__num { font-size: var(--typo-meta-size); line-height: 1.4; font-weight: 600; font-variant-numeric: tabular-nums; opacity: 0.7; }
+.career-reveal__title { display: flex; flex-wrap: wrap; align-items: baseline; column-gap: var(--space-12); font-size: var(--typo-title-size); line-height: 1.3; font-weight: var(--font-weight-bold); letter-spacing: var(--tracking-heading); }
+.career-reveal__sub { font-size: var(--typo-meta-size); font-weight: var(--font-weight-medium); letter-spacing: var(--tracking-body); opacity: 0.75; }
+.career-reveal__body { font-size: var(--typo-body-size); line-height: 1.6; letter-spacing: var(--tracking-body); opacity: 0.9; word-break: keep-all; }
+.career-reveal__note { font-size: var(--typo-caption-size); line-height: 1.5; opacity: 0.7; }
+
+@media (max-width: 720px) {
+  .career-reveal__stage { padding-top: clamp(80px, 12svh, 120px); padding-bottom: clamp(48px, 10svh, 96px); }
+  .career-reveal__rows { grid-template-columns: minmax(0, 1fr); gap: var(--space-28); }
+  .career-reveal__orb { top: 38%; }
+}
+/* 움직임 줄이기: 붙는 무대 없이 다 드러난 모습(진행 값은 모두 1) */
+@media (prefers-reduced-motion: reduce) {
+  .career-reveal__track { height: auto; }
+  .career-reveal__stage { position: relative; height: auto; min-height: 100svh; }
+}

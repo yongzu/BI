@@ -17,7 +17,9 @@
 }
 
 /* ---------- 제목 아래 단락(v19: 오른쪽 Φ 모션을 뺐다 — 단락이 본문 칸을 다 쓴다) ---------- */
-.philosophy__body { width: 100%; }
+/* 단락은 왼쪽 정렬, 다른 섹션 글과 같은 왼쪽 선(--side-wide)에 붙는다(사용자 지시 2026-10-27) — 아래 '역량과 태도' 제목으로
+   세로로 곧장 이어진다. 무대 양옆 여백은 제목 때문에 --gutter라 그 차이만큼 더 들인다 */
+.philosophy__body { width: 100%; padding-left: max(0px, calc(var(--side-wide) - var(--gutter))); }
 
 /* ---------- 큰 제목: 본문보다 큰 글(Apple typography-headline-super 자리). 잉크 단색(사용자 지시 2026-10-23 — 그라데이션 뺌) ---------- */
 .philosophy__title {
@@ -31,16 +33,16 @@
 }
 
 /* ---------- 단락: v17과 같은 큰 글(28 → 44px, 사용자 지시 2026-10-23 — 20 → 28px로 줄였던 것을 되돌림) — 한 칸에 겹친다 ---------- */
-.philosophy__paras { display: grid; justify-items: center; perspective: 1400px; } /* 펼침의 3D 깊이 · v21 가운데 정렬 */
+.philosophy__paras { display: grid; justify-items: start; perspective: 1400px; } /* 펼침의 3D 깊이 · 왼쪽 정렬(2026-10-27, v21은 가운데) */
 .philosophy__para {
   grid-area: 1 / 1;
   display: flex;
   flex-direction: column;
-  gap: var(--space-40);
-  max-width: 22em;
-  text-align: center; /* v21(사용자 지시 2026-10-24) */
-  font-size: clamp(1.75rem, 3.1vw, 2.75rem); /* 28 → 44 */
-  transform-origin: center top; /* 경첩은 위 — 위아래로 펼친다 */
+  gap: var(--space-20); /* 글이 절반이라 문장 사이도 40 → 20 */
+  max-width: 36em; /* 22em → 36em — 글이 절반이라 같은 em이면 줄이 너무 짧다 */
+  text-align: left; /* 가운데(v21) → 왼쪽(사용자 지시 2026-10-27) */
+  font-size: clamp(1rem, 1.55vw, 1.375rem); /* 글씨 절반(사용자 지시 2026-10-27): 44 → 22. 좁은 화면은 16 아래로 줄이지 않는다 */
+  transform-origin: left top; /* 경첩은 위 — 위아래로 펼친다 */
 }
 .philosophy__sentence {
   line-height: 1.4;
@@ -48,7 +50,7 @@
   letter-spacing: var(--tracking-heading);
   color: var(--color-text-secondary);
   word-break: keep-all;
-  text-wrap: balance; /* v21: 가운데 정렬이라 줄 길이를 고르게 — pretty → balance */
+  text-wrap: pretty; /* 왼쪽 정렬로 돌아와 balance → pretty(마지막 줄 외톨이 낱말만 막는다) */
 }
 /* 벡터 낱말([사고방식] 등)은 잉크로 — 테두리 캡슐은 뺐다. 마우스를 올리면 바운딩 박스 · 안내선만(앵커 없이, 사용자 지시 2026-10-23) */
 .philosophy__sentence .vw:not([data-on='true']) { color: var(--color-text-primary); } /* 올렸을 땐 흰 속 · 윤곽(VectorWord.css) */
@@ -89,7 +91,7 @@
 
 @media (max-width: 720px) {
   .philosophy__stage { gap: var(--space-32); }
-  .philosophy__para { gap: var(--space-28); }
+  .philosophy__para { gap: var(--space-16); }
 }
 /* 움직임 줄이기: 붙는 무대 없이 제목과 단락을 차례로 쌓는다 */
 @media (prefers-reduced-motion: reduce) {

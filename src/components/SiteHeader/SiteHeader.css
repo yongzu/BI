@@ -80,20 +80,6 @@
 .site-header__cta:hover { background: #000; transform: translateY(-1px); }
 .site-header__cta:focus-visible { outline: 2px solid var(--color-focus-ring); outline-offset: 3px; }
 
-/* 고정 신청 버튼(v15): 로고와 같은 높이의 오른쪽 위. 히어로를 지나면(data-shown) 위에서 내려오며 나타난다 */
-.site-header__cta--pinned {
-  position: fixed;
-  top: 10px;
-  right: 32px;
-  z-index: 60;
-  opacity: 0;
-  translate: 0 -8px;
-  pointer-events: none;
-  visibility: hidden;
-  transition: opacity 240ms var(--ease), translate 240ms var(--ease), visibility 0s linear 240ms, background 160ms, transform 240ms var(--ease);
-}
-.site-header__cta--pinned[data-shown='true'] { opacity: 1; translate: none; pointer-events: auto; visibility: visible; transition-delay: 0s; }
-
 /* 바깥 링크 표시(v15) */
 .external-mark { margin-left: 2px; font-weight: var(--font-weight-regular); }
 
@@ -130,5 +116,4 @@
   .site-header__brand { top: 6px; left: 8px; }
   .site-header__nav { display: none; }
   .site-header__cta { margin-left: auto; } /* 메뉴가 숨으면 CTA가 오른쪽 끝에 */
-  .site-header__cta--pinned { top: 6px; right: 8px; }
 }

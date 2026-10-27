@@ -162,18 +162,7 @@
 /* ---------- Courses: 필터 · 목록 · 상세는 components/CourseExplorer ---------- */
 
 
-/* ---------- 채용 연계: v3의 두 단 줄 목록(사용자 지시 2026-10-20) — 화면 폭 섹션 안에서 두 단이 반씩 ----------
-   줄 = 번호(48) · 제목 + 보조 문구, 설명은 제목과 같은 선에서 늘 보인다. 좁으면 위아래 */
-.career-columns { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-56) var(--grid-gap); align-items: start; margin-top: var(--space-48); }
-.career-row { display: grid; grid-template-columns: 48px minmax(0, 1fr); column-gap: var(--space-20); row-gap: var(--space-12); align-items: center; }
-.career-row__titles { display: flex; flex-direction: column; gap: var(--space-4); min-width: 0; }
-.career-row__body { grid-column: 2; display: flex; flex-direction: column; gap: var(--space-8); max-width: var(--lead-width); }
-@media (max-width: 900px) {
-  .career-columns { grid-template-columns: 1fr; }
-}
-@media (max-width: 720px) {
-  .career-row { grid-template-columns: 36px minmax(0, 1fr); column-gap: var(--space-12); }
-}
+/* ---------- 채용 연계: components/CareerReveal(아래에서 떠오르는 푸른 원, 2026-10-27) ---------- */
 
 /* ---------- Footer ---------- */
 .footer {
