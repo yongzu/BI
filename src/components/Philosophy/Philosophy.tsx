@@ -44,10 +44,12 @@ type Props = { title: string; paragraphs: string[][] };
 const STEP = 1.2;
 /** 제목이 커지는 스크롤 길이(화면 높이 배수) */
 const INTRO = 1;
-/** 처음 제목 폭 = 화면 폭 × 이 값 — v21: 1.7(화면을 넘친다) → 0.3(가운데 작게, 사용자 지시 2026-10-24) */
-const INTRO_WIDTH = 0.3;
-/** 처음 제목 폭의 하한(px) — 좁은 화면에서 읽히지 않을 만큼 작아지지 않게 */
-const INTRO_MIN = 260;
+/** 처음 제목 폭 = 화면 폭 × 이 값 — v21: 1.7(화면을 넘친다) → 0.3(가운데 작게, 사용자 지시 2026-10-24) → 0.12(더 작게, 2026-10-27) */
+const INTRO_WIDTH = 0.12;
+/** 처음 제목 폭의 하한(px) — 좁은 화면에서 아주 작아지지 않게 */
+const INTRO_MIN = 120;
+/** 처음 흐림(화면 px) — 커지며 걷힌다(사용자 지시 2026-10-27) */
+const INTRO_BLUR = 14;
 /** 몰입 길 중 가운데에서 커지는 몫 — 나머지는 제자리(위)로 올라가며 단락이 페이드인 */
 const GROW = 0.6;
 /** 지금 단락 자리에서 이만큼(px) 넘게 움직이고 멈추면 다음 · 이전 단락으로 넘긴다 */
@@ -105,12 +107,18 @@ export function Philosophy({ title, paragraphs }: Props) {
       const anchors = [top, ...Array.from({ length: n }, (_, i) => Math.round(top + intro + seg * i) + 1), top + span];
       return { r, vh, span, intro, seg, anchors };
     };
-    // 제목을 무대 글줄 폭(양옆 --gutter 안)에 꽉 차게 — 글꼴 크기에 폭이 비례하니 한 번 재서 맞춘다(사용자 지시 2026-10-24)
+    // 제목을 화면 폭에 꽉 차게(사용자 지시 2026-10-27 — Full width, 양옆 여백 없이. 이전엔 무대 글줄 폭) — 글자 잉크가 화면 양끝에 닿도록
+    // 같은 글꼴로 캔버스에서 잉크 폭을 재 글꼴 크기를 맞춘다(글꼴 크기에 폭이 비례). 넘친 글자 상자의 옆 여백은 무대가 가운데에서 양쪽으로 넘긴다
+    const ink = document.createElement('canvas').getContext('2d');
     const fit = () => {
-      const cs = getComputedStyle(stage);
-      const avail = stage.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
-      const fs = parseFloat(getComputedStyle(title).fontSize);
-      if (title.offsetWidth > 0) title.style.fontSize = `${((fs * avail) / title.offsetWidth).toFixed(2)}px`;
+      const cs = getComputedStyle(title);
+      const fs = parseFloat(cs.fontSize);
+      if (!ink || !fs) return;
+      ink.font = `${cs.fontStyle} ${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;
+      if ('letterSpacing' in ink) ink.letterSpacing = cs.letterSpacing;
+      const m = ink.measureText(title.textContent ?? '');
+      const w = m.actualBoundingBoxLeft + m.actualBoundingBoxRight;
+      if (w > 0) title.style.fontSize = `${((fs * stage.clientWidth) / w).toFixed(2)}px`;
     };
     const tick = () => {
       raf = 0;
@@ -130,6 +138,9 @@ export function Philosophy({ title, paragraphs }: Props) {
         title.style.transform = k >= 1 ? '' : `translate(0, ${ty.toFixed(1)}px) scale(${sc.toFixed(4)})`;
         // 움직이는 동안만 레이어로 — 제자리에선 풀어야 제 크기로 선명하게 다시 그린다(늘 걸면 작을 때 그린 그림을 확대해 흐렸다)
         title.style.willChange = k >= 1 ? '' : 'transform';
+        // 작을 때 흐렸다가 커지며 또렷하게 — 흐림은 변환 전에 걸리므로 화면에서의 흐림(INTRO_BLUR × 남은 몫)을 배율로 나눈다
+        const blur = (INTRO_BLUR * (1 - eA)) / sc;
+        title.style.filter = blur > 0.05 ? `blur(${blur.toFixed(2)}px)` : '';
         // 단락 칸은 ②를 따라 페이드인 — v21: 제목과 함께 올라온다(제목 밑에 붙어, 24px 더 아래에서 제자리로). 따로 두면 올라오는 제목과 겹쳤다
         body.style.opacity = eB >= 1 ? '' : eB.toFixed(3);
         body.style.transform = eB >= 1 ? '' : `translateY(${(ty + (1 - eB) * 24).toFixed(1)}px)`;
@@ -214,7 +225,7 @@ export function Philosophy({ title, paragraphs }: Props) {
       window.clearTimeout(holdTimer);
       window.removeEventListener('scroll', onScroll);
       window.removeEventListener('resize', onResize);
-      title.style.transform = title.style.fontSize = '';
+      title.style.transform = title.style.fontSize = title.style.filter = title.style.willChange = '';
       body.style.opacity = body.style.transform = '';
     };
   }, [paragraphs.length]);

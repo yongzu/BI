@@ -1,10 +1,7 @@
 /* 교육 철학(v18) — apple.com/kr/macbook-pro '성능' 섹션의 붙는 무대 + iPhone Duo 펼침 전환. 화면 폭 섹션 공통 양옆 여백(--side-wide). Tokens only.
    단락 수 × STEP 화면 높이의 길(.philosophy__track)에 화면 높이 무대가 붙고, 큰 제목 아래 단락들이 한 칸에 겹쳐 하나씩 보인다 */
-.philosophy { --ph-ease: cubic-bezier(0.22, 1, 0.36, 1); margin-top: -20svh; }
-/* 히어로 → 교육 철학 여백을 줄인다(사용자 지시 2026-10-27): 섹션 위 여백(--space-section, 317px)을 빼고 화면 20%만큼 히어로 아래로
-   당겨 올린다 — 무대가 화면 가운데에 제목을 세우므로 여백 0이어도 히어로 버튼 아래가 반 화면쯤 비어 보였다(약 900 → 400px).
-   당겨 올린 무대 윗부분은 히어로 아래에 깔린다(programs.css .hero z-index) — 무대 전체가 마우스를 받아 제목 벡터 호버가 된다.
-   (잠깐 무대에 pointer-events: none을 줬다가 제목 호버가 막혔다, 사용자 제보 2026-10-27) */
+.philosophy { --ph-ease: cubic-bezier(0.22, 1, 0.36, 1); }
+/* 첫 화면(히어로, 사용자 지시 2026-10-27) — 페이지 맨 위에서 무대가 바로 붙는다. 위 여백 없음 */
 /* 길 = 큰 제목이 줄어드는 몫(--ph-intro) + 단락 수 × STEP, 화면 높이 단위 */
 .philosophy__track { position: relative; height: calc((var(--ph-intro) + var(--ph-n) * var(--ph-step)) * 100svh); }
 .philosophy__stage {

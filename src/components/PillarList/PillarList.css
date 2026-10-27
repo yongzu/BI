@@ -17,6 +17,8 @@
 .section-header:has(+ .pillar-list) .section-header__title { line-height: 1.35; } /* 크기는 다른 섹션 제목과 같은 Heading(2026-10-27 — 46 → 48) */
 
 .pillar-list__rule { height: 1px; background: var(--color-border); }
+/* 역량과 태도(묶음 이름 칸이 있는 목록)의 맨 위 선은 오른쪽 끝에서 번호(01) 칸까지만(사용자 지시 2026-10-27) — 목록 폭 선 대신 첫 줄 위 선(아래) */
+.pillar-list:not(.pillar-list--flat) .pillar-list__rule { display: none; }
 
 /* ---------- 이미지 박스(304) · 줄 목록(나머지) ----------
    12열(박스 4열 · 줄 8열)이었는데, 묶음 이름을 첫 줄 01 왼쪽에 두며(사용자 지시 2026-10-27) 줄 칸이 모자라 박스 칸을 박스 폭으로 줄였다 —
@@ -53,9 +55,11 @@
 /* 구분선은 번호 칸부터(사용자 지시 2026-10-27 — 묶음 이름 칸까지 오지 않게). 줄 자체는 묶음 이름 칸까지라 그 자리에 올려도 줄이 골라진다 */
 .pillar-row { position: relative; }
 .pillar-row + .pillar-row,
-.pillar-group + .pillar-group .pillar-row:first-child { padding-top: var(--space-20); }
+.pillar-group + .pillar-group .pillar-row:first-child,
+.pillar-list:not(.pillar-list--flat) .pillar-group:first-child .pillar-row:first-child { padding-top: var(--space-20); }
 .pillar-row + .pillar-row::before,
-.pillar-group + .pillar-group .pillar-row:first-child::before {
+.pillar-group + .pillar-group .pillar-row:first-child::before,
+.pillar-list:not(.pillar-list--flat) .pillar-group:first-child .pillar-row:first-child::before {
   content: '';
   position: absolute;
   top: 0;

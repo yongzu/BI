@@ -2,7 +2,7 @@ import { Text } from '../components/Text/Text';
 import { Toc, type TocItem } from '../components/Toc/Toc';
 import { AnnualTimeline } from '../components/AnnualTimeline/AnnualTimeline';
 import { CourseExplorer } from '../components/CourseExplorer/CourseExplorer';
-import { HeroMark } from '../components/HeroMark/HeroMark';
+import { ApplyButton } from '../components/ApplyButton/ApplyButton';
 import { CareerReveal } from '../components/CareerReveal/CareerReveal';
 import { BackToTop, SiteHeader } from '../components/SiteHeader/SiteHeader';
 import { FooterMark } from '../components/FooterMark/FooterMark';
@@ -15,12 +15,14 @@ import { SCROLL_REVEAL } from '../components/ScrollReveal/preset';
 import { courseProfiles } from '../data/courseProfiles';
 import { useScrollReveal } from '../hooks/useScrollReveal';
 import {
+  admissions,
   attitudes,
   competencies,
   courseTypes,
   applyPeriod,
   approachGroups,
   devices,
+  facts,
   philosophy,
   stages,
 } from '../data/programs';
@@ -38,7 +40,8 @@ const toc: TocItem[] = [
   { id: 'pillars', label: '역량과 태도' }, // 맨 위(v18 — 교육 철학은 목차에 넣지 않는다). 역량 · Phi OS를 합침(2026-10-20)
   { id: 'curriculum', label: '커리큘럼' }, // 수업을 관통하는 접근은 커리큘럼 탭 안으로 옮겨 목차에서 뺐다(사용자 지시 2026-10-27)
   { id: 'curriculum-annual', label: '연간 구조' },
-  { id: 'career', label: '채용 연계' }, // 맨 아래(사용자 지시 2026-10-19)
+  { id: 'career', label: '채용 연계' },
+  { id: 'overview', label: '과정 개요' }, // 맨 아래 — 지원 페이지로 잇는다(사용자 지시 2026-10-27)
 ];
 
 /** Blocks that rise in on scroll */
@@ -90,18 +93,10 @@ export function ProgramsPage() {
       <SiteHeader cta={{ href: applyPeriod.href, label: applyPeriod.cta }} />
       <BackToTop />
       <main className="page">
-        {/* ---------- Hero ---------- (v9의 포인터 깊이 · 스크롤 포털은 v10에서 뺐다 — 사용자 지시 2026-10-19) */}
-        <section className="hero container" aria-labelledby="hero-title">
-          {/* 첫 화면은 Φ 로고 모션 하나만, 화면 정가운데에 크게(사용자 지시 2026-10-27 — 소개 · 기간 · 지원하기 버튼은 뺐다. 지원은 상단바 '1기 신청').
-              배경 GradientASCII(2026-10-20 ~ 10-27)도 뺐다. 아래로 스크롤하면 바로 교육 철학으로 이어진다 */}
-          <div className="hero__atf">
-            <HeroMark />
-            {/* 제목 'Programs'는 화면에서 뺐다(사용자 지시 2026-10-27). 읽기 도구용 제목으로만 남긴다 */}
-            <h1 id="hero-title" className="visually-hidden">Programs</h1>
-          </div>
-        </section>
+        {/* 히어로(Φ 로고 모션)는 뺐다 — 교육 철학이 첫 화면(사용자 지시 2026-10-27). 페이지 제목은 읽기 도구용으로만 */}
+        <h1 className="visually-hidden">Programs</h1>
 
-        {/* ---------- 교육 철학 — v18: 과정 개요 자리에 v17의 한 화면 한 단락(sui.io 큰 글). 목차 레일 밖이라 이 동안 목차는 숨어 있다 ---------- */}
+        {/* ---------- 교육 철학 — 첫 화면(히어로, 2026-10-27). v18: 한 화면 한 단락(sui.io 큰 글). 목차 레일 밖이라 이 동안 목차는 숨어 있다 ---------- */}
         <Philosophy title={philosophy.title} paragraphs={philosophy.paragraphs} />
         {/* 교육 철학 → 역량과 태도: 마지막 단락의 [역량과 태도] 벡터 낱말이 상자째 내려가 섹션 제목이 된다(사용자 지시 2026-10-24) */}
         <VectorHandoff targetSelector="#pillars .section-header__title" />
@@ -159,6 +154,22 @@ export function ProgramsPage() {
           header={<SectionHeader title="채용 연계" lead="Phi의 1년제 프로그램 졸업자들은 토스의 별도 채용 전형에 지원할 수 있습니다." />}
           items={careerItems}
         />
+
+        {/* ---------- 과정 개요 — 맨 아래(사용자 지시 2026-10-27): 기간 · 시수 · 방식 · 규모 · 개강 표, 그리고 지원 조건 · 선발 과제를 볼 수 있는 지원 페이지로 ---------- */}
+        <section id="overview" className="section section--wide section--last">
+          <SectionHeader title="과정 개요" lead="지원 조건과 선발 과제, 모집 일정은 지원 페이지에서 확인할 수 있습니다." />
+          <dl className="overview-facts">
+            {facts.map((f) => (
+              <div key={f.label} className="overview-facts__row">
+                <dt>{f.label}</dt>
+                <dd>{f.value}</dd>
+              </div>
+            ))}
+          </dl>
+          <div className="overview-cta">
+            <ApplyButton href={admissions.link.href}>지원 조건 · 과제 확인하기</ApplyButton>
+          </div>
+        </section>
 
         </div>
       </main>

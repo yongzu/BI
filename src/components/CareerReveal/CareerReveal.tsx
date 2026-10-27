@@ -48,7 +48,7 @@ export function CareerReveal({ header, items }: Props) {
   }, []);
 
   return (
-    <section ref={ref} id="career" className="section section--wide section--last career-reveal">
+    <section ref={ref} id="career" className="section section--wide career-reveal">
       {/* 아래에서 떠오르는 빛 — 가운데 하양 · 둘레 하늘색 */}
       <div className="career-reveal__sky" aria-hidden="true">
         <span className="career-reveal__halo" />

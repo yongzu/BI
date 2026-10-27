@@ -33,35 +33,7 @@
 }
 .toc-rail > * { pointer-events: auto; }
 
-/* ---------- Hero: 첫 화면 + 자세히 보기(사용자 지시 2026-09-30 · 2026-10-04) ----------
-   .hero__atf = 첫 화면: 한 화면 높이를 채우고 제목 → 지원하기를 세로 가운데에 둔다. 크롬 상단바 · 작업 표시줄로
-   보이는 높이가 달라져도 위아래 여백 비율이 같다. 100svh = 주소창이 보이는 상태의 실제 높이.
-   min-height라 내용이 한 화면보다 길면(작은 화면) 잘리지 않고 늘어난다. 투명한 상단바 때문에 위 64px은 늘 비운다.
-   다음은 과정 개요(components/OverviewReveal) */
-.hero {
-  position: relative;
-  /* 끌어서 고르지 않는다(사용자 지시 2026-10-20) */
-  user-select: none;
-  -webkit-user-select: none;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-}
-.hero__atf { position: relative; z-index: 1; }
-/* 히어로가 교육 철학(위로 당겨 올린 붙는 무대, Philosophy.css)보다 위에 그려진다 */
-.hero { z-index: 1; --hs: min(1px, 100vw / 1440, 100svh / 1080); }
-/* 첫 화면 = Φ 로고 모션 하나, 화면 정가운데(사용자 지시 2026-10-27 — 소개 · 기간 · 지원하기 버튼을 뺐다).
-   예전(2026-10-03 ~ 10-27)엔 토스뱅크 디자인 채용 히어로 비율로 제목 · 소개 · 기간 · 지원하기를 세로로 쌓았다 */
-.hero__atf {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  min-height: 100vh;
-  min-height: 100svh;
-}
+/* 히어로(첫 화면 Φ 로고 모션)는 뺐다 — 교육 철학(components/Philosophy)이 첫 화면(사용자 지시 2026-10-27) */
 
 /* ---------- Sections ---------- */
 .section {
@@ -106,6 +78,23 @@
 
 
 /* ---------- 채용 연계: components/CareerReveal(아래에서 떠오르는 푸른 원, 2026-10-27) ---------- */
+
+/* ---------- 과정 개요(맨 아래, 2026-10-27) — 이름 | 값 줄 표, 아래 지원 페이지로 가는 버튼 ---------- */
+.section-header + .overview-facts { margin-top: var(--space-56); }
+.overview-facts { border-top: 1px solid var(--color-border); }
+.overview-facts__row {
+  display: grid;
+  grid-template-columns: 136px minmax(0, 1fr);
+  gap: var(--space-24);
+  padding-block: var(--space-20);
+  border-bottom: 1px solid var(--color-border);
+}
+.overview-facts dt { font-size: var(--typo-meta-size); line-height: 1.6; color: var(--color-text-tertiary); }
+.overview-facts dd { font-size: var(--typo-body-size); line-height: 1.5; color: var(--color-text-primary); }
+.overview-cta { display: flex; margin-top: var(--space-48); }
+@media (max-width: 720px) {
+  .overview-facts__row { grid-template-columns: 96px minmax(0, 1fr); gap: var(--space-16); }
+}
 
 /* ---------- Footer ---------- */
 .footer {
