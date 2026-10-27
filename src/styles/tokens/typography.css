@@ -4,20 +4,19 @@
    Pretendard only. Values measured on a 1920px frame; large sizes scale down
    fluidly below that width. Tracking: headings -4%, everything else -2% (사용자 지시 2026-10-07).
 
-     Display   140 / Bold / 0.9 / -4%   hero lines (215 → 180 → 140: 3D 로고가 들어오며 줄임, 2026-10-05)
-     Heading    48 / Bold / 1.2 / -4%   section titles
-     Lead       20 / Regular / 1.4  / -2%   section intro (70%)
-     Title      24 / Bold / 1.2 / -4%   item & group titles
-     Label      16 / Medium  / 1.2  / -2%   English sub-labels (40%) — Body와 같은 크기, 굵기만 다름
-     Body       16 / Regular / 1.6  / -2%   item copy (70%)
-     Meta       14 / Regular / 1.5  / -2%   secondary info, tabs, nav, detail panel
-     Caption    12 / Medium  / 1.5  / -2%   tags, badges, months, small labels
+     Display   140 / Bold / 0.9 / -4%   hero lines (히어로 · 인터랙션 글은 이 단계 밖)
+     Heading    48 / Bold / 1.2 / -4%   section titles                         (≤900px 32)
+     Subheading 32 / Bold / 1.2 / -4%   큰 줄 이름 — 수업 · 기기 · 연간 시기     (≤900px 24)
+     Title      24 / Bold / 1.2 / -4%   item & group titles                    (≤900px 20)
+     Lead       24 / Regular / 1.4 / -2%  section intro — Title과 같은 크기, 굵기만 다름
+     Body       16 / Regular / 1.6 / -2%  item copy · Label(영문 보조)
+     Meta       14 / Regular / 1.5 / -2%  secondary info, tabs, nav, detail panel · Caption(작은 라벨)
 
-   글자 크기는 7가지만 쓴다(사용자 지시 2026-10-07, 10 → 7): 140 · 48 · 24 · 20 · 16 · 14 · 12.
-   같은 위계면 같은 크기 — 위계는 크기보다 굵기(Regular · Medium · Bold)와 잉크(100 · 70 · 40%)로 먼저 나눈다.
-   Subheading 36 · 히어로 문장 30 → Title 24, Intro → Lead, Emphasis 18 → Body Bold 16으로 합쳤다.
-   컴포넌트 CSS에 11 · 13 · 15 · 17 · 19px 같은 값을 직접 쓰지 말고 아래 --typo-*-size를 쓴다.
-   굵기 · 색은 컴포넌트마다 달라도 크기는 이 단계에서 고른다.
+   글자 크기는 2px 단위 다섯 단계 · 굵기는 Regular(400) · Bold(700) 두 가지만 쓴다(사용자 지시 2026-10-27).
+   48 · 32 · 24 · 16 · 14 — 화면 폭으로 늘어나는 clamp 대신 좁은 화면(≤900px)에서 한 단계씩 내린다(32 · 24 · 20 · 16 · 14).
+   이전(2026-10-07 ~ 10-27)의 Lead 20 · Caption 13 · Medium 500 · 600 · 11 · 17 · 22 · 26 · 46px은 이 다섯 단계로 합쳤다.
+   위계는 크기보다 굵기(Regular · Bold)와 잉크(100 · 70 · 40%)로 먼저 나눈다.
+   컴포넌트 CSS에 13 · 17 · 22px 같은 값을 직접 쓰지 말고 아래 --typo-*-size를 쓴다.
    ========================================================================== */
 
 :root {
@@ -25,7 +24,6 @@
     'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
 
   --font-weight-regular: 400;
-  --font-weight-medium: 500;
   --font-weight-bold: 700;
 
   /* 자간 두 단계(사용자 지시 2026-10-07): 한글은 네모 칸을 꽉 채워 그려져 기본 자간(0)이면 퍼져 보인다.
@@ -38,13 +36,21 @@
      1440×1080 이상에서 215, 그보다 좁거나 낮으면 폭(÷1440) · 높이(÷1080) 중 작은 쪽 비율로 줄어 첫 화면 비율이 유지된다.
      215 → 180(사용자 지시 2026-10-04): 최대 11.25rem, 줄어드는 비율도 그대로(180/1440 = 12.5vw, 180/1080 = 16.67svh) */
   --typo-display-size: max(2.75rem, min(8.75rem, 9.722vw, 12.963svh)); /* 140 = 1440 · 1080 이상에서 고정, 그보다 작으면 폭 · 높이 중 작은 비율로(= 히어로 --hs × 140, 2026-10-07 토큰으로 옮김) */
-  --typo-heading-size: clamp(2.25rem, 3.34vw, 3rem);    /* 36 → 48 */
-  --typo-lead-size: 1.25rem;                            /* 20 */
-  --typo-title-size: clamp(1.25rem, 1.667vw, 1.5rem);   /* 20 → 24 — 1440 이상에서 24(1920 기준이던 것을 Heading처럼 1440 기준으로, 2026-10-07) */
-  --typo-label-size: 1rem;                              /* 16 */
-  --typo-body-size: 1rem;                               /* 16 */
-  --typo-meta-size: 0.875rem;                           /* 14 */
-  --typo-caption-size: 0.8125rem;                       /* 13 — v15: 12px 한글은 옅은 회색과 겹쳐 읽기 힘들었다(2026-10-23) */
+  --typo-heading-size: 3rem;        /* 48 */
+  --typo-subheading-size: 2rem;     /* 32 */
+  --typo-title-size: 1.5rem;        /* 24 */
+  --typo-lead-size: var(--typo-title-size); /* 24 — Title과 같은 크기, Regular */
+  --typo-label-size: 1rem;          /* 16 */
+  --typo-body-size: 1rem;           /* 16 */
+  --typo-meta-size: 0.875rem;       /* 14 */
+  --typo-caption-size: var(--typo-meta-size); /* 14 — 13 → 14(2px 단위) */
+}
+@media (max-width: 900px) {
+  :root {
+    --typo-heading-size: 2rem;      /* 32 */
+    --typo-subheading-size: 1.5rem; /* 24 */
+    --typo-title-size: 1.25rem;     /* 20 */
+  }
 }
 
 /* ---------- Semantic styles (consumed by <Text />) ---------- */
@@ -52,10 +58,10 @@
 .typo-heading { font-size: var(--typo-heading-size); line-height: 1.2; font-weight: var(--font-weight-bold); letter-spacing: var(--tracking-heading); }
 .typo-lead    { font-size: var(--typo-lead-size); line-height: 1.4; font-weight: var(--font-weight-regular); letter-spacing: var(--tracking-body); }
 .typo-title   { font-size: var(--typo-title-size); line-height: 1.2; font-weight: var(--font-weight-bold); letter-spacing: var(--tracking-heading); }
-.typo-label   { font-size: var(--typo-label-size); line-height: 1.2; font-weight: var(--font-weight-medium); letter-spacing: var(--tracking-body); }
+.typo-label   { font-size: var(--typo-label-size); line-height: 1.2; font-weight: var(--font-weight-regular); letter-spacing: var(--tracking-body); }
 .typo-body    { font-size: var(--typo-body-size); line-height: 1.6; font-weight: var(--font-weight-regular); letter-spacing: var(--tracking-body); }
 .typo-meta    { font-size: var(--typo-meta-size); line-height: 1.5; font-weight: var(--font-weight-regular); letter-spacing: var(--tracking-body); }
-.typo-caption { font-size: var(--typo-caption-size); line-height: 1.5; font-weight: var(--font-weight-medium); letter-spacing: var(--tracking-body); }
+.typo-caption { font-size: var(--typo-caption-size); line-height: 1.5; font-weight: var(--font-weight-regular); letter-spacing: var(--tracking-body); }
 
 .color-primary   { color: var(--color-text-primary); }
 .color-secondary { color: var(--color-text-secondary); }

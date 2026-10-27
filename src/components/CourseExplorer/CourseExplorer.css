@@ -61,7 +61,7 @@
      (사용자 지시 2026-10-27). 좁은 화면(가로 막대)은 예전처럼 미끄러지는 곡선(아래 미디어 쿼리) */
   transition: transform 480ms var(--ce-ease), height 480ms var(--ce-ease);
 }
-/* v15(2026-10-23): 이름 24 → 20px — 탭(길잡이)이 수업 이름(16px)보다 훨씬 커 위계가 거꾸로였다.
+/* v15(2026-10-23): 이름 24 → 20px — 탭(길잡이)이 수업 이름(16px)보다 훨씬 커 위계가 거꾸로였다. 2026-10-27 다섯 단계: 수업 이름이 32라 탭은 다시 24(Lead).
    이름 아래 한글 한 줄(short)은 2026-10-24에 뺐다(사용자 지시) — 이름 + 수 알약 한 줄 */
 .course-tab { flex-wrap: wrap; row-gap: var(--space-4); }
 .course-tab__name { font-size: var(--typo-lead-size); line-height: 1.2; font-weight: var(--font-weight-bold); letter-spacing: var(--tracking-heading); }
@@ -85,8 +85,8 @@
 .course-tab[aria-selected='true'] { color: var(--color-text-primary); }
 .course-tab:focus-visible { outline: 2px solid var(--color-text-primary); outline-offset: -2px; border-radius: 8px; }
 /* 코스 밖 분류(Workshop · Event) 앞 구분선 — 탭 글자 선에서 시작하고, 길이는 남은 폭의 절반(사용자 지시 2026-10-23) */
-/* 탭 위 설명 '프로그램 구조'(사용자 지시 2026-10-24) — 탭 이름(20px)보다 작은 회색, 탭 글자와 같은 왼쪽 선 */
-.course-tabs__label { padding: 0 var(--space-20) var(--space-8); font-size: var(--typo-meta-size); line-height: 1.4; font-weight: var(--font-weight-medium); color: var(--color-nav); }
+/* 탭 위 설명 '프로그램 구조'(사용자 지시 2026-10-24) — 탭 이름(24px)보다 작은 회색, 탭 글자와 같은 왼쪽 선 */
+.course-tabs__label { padding: 0 var(--space-20) var(--space-8); font-size: var(--typo-meta-size); line-height: 1.4; font-weight: var(--font-weight-regular); color: var(--color-nav); }
 .course-tabs__divider { flex: none; width: calc((100% - var(--space-20)) / 2); height: 1px; margin: var(--space-12) 0 var(--space-12) var(--space-20); background: var(--color-border); }
 /* 둘째 묶음 '수업을 관통하는 접근'(사용자 지시 2026-10-27) — 과목 분류 아래 여백을 두고 같은 모양의 이름 · 탭.
    넓은 화면은 여백 + 이름으로 나누고 선은 쓰지 않는다(선은 좁은 화면 가로 줄에서만, 아래 미디어 쿼리) */
@@ -125,6 +125,12 @@
    투명하게 시작해 올라오며 진해진다. 창(.course-stage)의 높이는 고른 타입에 맞추고(CourseExplorer.tsx), 탭을
    바꾸는 동안(data-moving)만 높이가 따라 움직인다 — 수업을 여닫을 땐 창이 바로 따라간다. 세로만 잘라 줄의 회색 면은 양옆으로 나간다 */
 .course-stage { grid-column: span 9; min-width: 0; overflow: visible clip; }
+/* 본문 840px(섹션 폭 200px 줄임, 사용자 지시 2026-10-27)인 화면에선 3열 탭에 이름(24) + 수 알약이 한 줄에 들지 않는다 — 4열 · 8열.
+   본문이 1100px을 넘는 넓은 화면(1700 이상)은 3 · 9 그대로 */
+@media (min-width: 901px) and (max-width: 1700px) {
+  .course-tabs { grid-column: span 4; }
+  .course-stage { grid-column: span 8; }
+}
 .course-track { display: grid; }
 .course-track > * { grid-area: 1 / 1; align-self: start; }
 .course-stage[data-moving] { transition: height 480ms var(--ce-slide); }
@@ -192,7 +198,7 @@
 }
 /* 수업 이름 16 → 32px(사용자 지시 2026-10-24) — 펼친 상세 글(16px)과 크기가 같아 위계가 보이지 않았다 */
 .course-row__name {
-  font-size: calc(var(--typo-body-size) * 2);
+  font-size: var(--typo-subheading-size);
   line-height: 1.3;
   font-weight: var(--font-weight-bold);
   letter-spacing: var(--tracking-body);
@@ -201,7 +207,7 @@
 .course-row__meta {
   font-size: var(--typo-meta-size);
   line-height: 1.5;
-  font-weight: var(--font-weight-medium);
+  font-weight: var(--font-weight-regular);
   letter-spacing: var(--tracking-body);
   color: var(--color-text-tertiary);
 }
@@ -274,7 +280,7 @@
    이름(수업 이름과 같은 32px) · 설명이 늘 펼쳐져 있다 — 여닫지 않는다. 번호 · 결과 한 줄은 뺐다(2026-10-27). 글은 수업 이름과 같은 왼쪽 선 */
 .device-rows { display: flex; flex-direction: column; gap: var(--space-48); padding-top: var(--space-16); list-style: none; }
 .device-row { display: flex; flex-direction: column; align-items: flex-start; }
-.device-row__name { font-size: calc(var(--typo-body-size) * 2); line-height: 1.3; font-weight: var(--font-weight-bold); letter-spacing: var(--tracking-body); color: var(--color-text-primary); }
+.device-row__name { font-size: var(--typo-subheading-size); line-height: 1.3; font-weight: var(--font-weight-bold); letter-spacing: var(--tracking-body); color: var(--color-text-primary); }
 .device-row__body { max-width: var(--lead-width); margin-top: var(--space-16); }
 
 /* ---------- 상세: 수업 내용 700px | 전문가 · 코스 정보는 나머지(사용자 지시 2026-10-03) ---------- */
@@ -310,7 +316,7 @@
   padding: 0 0 var(--space-8);
   border-top: 0;
   font-size: var(--typo-meta-size);
-  font-weight: var(--font-weight-medium);
+  font-weight: var(--font-weight-regular);
   color: var(--color-text-secondary);
 }
 .course-goals__before { color: var(--color-text-tertiary); }
@@ -328,7 +334,7 @@
 .course-detail__bio { font-size: var(--typo-body-size); line-height: 1.6; letter-spacing: var(--tracking-body); color: var(--color-text-secondary); } /* 왼쪽 수업 내용(Body 16)과 같은 크기(사용자 지시 2026-10-07, 14 → 16) */
 .course-detail__facts { display: flex; flex-direction: column; gap: var(--space-16); padding-top: var(--space-20); border-top: 1px solid var(--color-border); }
 .course-detail__facts div { display: flex; flex-direction: column; gap: var(--space-4); }
-.course-detail__facts dt { font-size: var(--typo-caption-size); font-weight: var(--font-weight-medium); color: var(--color-text-tertiary); }
+.course-detail__facts dt { font-size: var(--typo-caption-size); font-weight: var(--font-weight-regular); color: var(--color-text-tertiary); }
 .course-detail__facts dd { font-size: var(--typo-meta-size); line-height: 1.5; color: var(--color-text-primary); }
 
 @media (prefers-reduced-motion: reduce) {
@@ -381,12 +387,10 @@
 /* 휴대폰: 태그는 이름 아래로 */
 @media (max-width: 720px) {
   .course-explorer { --ce-row-pad-x: 12px; }
-  .course-row__name,
-  .device-row__name { font-size: var(--typo-title-size); } /* 휴대폰은 24px — 32px이면 긴 이름(Event)이 세 줄이 된다 */
   .course-detail { padding: var(--space-16) var(--ce-open-pad) var(--space-28); gap: var(--space-28); }
   .course-detail__main { gap: var(--space-32); }
   .course-goals__row { grid-template-columns: 1fr; gap: var(--space-4); }
   .course-goals__row--head { display: none; }
-  .course-goals__before::before { content: 'Before  '; font-weight: var(--font-weight-medium); }
-  .course-goals__after::before { content: 'After  '; font-weight: var(--font-weight-medium); color: var(--color-text-secondary); }
+  .course-goals__before::before { content: 'Before  '; font-weight: var(--font-weight-regular); }
+  .course-goals__after::before { content: 'After  '; font-weight: var(--font-weight-regular); color: var(--color-text-secondary); }
 }

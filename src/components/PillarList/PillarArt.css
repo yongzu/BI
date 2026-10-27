@@ -27,7 +27,7 @@
   right: var(--space-24);
   bottom: var(--space-32);
   text-align: center;
-  font-size: 1.625rem;
+  font-size: var(--typo-title-size); /* 26 → Title 24(2026-10-27 다섯 단계) */
   line-height: 1.15;
   font-weight: var(--font-weight-regular);
   letter-spacing: -0.02em;

@@ -14,7 +14,7 @@
 .section-header + .pillar-list { margin-top: var(--space-56); }
 /* 글자 크기(사용자 지시 2026-10-27, 토스 Culture 값에서 조금씩 키움): 섹션 제목 40 → 46 · 번호 · 이름 20 → 22 · 설명 16 → 17.
    묶음 제목(이미지 박스 위)은 Title(24) */
-.section-header:has(+ .pillar-list) .section-header__title { font-size: clamp(1.75rem, 3.2vw, 2.875rem); line-height: 1.35; }
+.section-header:has(+ .pillar-list) .section-header__title { line-height: 1.35; } /* 크기는 다른 섹션 제목과 같은 Heading(2026-10-27 — 46 → 48) */
 
 .pillar-list__rule { height: 1px; background: var(--color-border); }
 
@@ -34,7 +34,7 @@
   top: 120px; /* 위 고정 바 아래 */
 }
 
-.pillar-list__groups { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+.pillar-list__groups { flex: 1; display: flex; flex-direction: column; min-width: 0; container-type: inline-size; }
 
 .pillar-group__rows { display: flex; flex-direction: column; list-style: none; }
 
@@ -68,25 +68,37 @@
 /* 이미지 박스 · 묶음 이름 칸이 없는 목록(채용 연계, 2026-10-27) — 번호 | 이름 | 설명, 선은 줄 폭 전체 */
 .pillar-list--flat .pillar-row { grid-template-columns: var(--pl-num) minmax(190px, 0.8fr) minmax(0, 1fr); }
 .pillar-list--flat .pillar-row::before { left: 0; }
+/* 줄 칸이 좁을 때(본문 840px — 섹션 폭 200px 줄임, 사용자 지시 2026-10-27): 설명을 이름 아래로 내리고 묶음 이름 칸을 줄인다.
+   묶음 이름 | 번호 | 이름 · 그 아래 설명. 넓은 화면(1920 등)은 위 네 칸 그대로 */
+@media (min-width: 901px) {
+  @container (max-width: 720px) {
+    .pillar-list:not(.pillar-list--flat) .pillar-row {
+      --pl-group: 112px; /* 컨테이너(줄 목록) 안쪽에만 닿으므로 줄에 둔다 — 구분선(::before)도 이 값을 쓴다 */
+      grid-template-columns: var(--pl-group) var(--pl-num) minmax(0, 1fr);
+      row-gap: var(--space-12);
+    }
+    .pillar-list:not(.pillar-list--flat) .pillar-row__body { grid-column: 3; padding-top: 0; }
+  }
+}
 /* 묶음 이름(사용자 지시 2026-10-27 — 이미지 박스 위에서 첫 줄 01 왼쪽으로): 이름과 같은 크기 · 굵기, 늘 진하게. 아래 작은 글(Phi OS) */
 .pillar-row__group {
   flex: none;
   display: flex;
   flex-direction: column;
-  font-size: 1.375rem;
+  font-size: var(--typo-title-size); /* 22 → Title 24(2026-10-27 다섯 단계) */
   line-height: 1.45;
   font-weight: var(--font-weight-bold);
   letter-spacing: var(--tracking-heading);
   word-break: keep-all;
   color: var(--color-text-primary);
 }
-.pillar-row__group small { font-size: var(--typo-meta-size); line-height: 1.5; font-weight: var(--font-weight-medium); letter-spacing: var(--tracking-body); color: var(--color-text-tertiary); }
+.pillar-row__group small { font-size: var(--typo-meta-size); line-height: 1.5; font-weight: var(--font-weight-regular); letter-spacing: var(--tracking-body); color: var(--color-text-tertiary); }
 .pillar-row__num,
-.pillar-row__name { font-size: 1.375rem; line-height: 1.45; letter-spacing: var(--tracking-body); }
-.pillar-row__num { font-weight: 600; font-variant-numeric: tabular-nums; } /* 토스 번호 굵기 600 */
+.pillar-row__name { font-size: var(--typo-title-size); line-height: 1.45; letter-spacing: var(--tracking-body); }
+.pillar-row__num { font-weight: var(--font-weight-bold); font-variant-numeric: tabular-nums; } /* 토스 번호 굵기 600 → Bold(굵기 두 가지, 2026-10-27) */
 .pillar-row__name { display: flex; flex-direction: column; font-weight: var(--font-weight-bold); }
 .pillar-row__note { margin-top: var(--space-8); font-size: var(--typo-caption-size); line-height: 1.5; } /* 각주(채용 연계) — 색은 줄과 함께 바뀐다 */
-.pillar-row__body { padding-top: 0.15em; font-size: 1.0625rem; line-height: 1.65; letter-spacing: var(--tracking-body); } /* 위 0.15em — 이름(22) 첫 줄과 글자 높이를 맞춘다 */
+.pillar-row__body { padding-top: 0.15em; font-size: var(--typo-body-size); line-height: 1.65; letter-spacing: var(--tracking-body); } /* 17 → Body 16. 위 0.15em — 이름(24) 첫 줄과 글자 높이를 맞춘다 */
 
 /* 색(토스 · 사용자 지시 2026-10-24): 기본은 회색, 고른 줄 · 마우스를 올린 줄은 검정. 번호는 검정 대신 진한 회색 */
 .pillar-row__num,

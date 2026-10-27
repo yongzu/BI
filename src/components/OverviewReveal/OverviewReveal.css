@@ -31,7 +31,7 @@
 .ov-para { max-width: 34em; font-size: var(--typo-body-size); line-height: 1.75; letter-spacing: var(--tracking-body); color: var(--color-text-secondary); }
 
 /* 과정 개요: 제목 + 다섯 줄, 줄 사이 가는 선(v5) */
-.ov-facts__head { padding-bottom: var(--space-12); font-size: var(--typo-label-size); line-height: 1.2; font-weight: var(--font-weight-medium); letter-spacing: var(--tracking-body); color: var(--color-text-primary); }
+.ov-facts__head { padding-bottom: var(--space-12); font-size: var(--typo-label-size); line-height: 1.2; font-weight: var(--font-weight-regular); letter-spacing: var(--tracking-body); color: var(--color-text-primary); }
 .ov-row {
   display: grid;
   grid-template-columns: 120px minmax(0, 1fr);
@@ -39,7 +39,7 @@
   padding: var(--space-16) 0;
   border-top: 1px solid var(--color-border);
 }
-.ov-row dt { align-self: center; font-size: var(--typo-meta-size); font-weight: var(--font-weight-medium); color: var(--color-text-tertiary); }
+.ov-row dt { align-self: center; font-size: var(--typo-meta-size); font-weight: var(--font-weight-regular); color: var(--color-text-tertiary); }
 .ov-row dd { font-size: var(--typo-body-size); line-height: 1.5; letter-spacing: var(--tracking-body); color: var(--color-text-primary); }
 
 /* 큰 제목 · 소개 문단은 ScrollReveal — 원본 CSS의 여백 · 글자 크기 대신 이 섹션의 글자를 그대로 쓴다 */

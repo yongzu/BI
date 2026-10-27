@@ -1,7 +1,7 @@
 /* 푸터 맨 아래 'Fundamental Over Tools'(2026-10-24) — 2026-10-27: 여백 없이 화면 폭에 꽉 차게 · 맨 아래에 붙인다.
    Tokens only. */
 /* 감싼 칸이 푸터 양옆 여백을 지우고 화면 끝까지 — svg에 직접 음수 여백을 주면 전역 max-width: 100%에 걸려 글줄 폭에 묶였다 */
-.footer-mark-wrap { margin-top: var(--space-96); margin-inline: calc(-1 * var(--side-wide)); }
+.footer-mark-wrap { margin-top: var(--space-96); margin-inline: calc(-1 * var(--side-content)); }
 .footer-mark {
   display: block;
   width: 100%;

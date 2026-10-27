@@ -111,7 +111,7 @@
   border-radius: 999px;
   background: var(--color-bg-subtle);
   font-size: var(--typo-label-size);
-  font-weight: var(--font-weight-medium);
+  font-weight: var(--font-weight-regular);
   color: var(--color-text-primary);
   cursor: var(--cursor-pointer);
 }
@@ -162,7 +162,7 @@
   transition: opacity 320ms var(--ease);
 }
 .sr-card__ko { font-size: var(--typo-title-size); line-height: 1.25; font-weight: var(--font-weight-bold); letter-spacing: var(--tracking-heading); color: var(--color-text-primary); word-break: keep-all; }
-.sr-card__en { font-size: var(--typo-meta-size); line-height: 1.4; font-weight: var(--font-weight-medium); color: var(--color-text-tertiary); }
+.sr-card__en { font-size: var(--typo-meta-size); line-height: 1.4; font-weight: var(--font-weight-regular); color: var(--color-text-tertiary); }
 .sr-card__text > :is(.sr-card__ko, .sr-card__en) { margin-right: var(--space-32); } /* 위 오른쪽 '+' 자리 */
 .sr-card__body { margin-top: var(--space-16); font-size: var(--typo-body-size); line-height: 1.65; color: var(--color-text-secondary); word-break: keep-all; }
 

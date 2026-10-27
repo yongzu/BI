@@ -7,7 +7,7 @@
   display: block;
   font-size: clamp(1.6rem, 4vw, 3rem);
   line-height: 1.5;
-  font-weight: 600;
+  font-weight: var(--font-weight-bold); /* 원본 600 → Bold(굵기 두 가지, 2026-10-27) */
 }
 
 .scroll-reveal-word,
