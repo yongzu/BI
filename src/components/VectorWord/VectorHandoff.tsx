@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { scrollToTarget } from '../../smoothScroll';
+import { autoplayHeld, scrollToTarget } from '../../smoothScroll';
 import './VectorHandoff.css';
 
 /**
@@ -78,7 +78,7 @@ export function VectorHandoff({ targetSelector }: { targetSelector: string }) {
       // 아래로 내려 무대가 풀리는 자리에 닿으면 제목 자리까지 저절로
       const down = window.scrollY > lastY;
       lastY = window.scrollY;
-      if (!playing && down && raw > -0.01 && raw < 0.6) {
+      if (!playing && down && !autoplayHeld() && raw > -0.01 && raw < 0.6) {
         scrollToTarget(window.scrollY + tr.top - END_TOP, { duration: AUTO_S });
         // 한 번 진행하는 동안은 다시 시작하지 않는다(사용자가 이어받아 스크롤해도)
         playing = window.setTimeout(() => { playing = 0; }, AUTO_S * 1000 + 120);

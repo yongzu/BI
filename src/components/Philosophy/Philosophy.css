@@ -20,8 +20,7 @@
 }
 
 /* ---------- 제목 아래 단락(v19: 오른쪽 Φ 모션을 뺐다 — 단락이 본문 칸을 다 쓴다) ---------- */
-/* 단락은 왼쪽 정렬, 다른 섹션 글과 같은 왼쪽 선(--side-wide)에 붙는다(사용자 지시 2026-10-27) — 아래 '역량과 태도' 제목으로
-   세로로 곧장 이어진다 */
+/* 단락은 가운데 정렬(사용자 지시 2026-10-27 — 교육 철학이 첫 화면(히어로)이 되며). 같은 날 앞서는 왼쪽 정렬이었다 */
 .philosophy__body { width: 100%; }
 
 /* ---------- 큰 제목: 본문보다 큰 글(Apple typography-headline-super 자리). 잉크 단색(사용자 지시 2026-10-23 — 그라데이션 뺌) ---------- */
@@ -36,16 +35,16 @@
 }
 
 /* ---------- 단락: v17과 같은 큰 글(28 → 44px, 사용자 지시 2026-10-23 — 20 → 28px로 줄였던 것을 되돌림) — 한 칸에 겹친다 ---------- */
-.philosophy__paras { display: grid; justify-items: start; perspective: 1400px; } /* 펼침의 3D 깊이 · 왼쪽 정렬(2026-10-27, v21은 가운데) */
+.philosophy__paras { display: grid; justify-items: center; perspective: 1400px; } /* 펼침의 3D 깊이 · 가운데 정렬(2026-10-27 히어로) */
 .philosophy__para {
   grid-area: 1 / 1;
   display: flex;
   flex-direction: column;
   gap: var(--space-20); /* 글이 절반이라 문장 사이도 40 → 20 */
   max-width: 900px; /* 글 폭 900px(사용자 지시 2026-10-27) — 예전 36em */
-  text-align: left; /* 가운데(v21) → 왼쪽(사용자 지시 2026-10-27) */
+  text-align: center; /* 가운데(v21) → 왼쪽 → 가운데(첫 화면이 되며, 사용자 지시 2026-10-27) */
   font-size: var(--typo-title-size); /* 글씨 절반(사용자 지시 2026-10-27): 44 → 22 → Title 24(다섯 단계, 좁은 화면 20) */
-  transform-origin: left top; /* 경첩은 위 — 위아래로 펼친다 */
+  transform-origin: center top; /* 경첩은 위 — 위아래로 펼친다 */
 }
 .philosophy__sentence {
   line-height: 1.55;
@@ -53,7 +52,7 @@
   letter-spacing: var(--tracking-heading);
   color: var(--color-text-secondary);
   word-break: keep-all;
-  text-wrap: pretty; /* 왼쪽 정렬로 돌아와 balance → pretty(마지막 줄 외톨이 낱말만 막는다) */
+  text-wrap: balance; /* 가운데 정렬이라 줄 길이를 고르게(\n이 없는 문장) */
 }
 /* 데이터의 \n에서 줄을 바꾼다(문장 · 구 단위로 끊어 읽히게, 2026-10-27 — ScrollReveal sr-plain이 pre-line).
    좁은 화면은 한 줄에 다 들어가지 않아 \n도 띄어쓰기로 — 아니면 짧은 줄이 끼어 더 어색했다 */

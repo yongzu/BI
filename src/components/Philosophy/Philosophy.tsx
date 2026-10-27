@@ -1,6 +1,6 @@
 import { Fragment, useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import ScrollReveal from '../ScrollReveal/ScrollReveal';
-import { scrollToTarget } from '../../smoothScroll';
+import { holdAutoplay, isNavigating, lockScrollInput, scrollToTarget } from '../../smoothScroll';
 import { VectorGuides, VectorWord, setVectorZone } from '../VectorWord/VectorWord';
 import './Philosophy.css';
 
@@ -94,6 +94,12 @@ export function Philosophy({ title, paragraphs }: Props) {
     let wasOn = false;
     let holdUntil = 0;
     let holdTimer = 0;
+    // 다 읽었나(사용자 지시 2026-10-27 — 빠르게 스크롤하면 둘째 단락을 읽지 않고 역량과 태도로 넘어갔다):
+    // 마지막 단락이 보이고 다 드러난 뒤(hold)에야 true. 무대 안에서 본 마지막 단락(lastOn), 무대에 들어와 있었나(inside)
+    let readAll = false;
+    let lastOn = 0;
+    let inside = false;
+    let unlock = 0;
     // 단락 i가 다 드러나는 시간(ms): 문장이 SENTENCE_GAP초 간격으로 시작해 마지막 문장이 READ_S초 동안 드러난다
     const hold = (i: number) => ((paragraphs[i].length - 1) * SENTENCE_GAP + READ_S) * 1000;
     // 맞출 자리(페이지 y): 0 = 무대가 붙는 순간(큰 제목), i = 단락 i - 1이 지금이 되는 지점, n + 1 = 무대가 풀리는 자리
@@ -171,6 +177,11 @@ export function Philosophy({ title, paragraphs }: Props) {
         holdTimer = window.setTimeout(onScroll, Math.max(0, holdUntil - now) + 16);
       }
       wasOn = on;
+      if (on) {
+        lastOn = atShown;
+        if (atShown >= n - 1 && now >= holdUntil) readAll = true;
+        else if (atShown < n - 1) readAll = false; // 앞 단락으로 되돌아갔다 — 다시 끝까지 읽어야
+      }
       setAt(atShown);
     };
     const snap = () => {
@@ -204,7 +215,44 @@ export function Philosophy({ title, paragraphs }: Props) {
       snapping = performance.now() + dur * 1000 + 120;
       scrollToTarget(a[target], { duration: dur });
     };
+    // 무대 끝을 지나쳤는데 아직 다 읽지 않았으면(빠른 스크롤 · 관성) 읽지 않은 단락으로 되돌린다 — 그동안 입력을 막고,
+    // 무대 끝의 이어 주기(VectorHandoff)도 잠깐 멈춘다. 목차 · 맨 위로 이동(isNavigating)은 막지 않는다
+    const guard = () => {
+      if (reduced) return;
+      const y = window.scrollY;
+      const { vh, anchors: a } = geometry();
+      const end = a[n + 1];
+      if (y >= a[0] && y <= end + 2) {
+        inside = true;
+        return;
+      }
+      if (y < a[0]) inside = false;
+      if (!inside || y > end + vh * 2.5 || isNavigating() || performance.now() < snapping) return;
+      const now = performance.now();
+      if (readAll || (wasOn && atShown >= n - 1 && now >= holdUntil)) return;
+      // 보던 단락이 아직 다 드러나지 않았으면 그 단락, 다 드러났으면 다음 단락(자리 i + 1 = 단락 i)
+      const doneLast = now >= holdUntil;
+      const target = Math.min(n, lastOn + 1 + (doneLast ? 1 : 0));
+      const dur = 0.8;
+      idx = target;
+      inside = false; // 되돌아가며 다시 들어온다
+      snapping = now + dur * 1000 + 120;
+      // 그 단락은 되돌아가 닿은 뒤부터 다시 다 드러날 때까지 머문다 — 되돌아가는 동안 시간이 흘러 남은 관성에 바로 다시 넘어가지 않게
+      atShown = target - 1;
+      readAll = false;
+      holdUntil = now + dur * 1000 + hold(atShown);
+      holdAutoplay(dur * 1000 + 300);
+      // 관성(트랙패드)이 남아 있는 동안도 막는다 — 되돌아간 뒤 0.4초 더
+      lockScrollInput(true);
+      window.clearTimeout(unlock);
+      unlock = window.setTimeout(() => {
+        unlock = 0;
+        lockScrollInput(false);
+      }, dur * 1000 + 400);
+      scrollToTarget(a[target], { duration: dur });
+    };
     const onScroll = () => {
+      guard();
       if (!raf) raf = requestAnimationFrame(tick);
       window.clearTimeout(settle);
       settle = window.setTimeout(snap, SETTLE_MS);
@@ -223,6 +271,10 @@ export function Philosophy({ title, paragraphs }: Props) {
       cancelAnimationFrame(raf);
       window.clearTimeout(settle);
       window.clearTimeout(holdTimer);
+      if (unlock) {
+        window.clearTimeout(unlock);
+        lockScrollInput(false);
+      }
       window.removeEventListener('scroll', onScroll);
       window.removeEventListener('resize', onResize);
       title.style.transform = title.style.fontSize = title.style.filter = title.style.willChange = '';
