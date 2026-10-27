@@ -11,7 +11,8 @@ import './FooterMark.css';
  * viewBox를 글자 잉크에 딱 맞춰 두어 폭 100%면 왼쪽 · 오른쪽 끝이 푸터 글줄 끝에 닿는다(글꼴 크기를 재서 맞출 필요가 없다).
  * 2026-10-27(사용자 지시): 푸터 맨 아래에 여백 없이 화면 폭에 꽉 차게(양옆 · 아래 0).
  *
- * 열리는 공간(사용자 지시 2026-10-27 — granola.ai 푸터 참고): 페이지 맨 아래에서 한 번 더 아래로 스크롤하면 바로
+ * 열리는 공간(사용자 지시 2026-10-27 — granola.ai 푸터 참고): 아래로 스크롤해 맨 아래에 거의 닿으면(NEAR) 멈추기를 기다리지 않고 바로,
+ * 이미 맨 아래면 한 번 더 아래로 스크롤하면
  * 'Fundamental Over Tools'가 (채용 연계 · 푸터와 함께) 위로 올라가며 화면 아래에서 새 공간(PANEL)이 올라온다.
  * 공간엔 히어로의 숫자(0 · 1) 인터랙션(GradientASCII, HERO_ASCII). STAY 동안 머문 뒤 다시 내려간다. 위로 스크롤하면 바로 닫는다.
  * 움직임은 transform만(html[data-footer-open] — CSS) — 처음엔 공간 높이를 늘리며 프레임마다 스크롤을 맞췄는데, 매 프레임 레이아웃을
@@ -21,7 +22,9 @@ import './FooterMark.css';
 const MOVE = 560; // 열리고 닫히는 시간(ms) — CSS --fr-move와 같다
 const STAY = 1600; // 열린 채 머무는 시간
 const COOLDOWN = 500; // 닫힌 뒤 다시 열 수 있기까지 — 휠 관성으로 바로 다시 열리지 않게
-const atBottom = () => window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 4;
+/** 맨 아래까지 남은 거리가 이 아래면 연다(px) — 부드러운 스크롤이 천천히 멈추는 끝자락을 기다리지 않는다(사용자 지시 2026-10-27) */
+const NEAR = 160;
+const toBottom = () => document.documentElement.scrollHeight - (window.innerHeight + window.scrollY);
 /** 아래로 가는 키 */
 const DOWN_KEYS = new Set(['ArrowDown', 'PageDown', 'End', ' ']);
 
@@ -68,7 +71,7 @@ export function FooterMark() {
     let readyAt = 0;
     let touchY = 0;
     const open = () => {
-      if (state !== 'closed' || performance.now() < readyAt || !atBottom()) return;
+      if (state !== 'closed' || performance.now() < readyAt || toBottom() > NEAR) return;
       state = 'open';
       root.style.setProperty('--fr-h', `${panel.offsetHeight}px`);
       root.dataset.footerOpen = 'true';
@@ -81,6 +84,13 @@ export function FooterMark() {
       delete root.dataset.footerOpen;
       window.clearTimeout(timer);
       timer = window.setTimeout(() => { state = 'closed'; readyAt = performance.now() + COOLDOWN; }, MOVE);
+    };
+    // 아래로 스크롤해 맨 아래 가까이 오면 바로 연다
+    let lastY = window.scrollY;
+    const onScroll = () => {
+      const y = window.scrollY;
+      if (y > lastY && toBottom() <= NEAR) open();
+      lastY = y;
     };
     // 맨 아래에서 더 내리면 열고, 위로 올리면 닫는다
     const onWheel = (e: WheelEvent) => { if (e.deltaY > 0) open(); else if (e.deltaY < 0) close(); };
@@ -96,6 +106,7 @@ export function FooterMark() {
     }, { rootMargin: '1200px 0px' });
     const mark = document.querySelector('.footer-mark-wrap');
     if (mark) near.observe(mark);
+    window.addEventListener('scroll', onScroll, { passive: true });
     window.addEventListener('wheel', onWheel, { passive: true });
     window.addEventListener('keydown', onKey);
     window.addEventListener('touchstart', onTouchStart, { passive: true });
@@ -103,6 +114,7 @@ export function FooterMark() {
     return () => {
       window.clearTimeout(timer);
       near.disconnect();
+      window.removeEventListener('scroll', onScroll);
       window.removeEventListener('wheel', onWheel);
       window.removeEventListener('keydown', onKey);
       window.removeEventListener('touchstart', onTouchStart);

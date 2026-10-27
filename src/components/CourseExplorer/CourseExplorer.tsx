@@ -245,7 +245,7 @@ export function CourseExplorer({ types, profiles, approaches, devices }: Props) 
             // 코스 밖 분류(Workshop · Event)는 Study 밑에 선을 긋고 구분한다(사용자 지시 2026-10-23)
             t.extra && !types[i - 1]?.extra && <span key={`${t.id}-divider`} className="course-tabs__divider" role="presentation" />,
             // 코스 밖 분류(Workshop · Event) 탭엔 수를 붙이지 않는다(사용자 지시 2026-10-23)
-            <TabButton key={t.id} id={t.id} name={t.name} count={t.extra ? undefined : t.courses.length} brief={t.brief} summary={t.summary}
+            <TabButton key={t.id} kind="type" id={t.id} name={t.name} count={t.extra ? undefined : t.courses.length} brief={t.brief} summary={t.summary}
               selected={tab === i} onPick={() => pickTab(i)} buttonRef={(el) => { tabRefs.current[i] = el; }} />,
           ])}
           {/* 수업을 관통하는 접근(사용자 지시 2026-10-27) — 과목 분류 아래 여백을 두고 같은 모양의 둘째 묶음. 좁은 화면(가로 줄)에선 이름 대신 세로선 */}
@@ -255,7 +255,7 @@ export function CourseExplorer({ types, profiles, approaches, devices }: Props) 
             const i = types.length + j;
             return (
               // 수 알약 · 작은 글씨는 붙이지 않는다(사용자 지시 2026-10-27) — 이름과 압축 설명만
-              <TabButton key={g.id} id={g.id} name={g.name} summary={g.summary}
+              <TabButton key={g.id} kind="approach" id={g.id} name={g.name} summary={g.summary}
                 selected={tab === i} onPick={() => pickTab(i)} buttonRef={(el) => { tabRefs.current[i] = el; }} />
             );
           })}
@@ -327,6 +327,8 @@ export function CourseExplorer({ types, profiles, approaches, devices }: Props) 
 }
 
 type TabProps = {
+  /** 과목 분류(type) · 수업을 관통하는 접근(approach) — 커리큘럼 들어가는 길은 과목 분류 이름만 큰 글자로 날려 보낸다(CurriculumEntry.css) */
+  kind: 'type' | 'approach';
   id: string;
   name: string;
   count?: number;
@@ -338,7 +340,7 @@ type TabProps = {
 };
 
 /** 왼쪽 세로 탭 한 칸 — 이름 + 수 알약, 고른 칸만 아래로 진행 방식 · 압축 설명이 펼쳐진다(사용자 지시 2026-10-25) */
-function TabButton({ id, name, count, brief, summary, selected, onPick, buttonRef }: TabProps) {
+function TabButton({ kind, id, name, count, brief, summary, selected, onPick, buttonRef }: TabProps) {
   return (
     <button
       ref={buttonRef}
@@ -350,6 +352,7 @@ function TabButton({ id, name, count, brief, summary, selected, onPick, buttonRe
       aria-describedby={`course-brief-${id}`}
       tabIndex={selected ? 0 : -1}
       className="course-tab"
+      data-kind={kind}
       onClick={onPick}
     >
       <span className="course-tab__name">{name}</span>

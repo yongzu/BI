@@ -80,6 +80,7 @@ export function CurriculumEntry({ types, children }: Props) {
     const stage = stageRef.current;
     const content = contentRef.current;
     if (!on || !intro || !stage || !content) return;
+    const root = content.parentElement!; // .ce
     const reel = stage.querySelector<HTMLElement>('.ce-intro__reel')!;
     const names = [...stage.querySelectorAll<HTMLElement>('.ce-intro__name')];
     const last = names.length - 1;
@@ -134,7 +135,8 @@ export function CurriculumEntry({ types, children }: Props) {
       reel.style.opacity = String(a);
       reel.style.transform = `translateY(${reelY + (1 - a) * 160}px)`;
       // 다 줄어든 뒤 실제 커리큘럼이 진해진다(탭 이름은 CSS로 끝까지 숨김 — 무대 글자가 그 자리에 있다)
-      content.style.opacity = phase === 'done' ? '' : String(easeOut(clamp01((ms - shrunk) / REVEAL_MS)));
+      // 끝나면 1로 둔다 — ''로 비우면 data-done이 React 다음 렌더에 붙기 전 한 프레임 동안 CSS(투명)로 돌아가 지직거렸다(2026-10-27)
+      content.style.opacity = phase === 'done' ? '1' : String(easeOut(clamp01((ms - shrunk) / REVEAL_MS)));
 
       // 3. 줄어들며 왼쪽으로 — 실제 탭 이름 자리로(줄마다 조금씩 늦게). 줄어드는 기준은 글자 왼쪽 가운데(CSS transform-origin)
       names.forEach((name, i) => {
@@ -170,6 +172,7 @@ export function CurriculumEntry({ types, children }: Props) {
         lock(false);
       }
       phase = 'done';
+      root.dataset.done = 'true'; // 같은 프레임에 붙인다(React의 data-done은 다음 렌더) — 탭 이름 · 무대가 한 프레임 어긋나지 않게
       render(end);
       setDone(true);
     };
@@ -189,6 +192,7 @@ export function CurriculumEntry({ types, children }: Props) {
         }
       } else if (phase === 'done' && top > vh) {
         phase = 'idle'; // 역량과 태도까지 돌아갔다 — 다음에 다시 진행
+        root.dataset.done = 'false';
         setDone(false);
       }
       const ms = phase === 'play' ? now - t0 : phase === 'done' ? end : 0;

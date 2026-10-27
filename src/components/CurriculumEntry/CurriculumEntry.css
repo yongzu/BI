@@ -39,5 +39,7 @@
    탭 이름만 끝까지 숨긴다 — 무대 글자가 그 자리로 날아가 겹친 순간 서로 바뀐다(둘 다 바로, 겹쳐 있어 티 나지 않는다) */
 .ce[data-intro='on'] .ce__content { opacity: 0; pointer-events: none; }
 .ce[data-intro='on'][data-done='true'] .ce__content { opacity: 1; pointer-events: auto; }
-.ce[data-intro='on']:not([data-done='true']) .course-tab__name { visibility: hidden; }
+.ce[data-intro='on']:not([data-done='true']) .course-tab[data-kind='type'] .course-tab__name { visibility: hidden; }
+/* 수업을 관통하는 접근 탭(Live Session · Reflection)은 날아오는 큰 글자가 없다 — 숨기지 않고 커리큘럼과 함께 진해진다.
+   예전엔 함께 숨겨 두어 끝에서 한꺼번에 툭 나타났다(사용자 제보 2026-10-27) */
 .ce[data-done='true'] .ce-intro__stage { visibility: hidden; }
