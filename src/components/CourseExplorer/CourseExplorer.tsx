@@ -50,20 +50,43 @@ export function CourseExplorer({ types, profiles, approaches, devices }: Props) 
   const panelRefs = useRef<(HTMLElement | null)[]>([]);
   const layoutRef = useRef<HTMLDivElement>(null);
 
-  // 고른 탭 자리로 막대를 옮긴다 — 넓은 화면은 왼쪽 세로 막대, 좁은 화면(탭이 가로 줄)은 아래 가로 막대
+  // 고른 탭 자리로 막대를 옮긴다 — 넓은 화면은 왼쪽 세로 막대, 좁은 화면(탭이 가로 줄)은 아래 가로 막대.
+  // 넓은 화면은 탭을 바꾸면 앞 탭의 설명이 접히고 고른 탭의 설명이 펼쳐진다. 지금 자리를 재면 막대가 아직 접히지 않은 설명만큼
+  // 아래로 갔다가 위로 올라오며 늘어났다(사용자 지시 2026-10-27 — 부자연스럽다). 그래서 설명이 다 여닫힌 뒤의 자리 · 길이를
+  // 처음부터 계산해 한 번에 간다: 위 탭들의 설명은 0으로, 고른 탭의 설명은 다 펼친 높이(scrollHeight)로
   useLayoutEffect(() => {
     const list = tabsRef.current;
     const bar = barRef.current;
     if (!list || !bar) return;
+    /** 탭 설명이 다 여닫힌 뒤까지 남은 높이 변화 */
+    const pending = (tabEl: HTMLElement, selected: boolean) => {
+      const brief = tabEl.querySelector<HTMLElement>('.course-tab__brief');
+      if (!brief) return 0;
+      const full = (brief.firstElementChild as HTMLElement | null)?.scrollHeight ?? 0;
+      return (selected ? full : 0) - brief.offsetHeight;
+    };
     const place = () => {
       const el = tabRefs.current[tab];
       if (!el) return;
       const row = getComputedStyle(list).flexDirection === 'row';
       const inset = row ? 16 : 8;
-      bar.style.setProperty('--x', `${row ? el.offsetLeft + inset : -1}px`);
-      bar.style.setProperty('--y', `${row ? el.offsetTop + el.offsetHeight - 1 : el.offsetTop + inset}px`);
-      bar.style.setProperty('--w', `${row ? el.offsetWidth - inset * 2 : 2}px`);
-      bar.style.setProperty('--h', `${row ? 2 : el.offsetHeight - inset * 2}px`);
+      if (row) {
+        bar.style.setProperty('--x', `${el.offsetLeft + inset}px`);
+        bar.style.setProperty('--y', `${el.offsetTop + el.offsetHeight - 1}px`);
+        bar.style.setProperty('--w', `${el.offsetWidth - inset * 2}px`);
+        bar.style.setProperty('--h', '2px');
+        return;
+      }
+      const above = tabRefs.current.slice(0, tab).reduce((sum, t) => sum + (t ? pending(t, false) : 0), 0);
+      const y = el.offsetTop + above + inset;
+      const h = el.offsetHeight + pending(el, true) - inset * 2;
+      // 설명이 여닫히는 동안 재면 반올림 때문에 1px씩 오락가락한다 — 그때마다 값을 바꾸면 전환이 처음부터 다시 시작돼 막대가
+      // 기어가듯 느려졌다. 2px 미만의 차이는 무시한다(글꼴 · 폭이 바뀌어 크게 달라질 때만 다시 놓는다)
+      const near = (name: string, v: number) => Math.abs(parseFloat(bar.style.getPropertyValue(name)) - v) < 2;
+      bar.style.setProperty('--x', '-1px');
+      bar.style.setProperty('--w', '2px');
+      if (!near('--y', y)) bar.style.setProperty('--y', `${y}px`);
+      if (!near('--h', h)) bar.style.setProperty('--h', `${h}px`);
     };
     place();
     const ro = new ResizeObserver(place);

@@ -57,7 +57,9 @@
   background: var(--color-text-primary);
   transform: translate(var(--x, 0), var(--y, 0));
   pointer-events: none;
-  transition: transform 560ms var(--ce-slide), width 560ms var(--ce-slide), height 560ms var(--ce-slide);
+  /* 넓은 화면(세로 막대)은 탭 설명이 여닫히는 것(.course-tab__brief 480ms)과 같은 시간 · 곡선 — 막대가 늘고 줄어드는 게 설명과 함께 간다
+     (사용자 지시 2026-10-27). 좁은 화면(가로 막대)은 예전처럼 미끄러지는 곡선(아래 미디어 쿼리) */
+  transition: transform 480ms var(--ce-ease), height 480ms var(--ce-ease);
 }
 /* v15(2026-10-23): 이름 24 → 20px — 탭(길잡이)이 수업 이름(16px)보다 훨씬 커 위계가 거꾸로였다.
    이름 아래 한글 한 줄(short)은 2026-10-24에 뺐다(사용자 지시) — 이름 + 수 알약 한 줄 */
@@ -371,6 +373,7 @@
     /* 오른쪽에 탭이 더 있으면 끝을 흐려 넘길 수 있음을 알린다(v15, CourseExplorer.tsx data-more) */
   .course-tabs[data-more='true'] { mask-image: linear-gradient(to right, #000 calc(100% - 48px), transparent); }
   .course-tabs__label { display: none; } /* 가로 줄에선 뺀다 — 탭 이름만 */
+  .course-tabs__indicator { transition: transform 560ms var(--ce-slide), width 560ms var(--ce-slide); }
   .course-tabs__divider { width: 1px; height: 12px; align-self: center; margin: 0 var(--space-8); } /* 세로선도 절반(탭 글자 높이 24 → 12) */
   .course-tabs__divider--group { display: block; height: 20px; } /* 두 묶음 사이는 조금 긴 세로선 */
   .course-tab__brief { display: none; } /* 가로 탭 안엔 펼칠 자리가 없다 — 탭 줄 아래 한 곳에 */
