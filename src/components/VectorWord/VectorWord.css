@@ -15,7 +15,9 @@
   transition: color 150ms, text-shadow 150ms;
 }
 .vw--box[data-on='true'] { --vw-ol: var(--color-text-primary); color: var(--color-bg-default); }
-.vw__svg { position: absolute; top: 0; left: 0; overflow: visible; pointer-events: none; }
+.vw__svg { position: absolute; top: 0; left: 0; max-width: none; overflow: visible; pointer-events: none; }
+/* max-width: none — 전역 svg { max-width: 100% }가 윤곽 SVG를 낱말 폭으로 눌러 윤곽이 1 ~ 2% 작게 · 위아래로 비켜 그려졌다.
+   마우스를 올리면 낱말이 살짝 움직여 보이던 원인(사용자 제보 2026-10-27) */
 .vw__outline {
   fill: none;
   stroke: transparent;

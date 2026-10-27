@@ -68,6 +68,8 @@
 .hero__atf:has(> .hero-logo) { padding-block: max(64px, 80 * var(--hs)) max(40px, 80 * var(--hs)); }
 /* Φ 마크(HeroMark, 2026-10-27)가 제목 위에 서므로 위 여백을 그만큼 덜어 첫 화면에 지원하기까지 들어오게 */
 .hero__atf:has(> .hero-mark) { padding-block: max(64px, 96 * var(--hs)) max(40px, 76 * var(--hs)); }
+/* 큰 제목 'Programs'를 뺐으므로(2026-10-27) 소개는 Φ 마크 바로 아래(마크의 아래 여백만) */
+.hero__atf:has(> .hero-mark) .hero__intro { margin-top: 0; }
 /* 제목 140은 Display 토큰 자체가 같은 식(max(44px, 140 × --hs))이라 따로 덮어쓰지 않는다(2026-10-07) */
 .hero__title { color: var(--color-text-primary); }
 
@@ -102,7 +104,6 @@
 .hero[data-intro='blur'] .hero__period { opacity: 0; filter: blur(15px); transform: translateY(10px); }
 /* v15: 상태(진하게) 위 · 지난 모집 기간(작게) 아래 */
 .hero .hero__period { display: flex; flex-direction: column; align-items: center; gap: var(--space-8); }
-.hero__status { font-weight: var(--font-weight-bold); color: var(--color-text-primary); }
 .hero__dates { font-size: var(--typo-meta-size); font-weight: var(--font-weight-regular); color: var(--color-text-tertiary); }
 .hero .apply-button {
   padding: max(13px, 16 * var(--fs)) max(28px, 35 * var(--fs));

@@ -118,10 +118,8 @@ export function ProgramsPage() {
           <div className="hero__atf">
             {/* Φ 마크: 화면 가운데에서 맞춰진 뒤 이 자리로 올라온다(사용자 지시 2026-10-27) */}
             <HeroMark />
-            {/* 제목은 'Programs' 한 단어(사용자 지시 2026-10-03). 제목 · 소개는 배경 인트로 뒤에 ScrollReveal로(2026-10-20) */}
-            <ScrollReveal as="h1" id="hero-title" containerClassName="hero__title typo-display color-primary sr-plain" {...SCROLL_REVEAL} delay={HERO_TEXT_AT}>
-              Programs
-            </ScrollReveal>
+            {/* 제목 'Programs'는 화면에서 뺐다(사용자 지시 2026-10-27 — 큰 글씨 제거). 읽기 도구용 제목으로만 남긴다 */}
+            <h1 id="hero-title" className="visually-hidden">Programs</h1>
             {/* 소개: 큰 글씨 두 줄 + 설명 한 문장 */}
             <div className="hero__intro">
               <ScrollReveal as="p" containerClassName="hero__statement typo-title color-primary sr-plain" {...SCROLL_REVEAL} delay={HERO_TEXT_AT + 0.15}>
@@ -137,9 +135,8 @@ export function ProgramsPage() {
             {/* 과정 개요 대신 지원 기간 + 지원하기 — 토스뱅크 디자인 채용 히어로를 따름(사용자 지시 2026-10-03) */}
             {/* v6: 기간 옆에 모집 상태를 글자로(파동이 기간 줄을 캔버스로 다시 그리므로 배지 면 대신 흐린 글자) */}
             <div className="hero__apply">
-              {/* v15(2026-10-23): 모집 상태를 먼저 · 진하게, 지난 모집 기간은 그 아래 보조로 — 기간이 더 눈에 띄어 지금 모집 중으로 읽혔다 */}
+              {/* v15(2026-10-23): 모집 상태를 먼저 · 진하게, 기간은 그 아래 보조로. 2026-10-27(사용자 지시): 상태('1기 모집 중')는 빼고 기간만 */}
               <Text typography="Label" className="hero__period">
-                <span className="hero__status">{applyPeriod.status}</span>
                 <span className="hero__dates">모집 기간 {applyPeriod.label}</span>
               </Text>
               <ApplyButton href={applyPeriod.href}>{applyPeriod.cta}</ApplyButton>

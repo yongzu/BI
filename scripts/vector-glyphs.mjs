@@ -66,13 +66,16 @@ function anchors(points) {
 }
 
 const out = { ascent: r(font.ascender), descent: r(-font.descender), words: {} };
+// 글자마다 따로(2026-10-27): 브라우저(가변 글꼴 · GPOS 커닝)와 이 정적 글꼴의 커닝이 달라 낱말 윤곽을 통째로 두면
+// 'To'처럼 커닝이 큰 자리에서 윤곽이 글자와 어긋났다. 글자 경로는 각자 원점(0, 기준선)에 두고, x는 기본 자리로만 적는다 —
+// 화면에서는 VectorWord가 캔버스로 잰 실제 글자 자리로 옮긴다
 for (const [word, spacing] of Object.entries(WORDS)) {
   const glyphs = font.stringToGlyphs(word);
   let x = 0;
-  const d = [];
-  const nodes = [];
+  const list = [];
   glyphs.forEach((g, i) => {
-    const path = g.getPath(x, 0, upm); // 크기 upm → 좌표가 글꼴 단위 그대로, y는 아래로 +
+    const path = g.getPath(0, 0, upm); // 크기 upm → 좌표가 글꼴 단위 그대로, y는 아래로 +
+    const d = [];
     for (const c of path.commands) {
       if (c.type === 'M') d.push(`M${r(c.x)} ${r(c.y)}`);
       else if (c.type === 'L') d.push(`L${r(c.x)} ${r(c.y)}`);
@@ -80,12 +83,14 @@ for (const [word, spacing] of Object.entries(WORDS)) {
       else if (c.type === 'C') d.push(`C${r(c.x1)} ${r(c.y1)} ${r(c.x2)} ${r(c.y2)} ${r(c.x)} ${r(c.y)}`);
       else if (c.type === 'Z') d.push('Z');
     }
+    const nodes = [];
     for (const contour of contours(path.commands)) nodes.push(...anchors(contour));
+    list.push({ x: r(x), d: d.join(''), nodes });
     const next = glyphs[i + 1];
     x += g.advanceWidth + (next ? font.getKerningValue(g, next) + spacing * upm : 0);
   });
-  out.words[word] = { width: r(x), d: d.join(''), nodes };
+  out.words[word] = { width: r(x), glyphs: list };
 }
 
 writeFileSync('src/data/vectorGlyphs.json', JSON.stringify(out));
-console.log(Object.entries(out.words).map(([w, v]) => `${w}: ${v.width}em, ${v.nodes.length} anchors`).join('\n'));
+console.log(Object.entries(out.words).map(([w, v]) => `${w}: ${v.width}em, ${v.glyphs.reduce((n, g) => n + g.nodes.length, 0)} anchors`).join('\n'));

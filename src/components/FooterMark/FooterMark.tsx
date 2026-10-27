@@ -9,7 +9,7 @@ import './FooterMark.css';
  *
  * (2026-10-27 사용자 지시로 뺐다: 글자 뒤 카드 → 파란 직사각형 → 열리는 공간 → 맨 아래에서 페이지가 들려 뒤 숫자 그래픽이 드러나는 인터랙션)
  */
-type Word = { width: number; d: string };
+type Word = { width: number; glyphs: { x: number; d: string }[] };
 const words = (glyphs as { words: Record<string, Word> }).words;
 const TEXT = ['Fundamental', 'Over', 'Tools'];
 /** 낱말 사이 띄어쓰기(em) — Pretendard 공백 폭에 자간을 더한 값에 가깝게 */
@@ -21,19 +21,22 @@ const layout = (() => {
   let maxX = -Infinity;
   let minY = Infinity;
   let maxY = -Infinity;
-  const parts = TEXT.map((name) => {
+  const parts = TEXT.flatMap((name) => {
     const w = words[name];
-    // 경로는 절대 좌표(M · L · Q · C)라 숫자가 x, y 차례로 나온다 — 잉크 상자를 잰다
-    const nums = w.d.match(/-?\d*\.?\d+/g)?.map(Number) ?? [];
-    for (let i = 0; i + 1 < nums.length; i += 2) {
-      minX = Math.min(minX, nums[i] + x);
-      maxX = Math.max(maxX, nums[i] + x);
-      minY = Math.min(minY, nums[i + 1]);
-      maxY = Math.max(maxY, nums[i + 1]);
-    }
-    const part = { name, x, d: w.d };
+    // 글자마다 원점 기준 경로(2026-10-27 — data는 글자별) — 기본 글자 자리(g.x)로 옮겨 잇는다
+    const list = w.glyphs.map((g, i) => {
+      // 경로는 절대 좌표(M · L · Q · C)라 숫자가 x, y 차례로 나온다 — 잉크 상자를 잰다
+      const nums = g.d.match(/-?\d*\.?\d+/g)?.map(Number) ?? [];
+      for (let j = 0; j + 1 < nums.length; j += 2) {
+        minX = Math.min(minX, nums[j] + x + g.x);
+        maxX = Math.max(maxX, nums[j] + x + g.x);
+        minY = Math.min(minY, nums[j + 1]);
+        maxY = Math.max(maxY, nums[j + 1]);
+      }
+      return { name: `${name}-${i}`, x: x + g.x, d: g.d };
+    });
     x += w.width + SPACE;
-    return part;
+    return list;
   });
   return { parts, box: [minX, minY, maxX - minX, maxY - minY] };
 })();

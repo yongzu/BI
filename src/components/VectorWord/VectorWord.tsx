@@ -13,8 +13,9 @@ import './VectorWord.css';
  *
  * 십자선 · 안내선 · 박스 · 좌표는 영역마다 하나인 VectorGuides가 그린다 — 낱말 · Φ 모션(PhiMotion)이 vectorHover()로 알린다.
  */
-/** nodes: [x, y, 0 = 곡선 위 점(원) | 1 = 모서리(네모)] */
-type Glyphs = { ascent: number; descent: number; words: Record<string, { width: number; d: string; nodes: number[][] }> };
+/** 글자마다: x = 기본 자리(em), d = 원점 기준 윤곽, nodes: [x, y, 0 = 곡선 위 점(원) | 1 = 모서리(네모)] */
+type Glyph = { x: number; d: string; nodes: number[][] };
+type Glyphs = { ascent: number; descent: number; words: Record<string, { width: number; glyphs: Glyph[] }> };
 const data: Glyphs = glyphs;
 
 /** 벡터 보기 대상(바운딩 박스) — null이면 끝 */
@@ -73,11 +74,17 @@ function inkRect(el: HTMLElement) {
 /**
  * boxOnly: 앵커 없이 바운딩 박스 · 안내선 — 글자는 바깥 윤곽선만 · 흰 속(여덟 방향 그림자, 본문 낱말, 사용자 지시 2026-10-23).
  * 제목 낱말은 윤곽 + 앵커까지.
+ * auto: 마우스 없이 벡터 보기를 켠다(교육 철학 제목이 커지며 낱말마다 차례로 — 사용자 지시 2026-10-27). 박스 · 안내선은 부르는 쪽이 그린다.
  */
-export function VectorWord({ word, boxOnly = false }: { word: string; boxOnly?: boolean }) {
+export function VectorWord({ word, boxOnly = false, auto = false }: { word: string; boxOnly?: boolean; auto?: boolean }) {
   const glyph = data.words[word];
   const ref = useRef<HTMLSpanElement>(null);
   const [px, setPx] = useState(0); // 1px이 몇 em인지 — 앵커 크기를 화면 px로 맞춘다. 0이면 꺼짐
+  const [autoPx, setAutoPx] = useState(0);
+  // 글자 자리(em) — 브라우저가 실제로 그린 자리에 윤곽을 둔다(사용자 지시 2026-10-27 — 마우스를 올리면 낱말이 살짝 움직여 보였다).
+  // 미리 뽑은 윤곽(정적 Pretendard Bold · kern)과 화면 글자(가변 글꼴 · GPOS 커닝)는 'To' 같은 자리의 커닝이 달라,
+  // 같은 글꼴 · 자간으로 캔버스에서 앞 글자들까지의 폭을 재 글자마다 옮긴다(em 단위라 크기가 바뀌어도 그대로)
+  const [xs, setXs] = useState<number[]>();
 
   const on = useRef(false);
   const enter = () => {
@@ -85,7 +92,7 @@ export function VectorWord({ word, boxOnly = false }: { word: string; boxOnly?: 
     on.current = true;
     setPx(1 / parseFloat(getComputedStyle(ref.current).fontSize));
     // 제목 낱말은 미리 뽑은 윤곽의 상자 그대로(정확), 본문 낱말은 캔버스로 잰 잉크 상자
-    const outline = ref.current.querySelector('.vw__outline');
+    const outline = ref.current.querySelector('.vw__glyphs');
     vectorHover(outline ? outline.getBoundingClientRect() : inkRect(ref.current));
   };
   const leave = () => {
@@ -116,6 +123,31 @@ export function VectorWord({ word, boxOnly = false }: { word: string; boxOnly?: 
     };
   }, []);
 
+  useEffect(() => {
+    setAutoPx(auto && ref.current ? 1 / parseFloat(getComputedStyle(ref.current).fontSize) : 0);
+  }, [auto]);
+
+  useEffect(() => {
+    if (boxOnly || !glyph) return;
+    const align = () => {
+      const el = ref.current;
+      ctx ??= document.createElement('canvas').getContext('2d');
+      if (!el || !ctx) return;
+      const cs = getComputedStyle(el);
+      const fs = parseFloat(cs.fontSize);
+      if (!fs) return;
+      ctx.font = `${cs.fontStyle} ${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;
+      if ('letterSpacing' in ctx) ctx.letterSpacing = cs.letterSpacing;
+      const c = ctx;
+      // 글자 i의 자리 = 앞 글자들 + 이 글자까지의 폭 − 이 글자 혼자의 폭(커닝 · 자간이 들어간 앞 글자와의 간격)
+      setXs([...word].map((ch, i) => (c.measureText(word.slice(0, i + 1)).width - c.measureText(ch).width) / fs));
+    };
+    align();
+    document.fonts.ready.then(align);
+    window.addEventListener('resize', align);
+    return () => window.removeEventListener('resize', align);
+  }, [word, boxOnly, glyph]);
+
   if (!glyph && !boxOnly) return <>{word}</>;
 
   if (boxOnly) {
@@ -126,8 +158,9 @@ export function VectorWord({ word, boxOnly = false }: { word: string; boxOnly?: 
     );
   }
   const h = data.ascent + data.descent;
+  const a = px || autoPx; // 앵커 크기(마우스 · 자동 중 켜진 쪽)
   return (
-    <span ref={ref} className="vw" data-on={px > 0} onPointerEnter={enter} onPointerLeave={leave}>
+    <span ref={ref} className="vw" data-on={a > 0} onPointerEnter={enter} onPointerLeave={leave}>
       {word}
       <svg
         className="vw__svg"
@@ -135,16 +168,23 @@ export function VectorWord({ word, boxOnly = false }: { word: string; boxOnly?: 
         style={{ width: `${glyph.width}em`, height: `${h}em` }}
         aria-hidden="true"
       >
-        <path className="vw__outline" d={glyph.d} />
-        {px > 0 && (
+        <g className="vw__glyphs">
+          {glyph.glyphs.map((g, i) => (
+            <path key={i} className="vw__outline" d={g.d} transform={`translate(${xs?.[i] ?? g.x} 0)`} />
+          ))}
+        </g>
+        {a > 0 && (
           <g className="vw__anchors">
-            {glyph.nodes.map(([x, y, corner], i) =>
-              corner ? (
-                <rect key={i} x={x - 2.2 * px} y={y - 2.2 * px} width={4.4 * px} height={4.4 * px} />
-              ) : (
-                <circle key={i} cx={x} cy={y} r={2.3 * px} />
-              ),
-            )}
+            {glyph.glyphs.flatMap((g, gi) => {
+              const ox = xs?.[gi] ?? g.x;
+              return g.nodes.map(([x, y, corner], i) =>
+                corner ? (
+                  <rect key={`${gi}-${i}`} x={ox + x - 2.2 * a} y={y - 2.2 * a} width={4.4 * a} height={4.4 * a} />
+                ) : (
+                  <circle key={`${gi}-${i}`} cx={ox + x} cy={y} r={2.3 * a} />
+                ),
+              );
+            })}
           </g>
         )}
       </svg>
