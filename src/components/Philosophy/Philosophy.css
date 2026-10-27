@@ -3,7 +3,8 @@
 .philosophy { --ph-ease: cubic-bezier(0.22, 1, 0.36, 1); margin-top: -20svh; }
 /* 히어로 → 교육 철학 여백을 줄인다(사용자 지시 2026-10-27): 섹션 위 여백(--space-section, 317px)을 빼고 화면 20%만큼 히어로 아래로
    당겨 올린다 — 무대가 화면 가운데에 제목을 세우므로 여백 0이어도 히어로 버튼 아래가 반 화면쯤 비어 보였다(약 900 → 400px).
-   당겨 올린 무대 윗부분이 히어로 버튼을 덮으므로 무대는 마우스를 통과시키고 단락(벡터 낱말 호버)만 받는다 */
+   당겨 올린 무대 윗부분은 히어로 아래에 깔린다(programs.css .hero z-index) — 무대 전체가 마우스를 받아 제목 벡터 호버가 된다.
+   (잠깐 무대에 pointer-events: none을 줬다가 제목 호버가 막혔다, 사용자 제보 2026-10-27) */
 /* 길 = 큰 제목이 줄어드는 몫(--ph-intro) + 단락 수 × STEP, 화면 높이 단위 */
 .philosophy__track { position: relative; height: calc((var(--ph-intro) + var(--ph-n) * var(--ph-step)) * 100svh); }
 .philosophy__stage {
@@ -19,9 +20,7 @@
      제목은 이 글줄 폭에 꽉 차게 맞춰지고(fit), 단락도 같은 왼쪽 선에 선다 */
   padding-inline: var(--side-wide);
   overflow: hidden;
-  pointer-events: none;
 }
-.philosophy__stage .philosophy__body { pointer-events: auto; }
 
 /* ---------- 제목 아래 단락(v19: 오른쪽 Φ 모션을 뺐다 — 단락이 본문 칸을 다 쓴다) ---------- */
 /* 단락은 왼쪽 정렬, 다른 섹션 글과 같은 왼쪽 선(--side-wide)에 붙는다(사용자 지시 2026-10-27) — 아래 '역량과 태도' 제목으로

@@ -12,8 +12,8 @@ import './HeroMark.css';
  *  2막(3D) phi.design 히어로의 three.js 링(phi-hero-rings.js, 키프레임 그대로)이 마크 자세에서 깨어나 한 바퀴(5.61초 ÷ 1.5) 돌고 다시 멈춘다
  * 프레임 값 · 이징은 예제(30fps) 그대로이고, 시간(ms)으로 바꿔 requestAnimationFrame으로 그린다(Remotion 없이).
  *
- * 화면 배치(2026-10-27 앞 버전의 픽셀 Φ와 같다): 1막 · 다리는 화면 한가운데에서 크게, 3D가 돌기 시작하면 제목 위 제자리로
- * 작아지며 올라가고(--dy · FLIP), 그 뒤 소개 · 버튼이 나온다(ProgramsPage의 HERO_TEXT_AT = SETTLE_AT + MOVE_MS).
+ * 화면 배치: 1막 · 다리는 화면 한가운데에서, 3D가 돌기 시작하면 크기 그대로 소개 위 제자리로 조금 올라가고(--dy · FLIP —
+ * 사용자 지시 2026-10-27, 예전엔 크게 보였다가 작아졌다), 그 뒤 소개 · 버튼이 위에서부터 나온다(ProgramsPage의 HERO_TEXT_AT).
  * 첫 화면 맨 위에서 열었을 때만 움직인다 — 스크롤된 채 새로 고치거나 움직임 줄이기면 2D 마크로 제자리에.
  */
 
@@ -49,7 +49,7 @@ const LOOP_MS = 5610;
 const SPIN_MS = LOOP_MS / HERO_SPEED;
 /** 화면 가운데에서 제자리로 옮기기 시작하는 시각(ms) — 3D가 돌기 시작한 직후 */
 export const SETTLE_AT = F(106) + 150;
-export const MOVE_MS = 900;
+export const MOVE_MS = 800;
 const END_MS = T.handoff[0] + SPIN_MS + 100;
 
 // ---------- 이징 ----------
@@ -152,9 +152,7 @@ export function HeroMark() {
       .then(({ createPhiHero }) => {
         if (disposed) return;
         const css = parseFloat(getComputedStyle(canvas).width);
-        const scale = parseFloat(getComputedStyle(el).getPropertyValue('--scale')) || 1;
-        // 가운데에서 크게(--scale) 보일 때도 선명하게 — 캔버스 해상도를 그만큼 올린다
-        hero = createPhiHero({ canvas, size: css, pixelRatio: Math.min(3, (window.devicePixelRatio || 1) * scale) });
+        hero = createPhiHero({ canvas, size: css, pixelRatio: Math.min(2, window.devicePixelRatio || 1) });
         hero.renderAt(LOOP_MS); // 마크 자세
       })
       .catch(() => {}); // WebGL을 못 쓰면 2D 마크로 끝난다

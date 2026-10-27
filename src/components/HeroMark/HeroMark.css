@@ -1,8 +1,7 @@
-/* 히어로 Φ 로고 모션(2026-10-27, phi-motion-study 예제 Ref11의 마크 모션) — 화면 가운데에서 크게 재생된 뒤
-   제목 위 제자리로 작아지며 올라간다(HeroMark.tsx). 2D(SVG 타원 둘)와 3D(three.js 캔버스)를 같은 가운데에 겹친다. */
+/* 히어로 Φ 로고 모션(2026-10-27, phi-motion-study 예제 Ref11의 마크 모션) — 화면 가운데에서 재생된 뒤
+   크기 그대로 소개 위 제자리로 조금 올라간다(HeroMark.tsx). 2D(SVG 타원 둘)와 3D(three.js 캔버스)를 같은 가운데에 겹친다. */
 .hero-mark {
-  --mark: max(64px, 96 * var(--hs, 1px)); /* 제자리 크기 — 1440 × 1080 이상에서 96 */
-  --scale: 2.6; /* 화면 가운데에서의 배율 */
+  --mark: max(120px, 200 * var(--hs, 1px)); /* 크기 — 1440 × 1080 이상에서 200. 가운데에서도 제자리에서도 같다(사용자 지시 2026-10-27 — 줄어들지 않게) */
   position: relative;
   z-index: 1;
   width: var(--mark);
@@ -23,9 +22,9 @@
   pointer-events: none;
 }
 
-/* 1) 화면 가운데에서 크게 */
-.hero-mark[data-stage='center'] { transform: translateY(var(--dy)) scale(var(--scale)); transition: none; }
-/* 2) 제자리로 — transform을 거둬 올라가며 작아진다(전환 시간은 --move) */
+/* 1) 화면 가운데에서 */
+.hero-mark[data-stage='center'] { transform: translateY(var(--dy)); transition: none; }
+/* 2) 제자리로 — 크기 그대로 위로 조금 옮긴다(전환 시간은 --move) */
 .hero-mark[data-stage='settle'] { transform: none; }
 
 @media (prefers-reduced-motion: reduce) {
