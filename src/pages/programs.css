@@ -169,9 +169,10 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-8);
-  padding-block: var(--space-64) var(--space-96);
+  padding-block: var(--space-64) 0; /* 아래 0 — 맨 아래 'Fundamental Over Tools'가 화면 아래 끝에 붙는다(사용자 지시 2026-10-27) */
   padding-inline: var(--side-wide); /* 화면 폭 섹션 공통 양옆 여백(foundation.css) */
   border-top: 1px solid var(--color-border);
+  overflow-x: clip; /* 화면 폭에 꽉 찬 글자 · 기울어진 카드가 가로 스크롤을 만들지 않게 */
 }
 
 /* ---------- Scroll reveal ---------- */

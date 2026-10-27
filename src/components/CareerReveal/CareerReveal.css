@@ -1,4 +1,4 @@
-/* 채용 연계(2026-10-27) — toss.im/company 히어로를 뒤집은 섹션: 아래에서 떠오르는 하늘색 빛(가운데는 하양) + 토스 'Vision' 줄 형식.
+/* 채용 연계(2026-10-27) — toss.im/company 히어로를 뒤집은 섹션: 아래에서 떠오르는 하늘색 빛(가운데는 하양) + 역량과 태도와 같은 줄 목록.
    떠오른 정도(--rise, 0 – 1)는 CareerReveal.tsx가 스크롤로 정한다. Tokens only — 빛 색만 이 섹션의 값 */
 .career-reveal {
   --cr-sky: #c9e0fb; /* 토스 히어로 빛의 하늘색 */
@@ -44,31 +44,4 @@
   background: linear-gradient(to bottom, transparent, var(--color-bg-default));
 }
 
-/* ---------- 줄: 위에 가는 선, 왼쪽 칸 비움 · 오른쪽 칸(12열 중 7 – 12)에 굵은 제목 · 설명(토스 Vision 줄) ---------- */
-.career-reveal__rows { margin-top: var(--space-after-header); list-style: none; }
-.career-reveal__row {
-  display: grid;
-  grid-template-columns: var(--grid-template);
-  column-gap: var(--grid-gap);
-  padding: var(--space-40) 0 var(--space-56);
-  border-top: 1px solid var(--color-border);
-}
-.career-reveal__text { grid-column: 7 / -1; display: flex; flex-direction: column; gap: var(--space-16); }
-.career-reveal__title {
-  font-size: 1.375rem;
-  line-height: 1.4;
-  font-weight: var(--font-weight-bold);
-  letter-spacing: var(--tracking-heading);
-  color: var(--color-text-primary);
-}
-.career-reveal__body { font-size: 1.0625rem; line-height: 1.7; letter-spacing: var(--tracking-body); color: var(--color-text-secondary); word-break: keep-all; }
-.career-reveal__note { margin-top: calc(-1 * var(--space-8)); font-size: var(--typo-caption-size); line-height: 1.5; color: var(--color-text-tertiary); }
-
-@media (max-width: 900px) {
-  .career-reveal__text { grid-column: 1 / -1; }
-  .career-reveal__row { padding: var(--space-28) 0 var(--space-40); }
-}
-@media (max-width: 720px) {
-  .career-reveal__title { font-size: var(--typo-lead-size); }
-  .career-reveal__body { font-size: var(--typo-body-size); }
-}
+/* 줄 · 이미지 박스는 역량과 태도와 같은 PillarList(PillarList.css) */

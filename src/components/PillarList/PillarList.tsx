@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useId, useState } from 'react';
 import type { Pillar } from '../../data/programs';
 import { PillarArt } from './PillarArt';
 import './PillarList.css';
@@ -16,11 +16,14 @@ import './PillarList.css';
  * - 토스처럼 줄은 스크롤하면 아래에서 떠오른다(ProgramsPage revealTargets).
  * - 좁은 화면: 이미지 박스 없이 줄만, 이름 아래 설명.
  * 예전 SkillReveal(붙는 무대 · 가로로 흐르는 카드 열 장)은 이 형식으로 바뀌었다.
+ * 채용 연계도 같은 구성으로 쓴다(사용자 지시 2026-10-27) — arts로 이미지 박스 그래픽을 골라 쓰고, 줄에 각주(note)를 달 수 있다.
  */
-export type PillarGroup = { label: string; items: Pillar[] };
+export type PillarItem = Pick<Pillar, 'ko' | 'en' | 'body'> & { note?: string };
+export type PillarGroup = { label: string; items: PillarItem[] };
 
-export function PillarList({ groups }: { groups: PillarGroup[] }) {
+export function PillarList({ groups, arts }: { groups: PillarGroup[]; arts?: number[] }) {
   const [active, setActive] = useState(0);
+  const uid = useId(); // 한 페이지에 둘(역량과 태도 · 채용 연계) — 묶음 제목 id가 겹치지 않게
 
   // 묶음을 이어 센 줄 번호의 시작(고른 줄 비교용) — 역량 0–4, 태도 5–9
   const starts = groups.map((_, gi) => groups.slice(0, gi).reduce((sum, g) => sum + g.items.length, 0));
@@ -38,13 +41,13 @@ export function PillarList({ groups }: { groups: PillarGroup[] }) {
             </div>
           </div>
           {/* 이미지 박스 — 줄마다 모노톤 움직이는 그래픽 + 가운데 영문 이름(사용자 지시 2026-10-24). 고른 줄을 따라 넘어간다 */}
-          <PillarArt titles={groups.flatMap((g) => g.items.map((p) => p.en))} active={active} />
+          <PillarArt titles={groups.flatMap((g) => g.items.map((p) => p.en))} active={active} arts={arts} />
         </div>
         <div className="pillar-list__groups">
           {groups.map((g, gi) => (
-            <section key={g.label} className="pillar-group" aria-labelledby={`pillar-group-${gi}`}>
+            <section key={g.label} className="pillar-group" aria-labelledby={`${uid}-group-${gi}`}>
               {/* 보이는 제목은 왼쪽 이미지 박스 위 — 여기는 화면 읽기 프로그램용 */}
-              <h3 id={`pillar-group-${gi}`} className="visually-hidden">{g.label}</h3>
+              <h3 id={`${uid}-group-${gi}`} className="visually-hidden">{g.label}</h3>
               <ol className="pillar-group__rows">
                 {g.items.map((p, i) => {
                   const index = starts[gi] + i;
@@ -58,7 +61,10 @@ export function PillarList({ groups }: { groups: PillarGroup[] }) {
                           <span>{p.ko}</span>
                         </h4>
                       </div>
-                      <p className="pillar-row__body">{p.body}</p>
+                      <div className="pillar-row__body">
+                        <p>{p.body}</p>
+                        {p.note && <p className="pillar-row__note">{p.note}</p>}
+                      </div>
                     </li>
                   );
                 })}

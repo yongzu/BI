@@ -4,12 +4,12 @@ import { Toc, type TocItem } from '../components/Toc/Toc';
 import { AnnualTimeline } from '../components/AnnualTimeline/AnnualTimeline';
 import { CourseExplorer } from '../components/CourseExplorer/CourseExplorer';
 import { ApplyButton } from '../components/ApplyButton/ApplyButton';
-import { CareerReveal, type CareerRow } from '../components/CareerReveal/CareerReveal';
+import { CareerReveal } from '../components/CareerReveal/CareerReveal';
 import GradientASCII from '../components/GradientASCII/GradientASCII';
 import { BackToTop, SiteHeader } from '../components/SiteHeader/SiteHeader';
 import { FooterMark } from '../components/FooterMark/FooterMark';
 import { VersionLog } from '../components/VersionLog/VersionLog';
-import { PillarList } from '../components/PillarList/PillarList';
+import { PillarList, type PillarItem } from '../components/PillarList/PillarList';
 import { CurriculumEntry } from '../components/CurriculumEntry/CurriculumEntry';
 import { Philosophy } from '../components/Philosophy/Philosophy';
 import { VectorHandoff } from '../components/VectorWord/VectorHandoff';
@@ -48,7 +48,7 @@ const toc: TocItem[] = [
 /** Blocks that rise in on scroll */
 // 히어로는 첫 화면 순서(흐린 제목 → 맑아짐 → 소개 · 기간)를 따로 가지므로 떠오르는 등장에서 뺀다
 // 섹션 제목 · 리드는 ScrollReveal이 맡으므로 뺐다(2026-10-20)
-const revealTargets = ['.group-label', '.group__lead', '.annual-map', '.pillar-row', '.career-reveal__row'].join(', ');
+const revealTargets = ['.group-label', '.group__lead', '.annual-map', '.pillar-row'].join(', ');
 
 /* ------------------------------------------------------------------ */
 
@@ -71,14 +71,16 @@ function SectionHeader({ title, lead }: { title: string | string[]; lead?: strin
 
 
 /**
- * 채용 연계 — 토스 별도 채용 전형 · 우수 졸업자 입사 특전. 2026-10-27(사용자 지시): 두 단 줄 목록(v3)을 토스 'Vision' 줄 형식
- * (선 아래 오른쪽 칸에 제목 · 설명) + 아래에서 떠오르는 하늘색 빛(CareerReveal — toss.im/company 히어로를 뒤집음)으로 바꿨다.
- * 보조 문구(2027년 8월 · Benefit)는 설명에 이미 있거나 쓰지 않아 뺐다. v7 ~ v14는 카드 두 장이었다
+ * 채용 연계 — 토스 별도 채용 전형 · 우수 졸업자 입사 특전. 2026-10-27(사용자 지시): 역량과 태도와 같은 구성(PillarList)에
+ * 아래에서 떠오르는 하늘색 빛(CareerReveal — toss.im/company 히어로를 뒤집음). 영문 이름은 이미지 박스 · 줄 첫 줄에 쓴다.
+ * 이미지 박스 그래픽은 역량과 태도 것을 골라 쓴다 — 채용 전형은 06(점 격자 위를 스스로 나아감), 입사 특전은 04(조준선이 한 칸을 고름).
+ * v7 ~ v14는 카드 두 장, v3 ~ v22는 두 단 줄 목록이었다
  */
-const careerRows: CareerRow[] = [
-  { id: 'toss-hiring', title: '토스 별도 채용 전형', body: '2027년 8월, Phi 1년제 1기 졸업자를 위한 토스의 별도 채용 전형이 마련됩니다.' },
-  { id: 'toss-benefit', title: '우수 졸업자 입사 특전', body: '우수 졸업자에게는 채용 전형에 더해 별도의 입사 특전*이 제공됩니다.', note: '*채용 특전의 세부 내용은 현재 검토 중입니다.' },
+const careerItems: PillarItem[] = [
+  { en: 'Toss Hiring Track', ko: '토스 별도 채용 전형', body: '2027년 8월, Phi 1년제 1기 졸업자를 위한 토스의 별도 채용 전형이 마련됩니다.' },
+  { en: 'Graduate Benefit', ko: '우수 졸업자 입사 특전', body: '우수 졸업자에게는 채용 전형에 더해 별도의 입사 특전*이 제공됩니다.', note: '*채용 특전의 세부 내용은 현재 검토 중입니다.' },
 ];
+const careerArts = [5, 3];
 
 
 /* ------------------------------------------------------------------ */
@@ -224,7 +226,9 @@ export function ProgramsPage() {
         {/* ---------- 채용 연계 — 맨 아래(사용자 지시 2026-10-19). 2026-10-27: 다른 섹션처럼 제목 · 리드, 아래에서 하늘색 빛이 떠오른다 ---------- */}
         <CareerReveal
           header={<SectionHeader title="채용 연계" lead="Phi의 1년제 프로그램 졸업자들은 토스의 별도 채용 전형에 지원할 수 있습니다." />}
-          rows={careerRows}
+          label="with Toss"
+          items={careerItems}
+          arts={careerArts}
         />
 
         </div>
@@ -237,10 +241,10 @@ export function ProgramsPage() {
         <Text typography="Label" color="tertiary">
           평일 10:00 - 18:00 (점심시간 13:00 - 14:00) · © 2026 Phi Institute of Design · <a href="#system" className="link">Design System</a>
         </Text>
-        {/* 푸터 폭에 꽉 찬 'Fundamental Over Tools'(사용자 지시 2026-10-24) */}
-        <FooterMark />
-        {/* 버전 기록은 맨 아래로 되살렸다 — 이전 버전도 볼 수 있게(v21, 사용자 지시 2026-10-24) */}
+        {/* 버전 기록 — 이전 버전도 볼 수 있게(v21, 사용자 지시 2026-10-24). 2026-10-27: 'Fundamental Over Tools'가 맨 아래로 가며 그 위로 */}
         <VersionLog />
+        {/* 맨 아래, 여백 없이 화면 폭에 꽉 찬 'Fundamental Over Tools' — 글자 뒤에서 카드가 떠올랐다 내려간다(사용자 지시 2026-10-27) */}
+        <FooterMark />
       </footer>
     </>
   );

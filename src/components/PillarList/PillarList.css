@@ -70,6 +70,7 @@
 .pillar-row__name { font-size: 1.375rem; line-height: 1.45; letter-spacing: var(--tracking-body); }
 .pillar-row__num { flex: none; width: var(--pl-num); font-weight: 600; font-variant-numeric: tabular-nums; } /* 토스 번호 굵기 600 */
 .pillar-row__name { display: flex; flex-direction: column; font-weight: var(--font-weight-bold); }
+.pillar-row__note { margin-top: var(--space-8); font-size: var(--typo-caption-size); line-height: 1.5; } /* 각주(채용 연계) — 색은 줄과 함께 바뀐다 */
 .pillar-row__body { padding-top: 0.15em; font-size: 1.0625rem; line-height: 1.65; letter-spacing: var(--tracking-body); } /* 위 0.15em — 이름(22) 첫 줄과 글자 높이를 맞춘다 */
 
 /* 색(토스 · 사용자 지시 2026-10-24): 기본은 회색, 고른 줄 · 마우스를 올린 줄은 검정. 번호는 검정 대신 진한 회색 */
