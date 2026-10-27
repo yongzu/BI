@@ -50,6 +50,15 @@
   padding-bottom: var(--space-48);
   cursor: default;
 }
+/* 넓은 화면의 역량과 태도(사용자 지시 2026-10-27 — 이미지 박스와 목록 사이를 넓게): 묶음 이름 · 번호 · 이름은 오른쪽으로 --pl-shift(70),
+   설명 칸은 제자리 — 설명 폭을 줄 목록(컨테이너) 폭의 43%로 두어 오른쪽에 붙이고, 늘어난 여백은 이름 칸이 내준다 */
+@media (min-width: 901px) {
+  .pillar-list:not(.pillar-list--flat) { --pl-shift: 70px; }
+  .pillar-list:not(.pillar-list--flat) .pillar-row {
+    grid-template-columns: calc(var(--pl-group) + var(--pl-shift)) var(--pl-num) minmax(0, 1fr) 43cqw;
+  }
+  .pillar-list:not(.pillar-list--flat) .pillar-row__group { padding-left: var(--pl-shift); }
+}
 /* 두 묶음 사이(역량 05 → 태도 01)는 띄운다(사용자 지시 2026-10-24). 둘째 묶음 첫 줄 위에도 선 */
 .pillar-group + .pillar-group { margin-top: var(--space-56); }
 /* 구분선은 번호 칸부터(사용자 지시 2026-10-27 — 묶음 이름 칸까지 오지 않게). 줄 자체는 묶음 이름 칸까지라 그 자리에 올려도 줄이 골라진다 */
@@ -64,7 +73,7 @@
   position: absolute;
   top: 0;
   right: 0;
-  left: calc(var(--pl-group) + var(--pl-gap));
+  left: calc(var(--pl-group) + var(--pl-shift, 0px) + var(--pl-gap));
   height: 1px;
   background: var(--color-border);
 }
@@ -75,9 +84,10 @@
 /* 줄 칸이 좁을 때(본문 840px — 섹션 폭 200px 줄임, 사용자 지시 2026-10-27): 설명을 이름 아래로 내리고 묶음 이름 칸을 줄인다.
    묶음 이름 | 번호 | 이름 · 그 아래 설명. 넓은 화면(1920 등)은 위 네 칸 그대로 */
 @media (min-width: 901px) {
-  @container (max-width: 720px) {
+  @container (max-width: 960px) { /* 720 → 960: 설명 43%를 빼고도 이름 칸이 남도록 */
     .pillar-list:not(.pillar-list--flat) .pillar-row {
       --pl-group: 112px; /* 컨테이너(줄 목록) 안쪽에만 닿으므로 줄에 둔다 — 구분선(::before)도 이 값을 쓴다 */
+      --pl-shift: 0px;
       grid-template-columns: var(--pl-group) var(--pl-num) minmax(0, 1fr);
       row-gap: var(--space-12);
     }
