@@ -44,8 +44,11 @@ type Props = { title: string; paragraphs: string[][] };
 const STEP = 1.2;
 /** 제목이 커지는 스크롤 길이(화면 높이 배수) */
 const INTRO = 1;
-/** 처음 제목 폭(px) — 아주 작은 점에서 시작한다(사용자 지시 2026-10-27). 이전: 화면 폭 × 0.3 → 0.12(최소 120px) */
-const DOT_PX = 6;
+/** 처음 제목 폭 = 화면 폭 × 이 값 — v21: 1.7(화면을 넘친다) → 0.3(가운데 작게, 사용자 지시 2026-10-24) → 0.12(더 작게, 2026-10-27).
+ *  같은 날 6px 점에서 시작하게 했다가 되돌렸다(사용자 지시) */
+const INTRO_WIDTH = 0.12;
+/** 처음 제목 폭의 하한(px) — 좁은 화면에서 아주 작아지지 않게 */
+const INTRO_MIN = 120;
 /** 몰입 길 중 가운데에서 커지는 몫 — 나머지는 제자리(위)로 올라가며 단락이 페이드인 */
 const GROW = 0.6;
 /** 지금 단락 자리에서 이만큼(px) 넘게 움직이고 멈추면 다음 · 이전 단락으로 넘긴다 */
@@ -134,7 +137,7 @@ export function Philosophy({ title, paragraphs }: Props) {
       if (!reduced) {
         const w = title.offsetWidth;
         const h = title.offsetHeight;
-        const s0 = Math.min(1, DOT_PX / w);
+        const s0 = Math.max(window.innerWidth * INTRO_WIDTH, Math.min(w, INTRO_MIN)) / w;
         const sc = s0 ** (1 - eA); // 크기는 비율로 커져야 고르게 보인다
         // 제목은 가로 가운데에 놓여 있어(CSS) 가운데를 축으로 키우면 된다. 세로는 ① 화면 가운데 → ② 제자리(무대가 붙어 있어 무대 위 = 화면 위)
         const ty = (vh / 2 - (title.offsetTop + h / 2)) * (1 - eB);
