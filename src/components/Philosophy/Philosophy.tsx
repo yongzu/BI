@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
+import { Fragment, useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import ScrollReveal from '../ScrollReveal/ScrollReveal';
 import { isNavigating, lockScrollInput, scrollToTarget } from '../../smoothScroll';
 import { VectorGuides, VectorWord, setVectorZone } from '../VectorWord/VectorWord';
@@ -75,7 +75,9 @@ export function Philosophy({ title, paragraphs }: Props) {
   const [shown, setShown] = useState(false);
   const [at, setAt] = useState(0); // 지금 단락
 
-  useEffect(() => {
+  // 그리기 전에(useLayoutEffect) 첫 장면을 잡는다(사용자 제보 2026-10-27 — 처음 들어오면 제목이 꽉 찬 크기로 잠깐 보였다가 작아졌다):
+  // 예전엔 useEffect + 다음 프레임(rAF)에서 처음 그려, 그 사이 한 프레임은 CSS 그대로(꽉 찬 제목 · 보이는 단락)였다
+  useLayoutEffect(() => {
     const root = ref.current;
     if (!root) return;
     const track = root.querySelector<HTMLElement>('.philosophy__track')!;
@@ -286,7 +288,9 @@ export function Philosophy({ title, paragraphs }: Props) {
     // 첫 단락 자리를 '맞춘 자리'로 적어 두고는 실제로는 움직이지 않아, 첫 스크롤에 '위로 올라갔다'로 읽혀 맨 처음으로 되돌아갔다)
     const onResize = () => {
       fit();
-      if (!raf) raf = requestAnimationFrame(tick);
+      // 재고 바로 그린다 — 글꼴 크기가 바뀐 프레임에 옛 배율이 한 번 보이지 않게
+      cancelAnimationFrame(raf);
+      tick();
     };
     // 글자가 다 나오기 전엔 아래로 못 내려간다(사용자 지시 2026-10-27) — 무대가 붙어 있고 단락이 드러나는 중(hold)이면
     // 아래로 가는 휠 · 터치 · 키만 막는다(위로는 된다). Lenis보다 먼저(capture) 받아 막는다
