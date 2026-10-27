@@ -74,7 +74,7 @@ function SectionHeader({ title, lead }: { title: string | string[]; lead?: strin
 /**
  * 채용 연계 — 토스 별도 채용 전형 · 우수 졸업자 입사 특전. 2026-10-27(사용자 지시): 역량과 태도와 같은 구성(PillarList)에
  * 아래에서 떠오르는 하늘색 빛(CareerReveal — toss.im/company 히어로를 뒤집음). 영문 이름은 이미지 박스 · 줄 첫 줄에 쓴다.
- * 이미지 박스엔 토스 심볼 모션 영상(흰 바탕, CareerReveal).
+ * 이미지 박스 · 묶음 이름 없이 줄만(2026-10-27).
  * v7 ~ v14는 카드 두 장, v3 ~ v22는 두 단 줄 목록이었다
  */
 const careerItems: PillarItem[] = [
@@ -207,7 +207,6 @@ export function ProgramsPage() {
         {/* ---------- 채용 연계 — 맨 아래(사용자 지시 2026-10-19). 2026-10-27: 다른 섹션처럼 제목 · 리드, 아래에서 하늘색 빛이 떠오른다 ---------- */}
         <CareerReveal
           header={<SectionHeader title="채용 연계" lead="Phi의 1년제 프로그램 졸업자들은 토스의 별도 채용 전형에 지원할 수 있습니다." />}
-          label="with Toss"
           items={careerItems}
         />
 

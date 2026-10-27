@@ -65,6 +65,9 @@
   background: var(--color-border);
 }
 .pillar-row__head { display: contents; } /* 묶음 이름 · 번호 · 이름이 줄의 칸에 바로 놓인다(좁은 화면은 한 덩어리) */
+/* 이미지 박스 · 묶음 이름 칸이 없는 목록(채용 연계, 2026-10-27) — 번호 | 이름 | 설명, 선은 줄 폭 전체 */
+.pillar-list--flat .pillar-row { grid-template-columns: var(--pl-num) minmax(190px, 0.8fr) minmax(0, 1fr); }
+.pillar-list--flat .pillar-row::before { left: 0; }
 /* 묶음 이름(사용자 지시 2026-10-27 — 이미지 박스 위에서 첫 줄 01 왼쪽으로): 이름과 같은 크기 · 굵기, 늘 진하게. 아래 작은 글(Phi OS) */
 .pillar-row__group {
   flex: none;

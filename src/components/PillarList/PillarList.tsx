@@ -1,4 +1,4 @@
-import { useId, useState, type ReactNode } from 'react';
+import { useId, useState } from 'react';
 import type { Pillar } from '../../data/programs';
 import { PillarArt } from './PillarArt';
 import './PillarList.css';
@@ -16,30 +16,28 @@ import './PillarList.css';
  * - 토스처럼 줄은 스크롤하면 아래에서 떠오른다(ProgramsPage revealTargets).
  * - 좁은 화면: 이미지 박스 없이 줄만, 이름 아래 설명.
  * 예전 SkillReveal(붙는 무대 · 가로로 흐르는 카드 열 장)은 이 형식으로 바뀌었다.
- * 채용 연계도 같은 구성으로 쓴다(사용자 지시 2026-10-27) — 줄에 각주(note)를 달 수 있고, 이미지 박스엔 그래픽 대신
- * media(흰 바탕 박스 안에 영상 등 — 고른 줄과 상관없이 그대로)를 넣을 수 있다.
+ * 채용 연계도 같은 줄 형식으로 쓴다(사용자 지시 2026-10-27) — 줄에 각주(note)를 달 수 있고, flat이면 이미지 박스와 묶음 이름 칸 없이
+ * 번호 | 이름 | 설명 줄만(채용 연계 — 토스 영상 박스 · 'with Toss'는 뺐다).
  */
 export type PillarItem = Pick<Pillar, 'ko' | 'en' | 'body'> & { note?: string };
 /** label: 묶음 이름(첫 줄 01 왼쪽에 굵게) · sub: 그 아래 작은 글(태도의 'Phi OS') */
 export type PillarGroup = { label: string; sub?: string; items: PillarItem[] };
 
-export function PillarList({ groups, media }: { groups: PillarGroup[]; media?: ReactNode }) {
+export function PillarList({ groups, flat = false }: { groups: PillarGroup[]; flat?: boolean }) {
   const [active, setActive] = useState(0);
   const uid = useId(); // 한 페이지에 둘(역량과 태도 · 채용 연계) — 묶음 제목 id가 겹치지 않게
 
   // 묶음을 이어 센 줄 번호의 시작(고른 줄 비교용) — 역량 0–4, 태도 5–9
   const starts = groups.map((_, gi) => groups.slice(0, gi).reduce((sum, g) => sum + g.items.length, 0));
   return (
-    <div className="pillar-list">
+    <div className={flat ? 'pillar-list pillar-list--flat' : 'pillar-list'}>
       <div className="pillar-list__rule" aria-hidden="true" />
       <div className="pillar-list__body">
-        <div className="pillar-list__side">
+        {!flat && <div className="pillar-list__side">
           {/* 묶음 이름은 이미지 박스 위(2026-10-24)에서 각 묶음 첫 줄 01 왼쪽으로 옮겼다(사용자 지시 2026-10-27) */}
           {/* 이미지 박스 — 줄마다 모노톤 움직이는 그래픽 + 가운데 영문 이름(사용자 지시 2026-10-24). 고른 줄을 따라 넘어간다 */}
-          {media
-            ? <div className="pa-box pa-box--media" aria-hidden="true">{media}</div>
-            : <PillarArt titles={groups.flatMap((g) => g.items.map((p) => p.en))} active={active} />}
-        </div>
+          <PillarArt titles={groups.flatMap((g) => g.items.map((p) => p.en))} active={active} />
+        </div>}
         <div className="pillar-list__groups">
           {groups.map((g, gi) => (
             <section key={g.label} className="pillar-group" aria-labelledby={`${uid}-group-${gi}`}>
@@ -53,9 +51,11 @@ export function PillarList({ groups, media }: { groups: PillarGroup[]; media?: R
                     <li key={p.en} className="pillar-row" data-active={active === index} onMouseEnter={() => setActive(index)}>
                       <div className="pillar-row__head">
                         {/* 묶음 이름 칸 — 첫 줄에만 글, 나머지 줄은 같은 폭으로 비워 번호 · 이름이 한 선에 선다 */}
-                        <span className="pillar-row__group" aria-hidden="true">
-                          {i === 0 && <>{g.label}{g.sub && <small>{g.sub}</small>}</>}
-                        </span>
+                        {!flat && (
+                          <span className="pillar-row__group" aria-hidden="true">
+                            {i === 0 && <>{g.label}{g.sub && <small>{g.sub}</small>}</>}
+                          </span>
+                        )}
                         <span className="pillar-row__num" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
                         <h4 className="pillar-row__name">
                           <span lang="en">{p.en}</span>
