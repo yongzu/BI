@@ -48,7 +48,7 @@ const toc: TocItem[] = [
 /** Blocks that rise in on scroll */
 // 히어로는 첫 화면 순서(흐린 제목 → 맑아짐 → 소개 · 기간)를 따로 가지므로 떠오르는 등장에서 뺀다
 // 섹션 제목 · 리드는 ScrollReveal이 맡으므로 뺐다(2026-10-20)
-const revealTargets = ['.group-label', '.group__lead', '.annual-map', '.pillar-row'].join(', ');
+const revealTargets = ['.group-label', '.group__lead', '.annual-map', '.pillar-row', '.career-reveal__row'].join(', ');
 
 /* ------------------------------------------------------------------ */
 
@@ -71,12 +71,13 @@ function SectionHeader({ title, lead }: { title: string | string[]; lead?: strin
 
 
 /**
- * 채용 연계 — 토스 별도 채용 전형 · 우수 졸업자 입사 특전. 2026-10-27(사용자 지시): 두 단 줄 목록(v3)을 아래에서 푸른 원이 떠오르는
- * 무대(CareerReveal — toss.im/company 히어로를 뒤집음)로 바꿨다. v7 ~ v14는 카드 두 장이었다
+ * 채용 연계 — 토스 별도 채용 전형 · 우수 졸업자 입사 특전. 2026-10-27(사용자 지시): 두 단 줄 목록(v3)을 토스 'Vision' 줄 형식
+ * (선 아래 오른쪽 칸에 제목 · 설명) + 아래에서 떠오르는 하늘색 빛(CareerReveal — toss.im/company 히어로를 뒤집음)으로 바꿨다.
+ * 보조 문구(2027년 8월 · Benefit)는 설명에 이미 있거나 쓰지 않아 뺐다. v7 ~ v14는 카드 두 장이었다
  */
 const careerRows: CareerRow[] = [
-  { id: 'toss-hiring', title: '토스 별도 채용 전형', sub: '2027년 8월', body: '2027년 8월, Phi 1년제 1기 졸업자를 위한 토스의 별도 채용 전형이 마련됩니다.' },
-  { id: 'toss-benefit', title: '우수 졸업자 입사 특전', sub: 'Benefit', body: '우수 졸업자에게는 채용 전형에 더해 별도의 입사 특전*이 제공됩니다.', note: '*채용 특전의 세부 내용은 현재 검토 중입니다.' },
+  { id: 'toss-hiring', title: '토스 별도 채용 전형', body: '2027년 8월, Phi 1년제 1기 졸업자를 위한 토스의 별도 채용 전형이 마련됩니다.' },
+  { id: 'toss-benefit', title: '우수 졸업자 입사 특전', body: '우수 졸업자에게는 채용 전형에 더해 별도의 입사 특전*이 제공됩니다.', note: '*채용 특전의 세부 내용은 현재 검토 중입니다.' },
 ];
 
 
@@ -220,11 +221,9 @@ export function ProgramsPage() {
           <AnnualTimeline stages={stages} />
         </section>
 
-        {/* ---------- 채용 연계 — 맨 아래(사용자 지시 2026-10-19). 2026-10-27: 아래에서 흐린 푸른 원이 떠오르며 토스로 이어진다는 걸 강조하는 무대 ---------- */}
+        {/* ---------- 채용 연계 — 맨 아래(사용자 지시 2026-10-19). 2026-10-27: 다른 섹션처럼 제목 · 리드, 아래에서 하늘색 빛이 떠오른다 ---------- */}
         <CareerReveal
-          eyebrow="채용 연계 · with Toss"
-          statement={<><span>Phi를 마치면,</span><span><span className="career-reveal__accent">토스</span>로 가는 길이 열립니다.</span></>}
-          lead="Phi의 1년제 프로그램 졸업자들은 토스의 별도 채용 전형에 지원할 수 있습니다."
+          header={<SectionHeader title="채용 연계" lead="Phi의 1년제 프로그램 졸업자들은 토스의 별도 채용 전형에 지원할 수 있습니다." />}
           rows={careerRows}
         />
 

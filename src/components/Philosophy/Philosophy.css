@@ -12,14 +12,16 @@
   align-items: center; /* v21: 제목 · 단락 가운데 정렬(사용자 지시 2026-10-24) — 왼쪽 정렬이던 것 */
   gap: var(--space-48);
   height: 100svh;
-  padding-inline: var(--gutter); /* v21: 제목이 화면 폭에 꽉 차게 --side-wide → --gutter(사용자 지시 2026-10-24) */
+  /* 다른 섹션과 같은 폭(사용자 지시 2026-10-27) — v21의 --gutter(화면 폭에 꽉 참)를 --side-wide로 되돌렸다.
+     제목은 이 글줄 폭에 꽉 차게 맞춰지고(fit), 단락도 같은 왼쪽 선에 선다 */
+  padding-inline: var(--side-wide);
   overflow: hidden;
 }
 
 /* ---------- 제목 아래 단락(v19: 오른쪽 Φ 모션을 뺐다 — 단락이 본문 칸을 다 쓴다) ---------- */
 /* 단락은 왼쪽 정렬, 다른 섹션 글과 같은 왼쪽 선(--side-wide)에 붙는다(사용자 지시 2026-10-27) — 아래 '역량과 태도' 제목으로
-   세로로 곧장 이어진다. 무대 양옆 여백은 제목 때문에 --gutter라 그 차이만큼 더 들인다 */
-.philosophy__body { width: 100%; padding-left: max(0px, calc(var(--side-wide) - var(--gutter))); }
+   세로로 곧장 이어진다 */
+.philosophy__body { width: 100%; }
 
 /* ---------- 큰 제목: 본문보다 큰 글(Apple typography-headline-super 자리). 잉크 단색(사용자 지시 2026-10-23 — 그라데이션 뺌) ---------- */
 .philosophy__title {

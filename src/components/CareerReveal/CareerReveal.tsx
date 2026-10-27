@@ -2,44 +2,37 @@ import { useEffect, useRef, type ReactNode } from 'react';
 import './CareerReveal.css';
 
 /**
- * 채용 연계(사용자 지시 2026-10-27) — toss.im/company 히어로를 뒤집은 무대.
- * 토스 히어로는 위에서 비치는 푸른 빛이라면, 여기선 그라디언트로 흐린 푸른 원이 화면 아래에서 떠오른다(해돋이처럼).
- * 원이 오르는 동안 큰 문장(토스로 이어진다)이 떠오르고, 원 안쪽(아래)에 채용 전형 · 입사 특전 두 줄이 흰 글로 나타난다.
+ * 채용 연계(사용자 지시 2026-10-27) — toss.im/company 히어로를 뒤집은 섹션.
+ * 토스 히어로는 위에서 하늘색 빛 고리가 비치고 가운데는 페이지처럼 하얗게 퍼진다. 여기선 그 빛이 아래에서 떠오른다.
  *
- * - 길(.career-reveal__track)에 화면 높이 무대가 붙는다. 진행 p는 길 맨 위가 화면 아래에 닿을 때 0 → 길 맨 아래가 화면 아래에 닿을 때 1.
- *   스크롤 자리에 묶여 있어 되돌리면 원이 다시 가라앉는다.
- * - 단계(p): 원 0.12 – 0.62 · 큰 문장 0.3 – 0.55 · 리드 0.42 – 0.62 · 두 줄 0.58 – 0.82(줄마다 조금 늦게). 나머지는 머묾.
- *   값은 CSS 변수(--rise · --say · --lead · --rows)로 넘기고 모양은 CSS가 정한다.
- * - 움직임 줄이기: 붙는 무대 없이 다 드러난 모습(CSS).
+ * - 구성은 다른 섹션과 같다: 섹션 제목 · 리드(header), 아래에 줄 둘. 줄은 토스 'Vision' 줄 형식 — 위에 가는 선,
+ *   왼쪽 칸은 비우고(점 · 라벨은 쓰지 않는다, 사용자 지시) 오른쪽 칸에 굵은 제목 · 설명.
+ * - 빛: 섹션 맨 아래를 가운데로 둔 넓은 타원 — 가운데 하양, 둘레 하늘색, 바깥 투명. 섹션이 화면에 들어오는 만큼(진행 --rise)
+ *   아래에서 떠오르며 진해진다. 스크롤 자리에 묶여 있어 되돌리면 가라앉는다. 무대를 붙잡지는 않는다(글이 잘리지 않게).
+ * - 움직임 줄이기: 떠오른 모습 그대로.
  */
-export type CareerRow = { id: string; title: string; sub: string; body: string; note?: string };
+export type CareerRow = { id: string; title: string; body: string; note?: string };
 
-type Props = { eyebrow: string; statement: ReactNode; lead: string; rows: CareerRow[] };
+type Props = { header: ReactNode; rows: CareerRow[] };
 
 const clamp01 = (x: number) => Math.min(1, Math.max(0, x));
 const easeOut = (t: number) => 1 - (1 - t) ** 3;
-/** p의 [a, b] 구간을 0 – 1로(끝이 부드럽게) */
-const span = (p: number, a: number, b: number) => easeOut(clamp01((p - a) / (b - a)));
 
-export function CareerReveal({ eyebrow, statement, lead, rows }: Props) {
+export function CareerReveal({ header, rows }: Props) {
   const ref = useRef<HTMLElement>(null);
 
   useEffect(() => {
     const root = ref.current;
     if (!root) return;
-    const track = root.querySelector<HTMLElement>('.career-reveal__track')!;
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
     let raf = 0;
     const tick = () => {
       raf = 0;
-      const r = track.getBoundingClientRect();
+      const r = root.getBoundingClientRect();
       const vh = window.innerHeight;
-      const p = reduced.matches ? 1 : clamp01((vh - r.top) / r.height);
-      root.style.setProperty('--rise', span(p, 0.12, 0.62).toFixed(4));
-      root.style.setProperty('--say', span(p, 0.3, 0.55).toFixed(4));
-      root.style.setProperty('--lead', span(p, 0.42, 0.62).toFixed(4));
-      root.style.setProperty('--rows', span(p, 0.58, 0.78).toFixed(4));
-      root.style.setProperty('--rows2', span(p, 0.64, 0.84).toFixed(4));
+      // 섹션 맨 아래가 화면 아래 1.4배 자리에 있을 때 0 → 화면 60% 높이에 오면 1
+      const p = reduced.matches ? 1 : clamp01((vh * 1.4 - r.bottom) / (vh * 0.8));
+      root.style.setProperty('--rise', easeOut(p).toFixed(4));
     };
     const onScroll = () => { if (!raf) raf = requestAnimationFrame(tick); };
     tick();
@@ -55,34 +48,23 @@ export function CareerReveal({ eyebrow, statement, lead, rows }: Props) {
   }, []);
 
   return (
-    <section ref={ref} id="career" className="career-reveal" aria-labelledby="career-title">
-      <div className="career-reveal__track">
-        <div className="career-reveal__stage">
-          {/* 아래에서 떠오르는 흐린 푸른 원 — 두 겹(넓고 옅은 빛 + 가운데 짙은 원)으로 그라디언트 깊이를 낸다 */}
-          <div className="career-reveal__orb" aria-hidden="true">
-            <span className="career-reveal__glow" />
-            <span className="career-reveal__core" />
-          </div>
-          <div className="career-reveal__head">
-            <h2 id="career-title" className="career-reveal__eyebrow">{eyebrow}</h2>
-            <p className="career-reveal__statement">{statement}</p>
-            <p className="career-reveal__lead">{lead}</p>
-          </div>
-          <ol className="career-reveal__rows">
-            {rows.map((r, i) => (
-              <li key={r.id} className="career-reveal__row" style={{ '--k': `var(--rows${i ? '2' : ''})` } as React.CSSProperties}>
-                <span className="career-reveal__num" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
-                <h3 className="career-reveal__title">
-                  {r.title}
-                  <span className="career-reveal__sub">{r.sub}</span>
-                </h3>
-                <p className="career-reveal__body">{r.body}</p>
-                {r.note && <p className="career-reveal__note">{r.note}</p>}
-              </li>
-            ))}
-          </ol>
-        </div>
+    <section ref={ref} id="career" className="section section--wide section--last career-reveal">
+      {/* 아래에서 떠오르는 빛 — 가운데 하양 · 둘레 하늘색 */}
+      <div className="career-reveal__sky" aria-hidden="true">
+        <span className="career-reveal__halo" />
       </div>
+      {header}
+      <ol className="career-reveal__rows">
+        {rows.map((r) => (
+          <li key={r.id} className="career-reveal__row">
+            <div className="career-reveal__text">
+              <h3 className="career-reveal__title">{r.title}</h3>
+              <p className="career-reveal__body">{r.body}</p>
+              {r.note && <p className="career-reveal__note">{r.note}</p>}
+            </div>
+          </li>
+        ))}
+      </ol>
     </section>
   );
 }
