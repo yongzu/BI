@@ -1,14 +1,19 @@
 /* 역량과 태도(2026-10-24) — toss.im/company Culture 형식: 왼쪽 붙는 이미지 박스 · 오른쪽 번호 · 이름 | 설명 줄. Tokens only.
-   간격은 토스 CSS 값(.dcrv6q2 · q5 · q6 · qa · qb): 두 칸 위 32 · 목록 위 56 · 줄 아래 92 · 둘째 줄부터 선 + 24 · 번호 칸 52 · 간격 24 */
+   간격은 처음엔 토스 CSS 값(두 칸 위 32 · 목록 위 56 · 줄 아래 92 · 둘째 줄부터 선 + 24)이었다. 우리 줄은 토스보다 넓은 화면 폭이라
+   같은 여백이면 빈 곳이 많았다 — 글을 키우고 여백을 줄였다(사용자 지시 2026-10-27): 머리글 아래 56 · 두 칸 위 24 · 목록 위 28 ·
+   줄 아래 48 · 둘째 줄부터 선 + 20 */
 .pillar-list {
   --pl-num: 52px; /* 번호 칸 폭 */
   --pl-gap: var(--space-24);
-  --pl-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  /* 넘어가는 곡선(사용자 지시 2026-10-27): 바로 출발해 짧게 서는 ease-out — 예전 ease-in-out(0.65, 0, 0.35, 1) 800ms는
+     처음이 느려 마우스를 옮긴 뒤 한 박자 늦게 움직이는 것처럼 보였다 */
+  --pl-ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --pl-move: 420ms;
 }
-.section-header + .pillar-list { margin-top: var(--space-after-header); }
-/* 글자 크기는 토스 Culture에 맞춘다(사용자 지시 2026-10-24): 섹션 제목 40/56(1440 이상, 좁으면 28까지 줄어든다) ·
-   번호 · 이름 20/29.6 · 설명 16/25.6. 묶음 제목(이미지 박스 위)은 Title(24) */
-.section-header:has(+ .pillar-list) .section-header__title { font-size: clamp(1.75rem, 2.778vw, 2.5rem); line-height: 1.4; }
+.section-header + .pillar-list { margin-top: var(--space-56); }
+/* 글자 크기(사용자 지시 2026-10-27, 토스 Culture 값에서 조금씩 키움): 섹션 제목 40 → 46 · 번호 · 이름 20 → 22 · 설명 16 → 17.
+   묶음 제목(이미지 박스 위)은 Title(24) */
+.section-header:has(+ .pillar-list) .section-header__title { font-size: clamp(1.75rem, 3.2vw, 2.875rem); line-height: 1.35; }
 
 .pillar-list__rule { height: 1px; background: var(--color-border); }
 
@@ -18,22 +23,23 @@
   grid-template-columns: var(--grid-template);
   column-gap: var(--grid-gap);
   align-items: start;
-  padding-top: var(--space-32);
+  padding-top: var(--space-24);
 }
+/* 이미지 박스를 키우려고(사용자 지시 2026-10-27) 왼쪽 칸 3 → 4열 — 3열(1440에서 230px)에 묶여 240도 다 쓰지 못했다 */
 .pillar-list__side {
-  grid-column: span 3;
+  grid-column: span 4;
   position: sticky;
   top: 120px; /* 위 고정 바 아래 */
 }
-/* 이미지 박스: 토스 240 × 315(모서리 40) — 그래픽은 PillarArt.css */
+/* 이미지 박스: 토스 240 × 315(모서리 40)에서 280 × 368로 — 그래픽은 PillarArt.css */
 
-.pillar-list__groups { grid-column: 4 / -1; display: flex; flex-direction: column; min-width: 0; padding-top: var(--space-56); }
+.pillar-list__groups { grid-column: 5 / -1; display: flex; flex-direction: column; min-width: 0; padding-top: var(--space-28); }
 
 /* 묶음 제목: 이미지 박스 위(사용자 지시 2026-10-24 — 토스 'Culture' 자리, 박스와 사이 28). 고른 줄의 묶음으로 위아래로 넘어간다 */
-.pillar-list__side { display: flex; flex-direction: column; gap: 28px; }
+.pillar-list__side { display: flex; flex-direction: column; gap: var(--space-20); }
 .pillar-list__label { --pl-label-h: calc(var(--typo-title-size) * 1.3); height: var(--pl-label-h); overflow: hidden; }
 /* 한 칸 높이만큼 옮긴다 — % 로 옮기면 트랙(제목 두 칸) 높이 기준이라 둘째 묶음이 칸 밖으로 넘어가 보이지 않았다 */
-.pillar-list__label-track { transform: translateY(calc(var(--g, 0) * -1 * var(--pl-label-h))); transition: transform 600ms var(--pl-ease); }
+.pillar-list__label-track { transform: translateY(calc(var(--g, 0) * -1 * var(--pl-label-h))); transition: transform var(--pl-move) var(--pl-ease); }
 .pillar-list__label p {
   height: var(--pl-label-h);
   font-size: var(--typo-title-size);
@@ -45,30 +51,31 @@
 }
 .pillar-group__rows { display: flex; flex-direction: column; list-style: none; }
 
-/* 줄: 번호 · 이름(두 줄) | 설명 — 반반. 첫 줄 빼고 위에 구분선 + 24, 아래 92(토스) */
+/* 줄: 번호 · 이름(두 줄) | 설명. 첫 줄 빼고 위에 구분선 + 20, 아래 48.
+   이름 칸 5 : 설명 칸 7(사용자 지시 2026-10-27) — 반반이면 이름 오른쪽이 비고 설명은 좁아 줄이 길어졌다 */
 .pillar-row {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
   column-gap: var(--pl-gap);
   align-items: start;
-  padding-bottom: 92px;
+  padding-bottom: var(--space-48);
   cursor: default;
 }
 /* 두 묶음 사이(역량 05 → 태도 01)는 띄운다(사용자 지시 2026-10-24). 둘째 묶음 첫 줄 위에도 선 */
-.pillar-group + .pillar-group { margin-top: var(--space-96); }
+.pillar-group + .pillar-group { margin-top: var(--space-56); }
 .pillar-row + .pillar-row,
-.pillar-group + .pillar-group .pillar-row:first-child { padding-top: var(--space-24); border-top: 1px solid var(--color-border); }
+.pillar-group + .pillar-group .pillar-row:first-child { padding-top: var(--space-20); border-top: 1px solid var(--color-border); }
 .pillar-row__head { display: flex; gap: var(--pl-gap); }
 .pillar-row__num,
-.pillar-row__name { font-size: var(--typo-lead-size); line-height: 1.48; letter-spacing: var(--tracking-body); }
+.pillar-row__name { font-size: 1.375rem; line-height: 1.45; letter-spacing: var(--tracking-body); }
 .pillar-row__num { flex: none; width: var(--pl-num); font-weight: 600; font-variant-numeric: tabular-nums; } /* 토스 번호 굵기 600 */
 .pillar-row__name { display: flex; flex-direction: column; font-weight: var(--font-weight-bold); }
-.pillar-row__body { font-size: var(--typo-body-size); line-height: 1.6; letter-spacing: var(--tracking-body); }
+.pillar-row__body { padding-top: 0.15em; font-size: 1.0625rem; line-height: 1.65; letter-spacing: var(--tracking-body); } /* 위 0.15em — 이름(22) 첫 줄과 글자 높이를 맞춘다 */
 
 /* 색(토스 · 사용자 지시 2026-10-24): 기본은 회색, 고른 줄 · 마우스를 올린 줄은 검정. 번호는 검정 대신 진한 회색 */
 .pillar-row__num,
 .pillar-row__name,
-.pillar-row__body { color: var(--color-nav-faint); transition: color 360ms var(--pl-ease); }
+.pillar-row__body { color: var(--color-nav-faint); transition: color 160ms ease-out; } /* 360 → 160ms — 줄을 옮겨 다닐 때 회색이 늦게 따라왔다 */
 .pillar-row[data-active='true'] :is(.pillar-row__name, .pillar-row__body) { color: var(--color-text-primary); }
 .pillar-row[data-active='true'] .pillar-row__num { color: var(--color-nav); }
 @media (hover: hover) {
