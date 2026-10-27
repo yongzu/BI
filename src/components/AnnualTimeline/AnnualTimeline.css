@@ -1,5 +1,5 @@
-/* 연간 구조 — 두 칸(2026-10-27, AnnualTimeline.tsx): 왼쪽 탭 + 고른 시기의 글과 표(위에 붙음), 오른쪽 시간표 · 상자. 스크롤을 따라 탭이 넘어간다.
-   Tokens only. 열: 글 5 · 시간표 7(시간표가 600px 안팎은 되어야 시간 글자가 들어간다) */
+/* 연간 구조 — 커리큘럼처럼 왼쪽 세로 탭 · 오른쪽 내용, 스크롤을 따라 탭이 넘어간다(2026-10-27, AnnualTimeline.tsx). Tokens only.
+   열: 탭 3 · 내용 9(내용 안은 글과 표 4 : 시간표 · 상자 5 — 모두 세 칸, 2026-10-27) */
 .annual-x {
   --ax-ease: cubic-bezier(0.65, 0, 0.35, 1);
   display: grid;
@@ -8,9 +8,9 @@
   align-items: start;
 }
 
-/* ---------- 왼쪽: 탭(이름 + 표시 알약) — 고른 탭 아래 글과 표가 펼쳐진다. 세로 선 위를 막대가 미끄러진다(커리큘럼 탭과 같은 모양) ---------- */
+/* ---------- 왼쪽 탭: 이름(Title 24) + 표시 알약, 고른 탭 아래 기간. 세로 선 위를 막대가 미끄러진다(커리큘럼 탭과 같은 모양) ---------- */
 .annual-x__tabs {
-  grid-column: span 5;
+  grid-column: span 3;
   position: sticky;
   top: 56px; /* TABS_TOP(AnnualTimeline.tsx) */
   display: flex;
@@ -31,20 +31,22 @@
   pointer-events: none;
   transition: transform 480ms var(--ax-ease), height 480ms var(--ax-ease);
 }
-.annual-x__tab { padding: var(--space-12) var(--space-20); color: var(--color-text-tertiary); transition: color var(--duration) var(--ease); }
-.annual-x__tab[data-active='true'] { color: var(--color-text-primary); }
-.annual-x__tab-head {
+.annual-x__tab {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: var(--space-4) var(--space-8);
-  min-height: 24px;
+  min-height: 48px;
+  padding: var(--space-12) var(--space-20);
+  border-radius: 12px;
   text-align: left;
-  color: inherit;
+  color: var(--color-text-tertiary);
   cursor: var(--cursor-pointer);
+  transition: color var(--duration) var(--ease), background var(--duration) var(--ease);
 }
+.annual-x__tab[data-active='true'] { color: var(--color-text-primary); }
 @media (hover: hover) {
-  .annual-x__tab[data-active='false'] .annual-x__tab-head:hover { color: var(--color-text-secondary); }
+  .annual-x__tab[data-active='false']:hover { background: var(--color-bg-hover); }
 }
 .annual-x__tab-name { font-size: var(--typo-title-size); line-height: 1.2; font-weight: var(--font-weight-bold); letter-spacing: var(--tracking-heading); }
 .annual-x__tab-marker {
@@ -59,29 +61,31 @@
   transition: background var(--duration) var(--ease), color var(--duration) var(--ease);
 }
 .annual-x__tab[data-active='true'] .annual-x__tab-marker { background: var(--color-text-primary); box-shadow: none; color: var(--color-bg-default); }
-/* 고른 탭 아래 글과 표 — 높이 0 → 제 높이로 펼쳐진다(커리큘럼 탭 설명과 같은 시간 · 곡선) */
-.annual-x__tab-brief { display: grid; grid-template-rows: 0fr; transition: grid-template-rows 480ms var(--ax-ease); }
-.annual-x__tab-brief-inner { min-height: 0; overflow: hidden; opacity: 0; transition: opacity 200ms var(--ease); }
+/* 고른 탭 아래 기간 — 높이 0 → 제 높이로 펼쳐진다(커리큘럼 탭 설명과 같은 시간 · 곡선) */
+.annual-x__tab-brief { display: grid; grid-template-rows: 0fr; flex-basis: 100%; transition: grid-template-rows 480ms var(--ax-ease); }
+.annual-x__tab-brief-inner { min-height: 0; overflow: hidden; opacity: 0; font-size: var(--typo-meta-size); line-height: 1.5; color: var(--color-text-secondary); transition: opacity 200ms var(--ease); }
 .annual-x__tab[data-active='true'] .annual-x__tab-brief { grid-template-rows: 1fr; }
 .annual-x__tab[data-active='true'] .annual-x__tab-brief-inner { opacity: 1; transition: opacity 360ms var(--ease) 160ms; }
-.annual-x__tab-brief .annual-x__text { padding-top: var(--space-16); padding-bottom: var(--space-8); }
 
-/* 글과 표: 질문(굵게) · 설명 · 기간과 사실 */
-.annual-x__text { display: flex; flex-direction: column; gap: var(--space-12); }
-.annual-x__question { font-weight: var(--font-weight-bold); color: var(--color-text-primary); }
+/* ---------- 오른쪽 내용: 시기마다 질문 · 설명 · 기간과 사실 · 내용. 시기 사이는 선과 넉넉한 여백 ---------- */
+.annual-x__panels { grid-column: span 9; display: flex; flex-direction: column; min-width: 0; }
+.annual-x__panel { display: flex; flex-direction: column; gap: var(--space-20); padding-bottom: var(--space-96); }
+.annual-x__panel + .annual-x__panel { padding-top: var(--space-56); border-top: 1px solid var(--color-border); }
+/* 고르지 않은 시기는 옅게 — 스크롤하며 다음 시기로 넘어가는 것이 보이게 */
+.annual-x__panel { transition: opacity 360ms var(--ease); }
+.annual-x__panel[data-active='false'] { opacity: 0.35; }
+.annual-x__name { display: none; align-items: center; gap: var(--space-8); } /* 좁은 화면에서만(아래) */
+/* 시기 안 두 칸(사용자 지시 2026-10-27 — 탭까지 세 칸): 글과 표 4 | 시간표 · 상자 5 */
+.annual-x__cols { display: grid; grid-template-columns: minmax(0, 4fr) minmax(0, 5fr); column-gap: var(--grid-gap); align-items: start; }
+.annual-x__text { display: flex; flex-direction: column; gap: var(--space-20); min-width: 0; }
+.annual-x__visual { display: flex; flex-direction: column; gap: var(--space-12); min-width: 0; }
+.annual-x__question { line-height: 1.35; color: var(--color-text-primary); }
+
 .annual-x__facts { display: flex; flex-direction: column; border-top: 1px solid var(--color-border); }
-.annual-x__facts > div { display: grid; grid-template-columns: 72px minmax(0, 1fr); gap: var(--space-12); padding: var(--space-8) 0; border-bottom: 1px solid var(--color-border); }
+.annual-x__facts > div { display: grid; grid-template-columns: 88px minmax(0, 1fr); gap: var(--space-12); padding: var(--space-12) 0; border-bottom: 1px solid var(--color-border); }
 .annual-x__facts dt { font-size: var(--typo-caption-size); line-height: 1.6; color: var(--color-text-tertiary); }
 .annual-x__facts dd { font-size: var(--typo-meta-size); line-height: 1.5; color: var(--color-text-primary); }
-
-/* ---------- 오른쪽: 시기마다 시간표 또는 상자. 시기 사이는 넉넉한 여백 ---------- */
-.annual-x__panels { grid-column: span 7; display: flex; flex-direction: column; gap: var(--space-96); min-width: 0; }
-.annual-x__panel { display: flex; flex-direction: column; gap: var(--space-20); transition: opacity 360ms var(--ease); }
-/* 고르지 않은 시기는 옅게 — 스크롤하며 다음 시기로 넘어가는 것이 보이게 */
-.annual-x__panel[data-active='false'] { opacity: 0.35; }
-.annual-x__mobile { display: none; flex-direction: column; gap: var(--space-12); } /* 좁은 화면에서만(아래) */
-.annual-x__name { display: flex; align-items: center; gap: var(--space-8); }
-/* 캠프 · 수료 & 졸업 상자 — 흰 바탕 위 회색 상자 */
+/* 캠프 · 수료 & 졸업 카드 — 흰 바탕 위 회색 카드 */
 .history__cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--space-12); }
 .history__card {
   display: flex;
@@ -160,9 +164,11 @@
 }
 
 @media (max-width: 900px) {
-  /* 좁은 화면: 탭 없이 시기마다 이름 · 글 · 표 · 시간표(상자)를 위에서 아래로 */
+  /* 좁은 화면: 탭 없이 시기를 위에서 아래로, 이름은 내용 위에 */
   .annual-x__tabs { display: none; }
-  .annual-x__panels { grid-column: 1 / -1; gap: var(--space-64); }
-  .annual-x__mobile { display: flex; }
+  .annual-x__panels { grid-column: 1 / -1; }
+  .annual-x__name { display: flex; }
+  .annual-x__cols { grid-template-columns: minmax(0, 1fr); row-gap: var(--space-24); }
   .annual-x__panel[data-active='false'] { opacity: 1; }
+  .annual-x__panel { padding-bottom: var(--space-64); }
 }

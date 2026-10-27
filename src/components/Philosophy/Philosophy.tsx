@@ -376,13 +376,13 @@ export function Philosophy({ title, paragraphs }: Props) {
                   </div>
                 ))}
             </div>
+            {/* 아래로 스크롤하라는 화살표(사용자 지시 2026-10-27) — 단락 아래 가운데, 옅어졌다 진해졌다를 되풀이 */}
+            <span className="philosophy__hint" data-on={shown} aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 4v15M5.5 12.5 12 19l6.5-6.5" />
+              </svg>
+            </span>
           </div>
-          {/* 아래로 스크롤하라는 화살표(사용자 지시 2026-10-27) — 단락이 나오면 무대 아래 가운데에서 옅어졌다 진해졌다를 되풀이 */}
-          <span className="philosophy__hint" data-on={shown} aria-hidden="true">
-            <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M12 4v15M5.5 12.5 12 19l6.5-6.5" />
-            </svg>
-          </span>
         </div>
       </div>
     </section>
