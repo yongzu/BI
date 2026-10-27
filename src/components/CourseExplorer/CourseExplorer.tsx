@@ -1,6 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState, type KeyboardEvent } from 'react';
 import { Text } from '../Text/Text';
-import type { Course, CourseType } from '../../data/programs';
+import type { ApproachGroup, Course, CourseType, Device } from '../../data/programs';
 import type { CourseProfile } from '../../data/courseProfiles';
 import { keepInPlace, scrollToTarget } from '../../smoothScroll';
 import { COURSE_OPEN_EVENT } from './openCourse';
@@ -13,11 +13,14 @@ import './CourseExplorer.css';
  *   고른 칸을 가리키는 막대는 하나이고, 연간 구조 탭처럼 고른 칸 자리로 미끄러져 간다(사용자 지시 2026-10-19).
  *   고른 탭만 이름 아래로 진행 방식(brief, 작은 글씨)과 압축 설명(summary)이 펼쳐진다(사용자 지시 2026-10-25) — 예전 위 타입 머리글
  *   (이름 · 진행 방식 · 수업 수 · 설명)은 뺐고, 그 자리엔 섹션 제목 '커리큘럼' · 리드가 선다(ProgramsPage).
+ *   과목 분류 탭 아래엔 여백을 두고 '수업을 관통하는 접근' 분류 탭(Live Session · Reflection)이 같은 모양으로 이어진다(사용자 지시
+ *   2026-10-27 — 따로 있던 섹션을 옮겼다). 탭 번호는 과목 분류 다음부터 이어 센다 — ↑/↓도 두 묶음을 이어서 오간다.
+ *   이 분류를 고르면 오른쪽엔 그 분류의 수업 장치(번호 · 이름 · 결과 한 줄 · 설명)가 나온다. 예전 섹션의 왼쪽 지도는 가져오지 않았다.
  * 오른쪽(사용자 지시 2026-10-19: v6 카드 · 옆 패널 → v5로 되돌림):
- * - 수업 한 줄: 영문 이름 / 한글 이름 · 전문가 / 기르는 역량 태그. 누르면 아래로 상세가 펼쳐진다.
+ * - 수업 한 줄: 영문 이름 + 기르는 역량 태그(이름 오른쪽, 사용자 지시 2026-10-27) / 한글 이름 · 전문가. 누르면 아래로 상세가 펼쳐진다.
  * - 펼치는 수업은 하나 — 다른 수업을 누르면 펼쳐 있던 수업이 접히고, 누른 줄은 화면의 같은 자리에 머문다(keepInPlace).
  */
-type Props = { types: CourseType[]; profiles: Record<string, CourseProfile> };
+type Props = { types: CourseType[]; profiles: Record<string, CourseProfile>; approaches: ApproachGroup[]; devices: Device[] };
 
 /** 넓은 화면에서 왼쪽 탭이 붙는 높이(px) — CSS .course-tabs top과 같다 */
 const TABS_TOP = 56;
@@ -32,8 +35,11 @@ const inView = (el: HTMLElement | null) => {
   return r.bottom > 0 && r.top < window.innerHeight;
 };
 
-export function CourseExplorer({ types, profiles }: Props) {
+export function CourseExplorer({ types, profiles, approaches, devices }: Props) {
   const [tab, setTab] = useState(0);
+  // 탭 번호: 과목 분류 0 … n − 1, 이어서 수업을 관통하는 접근 n …
+  const tabCount = types.length + approaches.length;
+  const current = tab < types.length ? types[tab] : approaches[tab - types.length];
   const [open, setOpen] = useState<string | null>(null);
   const tabRefs = useRef<(HTMLButtonElement | null)[]>([]);
   const tabsRef = useRef<HTMLDivElement>(null);
@@ -187,7 +193,7 @@ export function CourseExplorer({ types, profiles }: Props) {
     const step = e.key === 'ArrowDown' ? 1 : e.key === 'ArrowUp' ? -1 : 0;
     if (!step) return;
     e.preventDefault();
-    const next = (tab + step + types.length) % types.length;
+    const next = (tab + step + tabCount) % tabCount;
     switchTab(next);
     tabRefs.current[next]?.focus();
   };
@@ -215,36 +221,25 @@ export function CourseExplorer({ types, profiles }: Props) {
           {types.map((t, i) => [
             // 코스 밖 분류(Workshop · Event)는 Study 밑에 선을 긋고 구분한다(사용자 지시 2026-10-23)
             t.extra && !types[i - 1]?.extra && <span key={`${t.id}-divider`} className="course-tabs__divider" role="presentation" />,
-            <button
-              key={t.id}
-              ref={(el) => { tabRefs.current[i] = el; }}
-              type="button"
-              role="tab"
-              id={`course-tab-${t.id}`}
-              aria-selected={tab === i}
-              aria-controls={`course-panel-${t.id}`}
-              aria-describedby={`course-brief-${t.id}`}
-              tabIndex={tab === i ? 0 : -1}
-              className="course-tab"
-              onClick={() => pickTab(i)}
-            >
-              <span className="course-tab__name">{t.name}</span>
-              {/* 코스 밖 분류(Workshop · Event) 탭엔 수를 붙이지 않는다(사용자 지시 2026-10-23) */}
-              {!t.extra && <span className="course-tab__count">{t.courses.length}</span>}
-              {/* 고른 탭만 이름 아래로 진행 방식 · 압축 설명이 펼쳐진다(사용자 지시 2026-10-25). 이름은 이름 · 수만, 이 글은 설명으로 읽힌다 */}
-              <span id={`course-brief-${t.id}`} className="course-tab__brief" aria-hidden="true">
-                <span className="course-tab__brief-inner">
-                  <span className="course-tab__cadence">{t.brief}</span>
-                  <span className="course-tab__summary">{t.summary}</span>
-                </span>
-              </span>
-            </button>,
+            // 코스 밖 분류(Workshop · Event) 탭엔 수를 붙이지 않는다(사용자 지시 2026-10-23)
+            <TabButton key={t.id} id={t.id} name={t.name} count={t.extra ? undefined : t.courses.length} brief={t.brief} summary={t.summary}
+              selected={tab === i} onPick={() => pickTab(i)} buttonRef={(el) => { tabRefs.current[i] = el; }} />,
           ])}
+          {/* 수업을 관통하는 접근(사용자 지시 2026-10-27) — 과목 분류 아래 여백을 두고 같은 모양의 둘째 묶음. 좁은 화면(가로 줄)에선 이름 대신 세로선 */}
+          <span className="course-tabs__divider course-tabs__divider--group" role="presentation" />
+          <span className="course-tabs__label course-tabs__label--group" aria-hidden="true">수업을 관통하는 접근</span>
+          {approaches.map((g, j) => {
+            const i = types.length + j;
+            return (
+              <TabButton key={g.id} id={g.id} name={g.name} count={devices.filter((d) => d.tag === g.tag).length} brief={g.brief} summary={g.summary}
+                selected={tab === i} onPick={() => pickTab(i)} buttonRef={(el) => { tabRefs.current[i] = el; }} />
+            );
+          })}
         </div>
         {/* 좁은 화면(탭이 가로 줄): 탭 안에 펼칠 자리가 없어 고른 분류의 글을 탭 줄 아래에 한 번 싣는다 */}
         <p className="course-tabs__brief" aria-hidden="true">
-          <span className="course-tab__cadence">{types[tab].brief}</span>
-          <span className="course-tab__summary">{types[tab].summary}</span>
+          <span className="course-tab__cadence">{current.brief}</span>
+          <span className="course-tab__summary">{current.summary}</span>
         </p>
 
         <div ref={stageRef} className="course-stage">
@@ -275,10 +270,76 @@ export function CourseExplorer({ types, profiles }: Props) {
                 </ul>
               </section>
             ))}
+            {approaches.map((g, j) => {
+              const i = types.length + j;
+              return (
+                <section
+                  key={g.id}
+                  ref={(el) => { panelRefs.current[i] = el; }}
+                  id={`course-panel-${g.id}`}
+                  role="tabpanel"
+                  aria-labelledby={`course-tab-${g.id}`}
+                  className="course-tabpanel"
+                  data-active={tab === i}
+                  inert={tab !== i}
+                >
+                  {/* 장치 번호는 두 분류를 이어 센다 — Live Session 01 · 02, Reflection 03 · 04 · 05(예전 섹션과 같다) */}
+                  <ol className="device-rows">
+                    {devices.map((d, n) => d.tag === g.tag && (
+                      <li key={d.name} className="device-row">
+                        <span className="device-row__num" aria-hidden="true">{String(n + 1).padStart(2, '0')}</span>
+                        <h4 className="device-row__name">{d.name}</h4>
+                        <p className="device-row__outcome">{d.outcome}</p>
+                        <Text typography="Body" color="secondary" className="device-row__body">{d.body}</Text>
+                      </li>
+                    ))}
+                  </ol>
+                </section>
+              );
+            })}
           </div>
         </div>
       </div>
     </div>
+  );
+}
+
+type TabProps = {
+  id: string;
+  name: string;
+  count?: number;
+  brief: string;
+  summary: string;
+  selected: boolean;
+  onPick: () => void;
+  buttonRef: (el: HTMLButtonElement | null) => void;
+};
+
+/** 왼쪽 세로 탭 한 칸 — 이름 + 수 알약, 고른 칸만 아래로 진행 방식 · 압축 설명이 펼쳐진다(사용자 지시 2026-10-25) */
+function TabButton({ id, name, count, brief, summary, selected, onPick, buttonRef }: TabProps) {
+  return (
+    <button
+      ref={buttonRef}
+      type="button"
+      role="tab"
+      id={`course-tab-${id}`}
+      aria-selected={selected}
+      aria-controls={`course-panel-${id}`}
+      aria-describedby={`course-brief-${id}`}
+      tabIndex={selected ? 0 : -1}
+      className="course-tab"
+      onClick={onPick}
+    >
+      <span className="course-tab__name">{name}</span>
+      {count !== undefined && <span className="course-tab__count">{count}</span>}
+      {/* 이름은 이름 · 수만, 이 글은 설명으로 읽힌다 */}
+      <span id={`course-brief-${id}`} className="course-tab__brief" aria-hidden="true">
+        <span className="course-tab__brief-inner">
+          <span className="course-tab__cadence">{brief}</span>
+          <span className="course-tab__summary">{summary}</span>
+        </span>
+      </span>
+    </button>
   );
 }
 
@@ -290,17 +351,20 @@ function CourseRow({ course, type, profile, open, onToggle }: RowProps) {
     <li id={`course-row-${course.slug}`} className="course-row" data-open={open}>
       <button type="button" className="course-row__hit" aria-expanded={open} aria-controls={panelId} onClick={(e) => onToggle(e.currentTarget.closest<HTMLElement>('.course-row'))}>
         <span className="course-row__text">
-          <span className="course-row__name">{course.en}</span>
+          {/* 역량 태그는 이름 오른쪽에 조금 띄워 붙인다(사용자 지시 2026-10-27) — 예전엔 줄 맨 오른쪽 끝이라 이름과 떨어져 읽혔다 */}
+          <span className="course-row__title">
+            <span className="course-row__name">{course.en}</span>
+            <span className="course-row__tags">
+              {course.tags.map((tag) => (
+                <span key={tag} className="course-row__tag">{tag}</span>
+              ))}
+            </span>
+          </span>
           {/* 전문가는 캡슐 대신 한글 이름 옆 글자로 — 캡슐은 역량에만(v15: 같은 캡슐에 사람과 역량이 섞여 구분되지 않았다) */}
           <span className="course-row__meta">
             {course.ko}
             <span className="course-row__experts"> · {[type.people ?? '전문가', profile.experts.map((ex) => ex.name).join(', ')].filter(Boolean).join(' ')}</span>
           </span>
-        </span>
-        <span className="course-row__tags">
-          {course.tags.map((tag) => (
-            <span key={tag} className="course-row__tag">{tag}</span>
-          ))}
         </span>
         <span className="course-row__chevron" aria-hidden="true" />
       </button>

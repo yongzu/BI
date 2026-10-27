@@ -9,7 +9,6 @@ import { BackToTop, SiteHeader } from '../components/SiteHeader/SiteHeader';
 import { FooterMark } from '../components/FooterMark/FooterMark';
 import { VersionLog } from '../components/VersionLog/VersionLog';
 import { PillarList } from '../components/PillarList/PillarList';
-import { DeviceMap } from '../components/DeviceMap/DeviceMap';
 import { CurriculumEntry } from '../components/CurriculumEntry/CurriculumEntry';
 import { Philosophy } from '../components/Philosophy/Philosophy';
 import { VectorHandoff } from '../components/VectorWord/VectorHandoff';
@@ -22,6 +21,7 @@ import {
   competencies,
   courseTypes,
   applyPeriod,
+  approachGroups,
   devices,
   heroStatement,
   philosophy,
@@ -39,8 +39,7 @@ const toc: TocItem[] = [
   // 커리큘럼 아래에서 빼 같은 층위로(사용자 지시 2026-09-30)
   // 순서는 페이지 섹션과 같다(사용자 지시 2026-10-23)
   { id: 'pillars', label: '역량과 태도' }, // 맨 위(v18 — 교육 철학은 목차에 넣지 않는다). 역량 · Phi OS를 합침(2026-10-20)
-  { id: 'curriculum', label: '커리큘럼' },
-  { id: 'devices', label: '수업을 관통하는 접근' },
+  { id: 'curriculum', label: '커리큘럼' }, // 수업을 관통하는 접근은 커리큘럼 탭 안으로 옮겨 목차에서 뺐다(사용자 지시 2026-10-27)
   { id: 'curriculum-annual', label: '연간 구조' },
   { id: 'career', label: '채용 연계' }, // 맨 아래(사용자 지시 2026-10-19)
 ];
@@ -78,15 +77,6 @@ function GroupLabel({ children, meta }: { children: ReactNode; meta?: string }) 
   );
 }
 
-/** Title (24) · English/meta label (16, 20%) · body (16, 70%) */
-/** 수업 장치마다 학습자가 얻는 결과 한 줄 — GPT 개편안(/BI/gpt/)의 문구 그대로 */
-const deviceOutcomes: Record<string, string> = {
-  라이브데모: '전문가의 사고 과정을 직접 본다',
-  피어크리틱: '동료와 평가 기준을 공유한다',
-  셀프피드백: '스스로 성장 정도를 판단한다',
-  공유회: '설명하며 다시 배운다',
-  저널링: '배움을 기록하고 다음 행동으로 잇는다',
-};
 
 /**
  * 채용 연계 — v3의 두 단 줄 목록으로 되돌림(사용자 지시 2026-10-20, 화면 폭 전체). 왼쪽 토스 별도 채용 전형 · 오른쪽 우수 졸업자 입사 특전.
@@ -241,24 +231,11 @@ export function ProgramsPage() {
             />
             {/* 필터 · 수업 목록 · 상세를 한 화면에 — 클릭 없이 전체를 파악한다 */}
             <div id="courses" className="group">
-              <CourseExplorer types={courseTypes} profiles={courseProfiles} />
+              <CourseExplorer types={courseTypes} profiles={courseProfiles} approaches={approachGroups} devices={devices} />
             </div>
           </CurriculumEntry>
         </section>
 
-        {/* ---------- 수업을 관통하는 접근 ---------- */}
-        {/* 다른 화면 폭 섹션과 같은 폭 · 제목 한 줄(사용자 지시 2026-10-20) */}
-        <section id="devices" className="section section--wide">
-          <SectionHeader
-            title="수업을 관통하는 접근"
-            lead={'Phi의 교육은 인지적 도제(Cognitive Apprenticeship)를 토대로 설계되었습니다.\n전문가의 사고 과정을 학습자가 능동적으로 관찰할 수 있도록 다양한 장치가 준비되어있습니다.'}
-          />
-          {/* 두 단 목록을 시험해 본 뒤 박스로 되돌림(사용자 지시 2026-09-30) */}
-          <div className="group">
-            {/* '핵심 수업 장치' 라벨은 배우는 자리 라벨 셋이 대신한다(2026-10-05) */}
-            <DeviceMap items={devices} outcomes={deviceOutcomes} />
-          </div>
-        </section>
 
         {/* ---------- 연간 구조 — 수업을 관통하는 접근 다음, 채용 연계 앞(사용자 지시 2026-10-23, 예전엔 과정 개요 바로 아래). 화면 폭 전체 ---------- */}
         <section id="curriculum-annual" className="section section--wide">
