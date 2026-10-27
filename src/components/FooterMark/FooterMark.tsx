@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import glyphs from '../../data/vectorGlyphs.json';
+import { lenis } from '../../smoothScroll';
 import GradientASCII from '../GradientASCII/GradientASCII';
 import { HERO_ASCII } from '../GradientASCII/heroPreset';
 import './FooterMark.css';
@@ -11,22 +12,23 @@ import './FooterMark.css';
  * viewBox를 글자 잉크에 딱 맞춰 두어 폭 100%면 왼쪽 · 오른쪽 끝이 푸터 글줄 끝에 닿는다(글꼴 크기를 재서 맞출 필요가 없다).
  * 2026-10-27(사용자 지시): 푸터 맨 아래에 여백 없이 화면 폭에 꽉 차게(양옆 · 아래 0).
  *
- * 열리는 공간(사용자 지시 2026-10-27 — granola.ai 푸터 참고): 아래로 스크롤해 맨 아래에 거의 닿으면(NEAR) 멈추기를 기다리지 않고 바로,
- * 이미 맨 아래면 한 번 더 아래로 스크롤하면
- * 'Fundamental Over Tools'가 (채용 연계 · 푸터와 함께) 위로 올라가며 화면 아래에서 새 공간(PANEL)이 올라온다.
- * 공간엔 히어로의 숫자(0 · 1) 인터랙션(GradientASCII, HERO_ASCII). STAY 동안 머문 뒤 다시 내려간다. 위로 스크롤하면 바로 닫는다.
- * 움직임은 transform만(html[data-footer-open] — CSS) — 처음엔 공간 높이를 늘리며 프레임마다 스크롤을 맞췄는데, 매 프레임 레이아웃을
- * 다시 계산해 뚝뚝 끊겼다(사용자 제보 2026-10-27). 공간은 body에 붙인 화면 고정 칸이라 올라가는 푸터에 묶이지 않는다.
- * 움직임 줄이기면 열지 않는다. (그 전엔 글자 뒤에서 그래픽 카드 → 파란 직사각형 구역이 떠올랐다 내려갔다)
+ * 뒤에 숨은 그래픽(사용자 지시 2026-10-27 — morphin.dev 'granola-ai-footer'): 페이지 맨 아래에서 더 스크롤하면 그만큼
+ * 페이지(채용 연계 · 푸터)가 위로 들려 올라가고, 그 아래 화면 바닥에 고정된 그래픽이 드러난다 — 그래픽은 움직이지 않고 페이지만 움직인다.
+ * 손을 떼면(입력이 RELEASE ms 없으면) 페이지가 다시 내려와 덮는다. 위로 스크롤하면 바로 내려온다.
+ * 들리는 양은 더 스크롤한 양에 저항(RESIST)을 곱한 값, 최대 그래픽 높이. 시간으로 목표를 따라간다(TAU — 프레임 수와 상관없이 같은 빠르기).
+ * 맨 아래를 떠나면(스크롤이 위로 움직이면) 바로 내려놓는다.
+ * 그래픽은 히어로의 숫자(0 · 1) 인터랙션(GradientASCII, HERO_ASCII) — 위아래를 뒤집어 아래쪽에 숫자가 짙다.
+ * 움직임은 transform만(--fr-lift). 움직임 줄이기면 하지 않는다.
+ * (그 전엔 글자 뒤 카드 → 파란 직사각형 → 시간으로 열고 닫히며 아래에서 올라오는 공간이었다)
  */
-const MOVE = 560; // 열리고 닫히는 시간(ms) — CSS --fr-move와 같다
-const STAY = 1600; // 열린 채 머무는 시간
-const COOLDOWN = 500; // 닫힌 뒤 다시 열 수 있기까지 — 휠 관성으로 바로 다시 열리지 않게
-/** 맨 아래까지 남은 거리가 이 아래면 연다(px) — 부드러운 스크롤이 천천히 멈추는 끝자락을 기다리지 않는다(사용자 지시 2026-10-27) */
-const NEAR = 160;
-const toBottom = () => document.documentElement.scrollHeight - (window.innerHeight + window.scrollY);
+const RESIST = 0.45; // 더 스크롤한 양 대비 들리는 양
+const TAU = 90; // 목표로 따라가는 시간 상수(ms) — 프레임마다 비율로 다가가면 느린 화면에서 기어가듯 늦었다
+const RELEASE = 650; // 마지막 입력 뒤 내려오기까지(ms)
 /** 아래로 가는 키 */
 const DOWN_KEYS = new Set(['ArrowDown', 'PageDown', 'End', ' ']);
+/** 맨 아래(더 내릴 수 없는 자리)에 있나 — Lenis는 목표 스크롤이 끝에 닿았으면(부드럽게 따라가는 중이어도) 맨 아래로 본다 */
+const atEnd = () =>
+  lenis ? lenis.targetScroll >= lenis.limit - 1 : document.documentElement.scrollHeight - (window.innerHeight + window.scrollY) <= 1;
 
 type Word = { width: number; d: string };
 const words = (glyphs as { words: Record<string, Word> }).words;
@@ -59,67 +61,93 @@ const layout = (() => {
 
 export function FooterMark() {
   const panelRef = useRef<HTMLDivElement>(null);
-  // 숫자 인터랙션은 푸터가 가까워지면 미리 띄운다 — 처음 띄울 때 셰이더를 만드느라 잠깐 멈추는데, 열리는 순간과 겹치면 끊겨 보인다.
-  // 그 전엔 WebGL을 돌리지 않는다
+  // 숫자 인터랙션은 푸터가 가까워지면 미리 띄운다 — 처음 띄울 때 셰이더를 만드느라 잠깐 멈추는데, 들리는 순간과 겹치면 끊겨 보인다
   const [ascii, setAscii] = useState(false);
+
   useEffect(() => {
     const panel = panelRef.current;
     if (!panel || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     const root = document.documentElement;
-    let state: 'closed' | 'open' | 'closing' = 'closed';
-    let timer = 0;
-    let readyAt = 0;
-    let touchY = 0;
-    const open = () => {
-      if (state !== 'closed' || performance.now() < readyAt || toBottom() > NEAR) return;
-      state = 'open';
-      root.style.setProperty('--fr-h', `${panel.offsetHeight}px`);
-      root.dataset.footerOpen = 'true';
-      window.clearTimeout(timer);
-      timer = window.setTimeout(close, MOVE + STAY);
+    let target = 0; // 들릴 높이(px)
+    let lift = 0; // 지금 들린 높이
+    let raf = 0;
+    let last = 0; // 지난 프레임 시각
+    let release = 0;
+    let touchY: number | null = null;
+    let touchBase = 0;
+    const max = () => panel.offsetHeight;
+    const frame = (now: number) => {
+      raf = 0;
+      const dt = last ? Math.min(100, now - last) : 16;
+      last = now;
+      lift += (target - lift) * (1 - Math.exp(-dt / TAU));
+      if (Math.abs(target - lift) < 0.5) lift = target;
+      if (lift > 0) {
+        root.dataset.footerLift = '';
+        root.style.setProperty('--fr-lift', `${lift.toFixed(1)}px`);
+      } else {
+        delete root.dataset.footerLift;
+        root.style.removeProperty('--fr-lift');
+      }
+      if (lift !== target) raf = requestAnimationFrame(frame);
+      else last = 0;
     };
-    const close = () => {
-      if (state !== 'open') return;
-      state = 'closing';
-      delete root.dataset.footerOpen;
-      window.clearTimeout(timer);
-      timer = window.setTimeout(() => { state = 'closed'; readyAt = performance.now() + COOLDOWN; }, MOVE);
+    const setTarget = (v: number) => {
+      target = Math.min(max(), Math.max(0, v));
+      if (!raf) raf = requestAnimationFrame(frame);
     };
-    // 아래로 스크롤해 맨 아래 가까이 오면 바로 연다
-    let lastY = window.scrollY;
+    const holdThenDrop = () => {
+      window.clearTimeout(release);
+      release = window.setTimeout(() => setTarget(0), RELEASE);
+    };
+    const onWheel = (e: WheelEvent) => {
+      if (e.deltaY > 0 && atEnd()) {
+        setTarget(target + e.deltaY * RESIST);
+        holdThenDrop();
+      } else if (e.deltaY < 0 && target > 0) {
+        window.clearTimeout(release);
+        setTarget(0);
+      }
+    };
+    // 맨 아래를 떠나면 바로 내려놓는다(위로 스크롤 · 목차 이동 등)
     const onScroll = () => {
-      const y = window.scrollY;
-      if (y > lastY && toBottom() <= NEAR) open();
-      lastY = y;
+      if (target > 0 && !atEnd()) { window.clearTimeout(release); setTarget(0); }
     };
-    // 맨 아래에서 더 내리면 열고, 위로 올리면 닫는다
-    const onWheel = (e: WheelEvent) => { if (e.deltaY > 0) open(); else if (e.deltaY < 0) close(); };
-    const onKey = (e: KeyboardEvent) => { if (DOWN_KEYS.has(e.key)) open(); else if (e.key === 'ArrowUp' || e.key === 'PageUp' || e.key === 'Home') close(); };
-    const onTouchStart = (e: TouchEvent) => { touchY = e.touches[0].clientY; };
+    const onKey = (e: KeyboardEvent) => {
+      if (DOWN_KEYS.has(e.key) && atEnd()) { setTarget(max()); holdThenDrop(); }
+      else if (e.key === 'ArrowUp' || e.key === 'PageUp' || e.key === 'Home') setTarget(0);
+    };
+    // 터치: 맨 아래에서 위로 쓸어 올리면 손가락을 따라 들리고, 떼면 내려온다
+    const onTouchStart = (e: TouchEvent) => { touchY = atEnd() ? e.touches[0].clientY : null; touchBase = target; };
     const onTouchMove = (e: TouchEvent) => {
-      const dy = e.touches[0].clientY - touchY;
-      if (dy < -12) open(); // 위로 쓸어 올림 = 아래로 스크롤
-      else if (dy > 12) close();
+      if (touchY === null) { if (atEnd()) { touchY = e.touches[0].clientY; touchBase = target; } return; }
+      window.clearTimeout(release);
+      setTarget(touchBase + (touchY - e.touches[0].clientY) * RESIST);
     };
+    const onTouchEnd = () => { if (touchY !== null) { touchY = null; holdThenDrop(); } };
     const near = new IntersectionObserver(([entry]) => {
       if (entry.isIntersecting) { setAscii(true); near.disconnect(); }
     }, { rootMargin: '1200px 0px' });
     const mark = document.querySelector('.footer-mark-wrap');
     if (mark) near.observe(mark);
-    window.addEventListener('scroll', onScroll, { passive: true });
     window.addEventListener('wheel', onWheel, { passive: true });
+    window.addEventListener('scroll', onScroll, { passive: true });
     window.addEventListener('keydown', onKey);
     window.addEventListener('touchstart', onTouchStart, { passive: true });
     window.addEventListener('touchmove', onTouchMove, { passive: true });
+    window.addEventListener('touchend', onTouchEnd);
     return () => {
-      window.clearTimeout(timer);
+      cancelAnimationFrame(raf);
+      window.clearTimeout(release);
       near.disconnect();
-      window.removeEventListener('scroll', onScroll);
       window.removeEventListener('wheel', onWheel);
+      window.removeEventListener('scroll', onScroll);
       window.removeEventListener('keydown', onKey);
       window.removeEventListener('touchstart', onTouchStart);
       window.removeEventListener('touchmove', onTouchMove);
-      delete root.dataset.footerOpen;
+      window.removeEventListener('touchend', onTouchEnd);
+      delete root.dataset.footerLift;
+      root.style.removeProperty('--fr-lift');
     };
   }, []);
 
@@ -130,11 +158,10 @@ export function FooterMark() {
           {layout.parts.map((p) => <path key={p.name} d={p.d} transform={`translate(${p.x} 0)`} />)}
         </svg>
       </div>
-      {/* 화면 아래에서 올라오는 공간 — 히어로의 숫자 인터랙션. body에 붙여 올라가는 푸터의 transform에 묶이지 않게 */}
+      {/* 페이지 뒤 화면 바닥에 고정된 그래픽 — 페이지가 들리면 드러난다. body에 붙여 들리는 푸터의 transform에 묶이지 않게 */}
       {createPortal(
         <div ref={panelRef} className="footer-reveal" aria-hidden="true">
-          {/* 모양은 위아래로 뒤집는다 — 히어로는 위쪽에 글자가 몰리고 아래가 비는데, 여기선 위(올라간 글자와 맞닿는 쪽)가 비어
-              페이지 바탕과 이어지고 아래로 갈수록 숫자가 짙어진다(사용자 지시 2026-10-27) */}
+          {/* 모양은 위아래로 뒤집는다 — 위(페이지 끝과 맞닿는 쪽)는 비어 바탕과 이어지고 아래로 갈수록 숫자가 짙다(사용자 지시 2026-10-27) */}
           {ascii && <GradientASCII {...HERO_ASCII} flipY />}
         </div>,
         document.body,

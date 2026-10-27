@@ -1,5 +1,5 @@
 /* 푸터 맨 아래 'Fundamental Over Tools'(2026-10-24) — 2026-10-27: 여백 없이 화면 폭에 꽉 차게 · 맨 아래에 붙인다.
-   맨 아래에서 더 내리면 글자가 위로 올라가며 아래에서 숫자 인터랙션 공간(.footer-reveal)이 올라왔다 내려간다(FooterMark.tsx). Tokens only. */
+   맨 아래에서 더 스크롤하면 페이지가 들려 올라가며 뒤에 고정된 숫자 그래픽(.footer-reveal)이 드러났다 다시 덮인다(FooterMark.tsx). Tokens only. */
 /* 감싼 칸이 푸터 양옆 여백을 지우고 화면 끝까지 — svg에 직접 음수 여백을 주면 전역 max-width: 100%에 걸려 글줄 폭에 묶였다 */
 .footer-mark-wrap { margin-top: var(--space-96); margin-inline: calc(-1 * var(--side-wide)); }
 .footer-mark {
@@ -10,26 +10,23 @@
   fill: var(--color-text-primary);
 }
 
-/* 열리는 공간: 화면 아래 고정 칸(body에 붙음). 닫혀 있을 땐 화면 아래 밖에서 기다린다.
-   열리면(html[data-footer-open]) 채용 연계 · 푸터가 공간 높이(--fr-h)만큼 올라가고 공간은 아래에서 올라온다 — transform만 움직인다.
-   곡선은 가볍게(사용자 지시 2026-10-27 — 들어오고 나갈 때 ease가 너무 심했다: easeInOutCubic 1000ms → 표준 곡선 560ms) */
-:root { --fr-move: 560ms; --fr-ease: cubic-bezier(0.4, 0, 0.2, 1); }
+/* 뒤에 숨은 그래픽: 화면 바닥에 고정, 페이지 뒤(z 0). 높이는 예전 열리는 공간의 절반(사용자 지시 2026-10-27 — 42vh · 420 → 21vh · 210).
+   채용 연계 · 푸터는 바탕을 칠하고 그 위(z 1)에 있어 평소엔 가린다. 맨 아래에서 더 스크롤하면(html[data-footer-lift]) 둘이 --fr-lift만큼
+   위로 들려 그 아래로 그래픽이 드러난다 — 그래픽은 움직이지 않는다. 들리지 않았을 땐 숨겨 다른 섹션의 투명한 바탕 뒤로 비치지 않게 */
 .footer-reveal {
   position: fixed;
-  z-index: 40;
+  z-index: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  height: min(42vh, 420px);
-  background: var(--color-bg-default);
-  transform: translateY(100%);
-  transition: transform var(--fr-move) var(--fr-ease);
+  height: min(21vh, 210px);
+  visibility: hidden;
   pointer-events: none;
 }
-:root[data-footer-open] .footer-reveal { transform: none; }
+:root[data-footer-lift] .footer-reveal { visibility: visible; }
 #career,
-.footer { transition: transform var(--fr-move) var(--fr-ease); }
-:root[data-footer-open] :is(#career, .footer) { transform: translateY(calc(-1 * var(--fr-h, 0px))); }
+.footer { position: relative; z-index: 1; background: var(--color-bg-default); }
+:root[data-footer-lift] :is(#career, .footer) { transform: translateY(calc(-1 * var(--fr-lift, 0px))); }
 
 @media (prefers-reduced-motion: reduce) {
   .footer-reveal { display: none; }
