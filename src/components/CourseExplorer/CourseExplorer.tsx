@@ -15,7 +15,7 @@ import './CourseExplorer.css';
  *   (이름 · 진행 방식 · 수업 수 · 설명)은 뺐고, 그 자리엔 섹션 제목 '커리큘럼' · 리드가 선다(ProgramsPage).
  *   과목 분류 탭 아래엔 여백을 두고 '수업을 관통하는 접근' 분류 탭(Live Session · Reflection)이 같은 모양으로 이어진다(사용자 지시
  *   2026-10-27 — 따로 있던 섹션을 옮겼다). 탭 번호는 과목 분류 다음부터 이어 센다 — ↑/↓도 두 묶음을 이어서 오간다.
- *   이 분류를 고르면 오른쪽엔 그 분류의 수업 장치(번호 · 이름 · 결과 한 줄 · 설명)가 나온다. 예전 섹션의 왼쪽 지도는 가져오지 않았다.
+ *   이 분류를 고르면 오른쪽엔 그 분류의 수업 장치(이름 · 설명 — 번호 · 결과 한 줄은 2026-10-27에 뺐다)가 나온다. 예전 섹션의 왼쪽 지도는 가져오지 않았다.
  * 오른쪽(사용자 지시 2026-10-19: v6 카드 · 옆 패널 → v5로 되돌림):
  * - 수업 한 줄: 영문 이름 + 기르는 역량 태그(이름 오른쪽, 사용자 지시 2026-10-27) / 한글 이름 · 전문가. 누르면 아래로 상세가 펼쳐진다.
  * - 펼치는 수업은 하나 — 다른 수업을 누르면 펼쳐 있던 수업이 접히고, 누른 줄은 화면의 같은 자리에 머문다(keepInPlace).
@@ -307,17 +307,15 @@ export function CourseExplorer({ types, profiles, approaches, devices }: Props) 
                   data-active={tab === i}
                   inert={tab !== i}
                 >
-                  {/* 장치 번호는 두 분류를 이어 센다 — Live Session 01 · 02, Reflection 03 · 04 · 05(예전 섹션과 같다) */}
-                  <ol className="device-rows">
-                    {devices.map((d, n) => d.tag === g.tag && (
+                  {/* 번호(01 – 05)와 결과 한 줄(outcome)은 뺐다(사용자 지시 2026-10-27) — 이름 · 설명만 */}
+                  <ul className="device-rows">
+                    {devices.map((d) => d.tag === g.tag && (
                       <li key={d.name} className="device-row">
-                        <span className="device-row__num" aria-hidden="true">{String(n + 1).padStart(2, '0')}</span>
                         <h4 className="device-row__name">{d.name}</h4>
-                        <p className="device-row__outcome">{d.outcome}</p>
                         <Text typography="Body" color="secondary" className="device-row__body">{d.body}</Text>
                       </li>
                     ))}
-                  </ol>
+                  </ul>
                 </section>
               );
             })}

@@ -298,6 +298,7 @@ export const courseTypes: CourseType[] = [
  * 2026-10-27(사용자 지시): 따로 섹션이던 것을 커리큘럼 탭 아래 두 번째 탭 묶음으로 옮겼다 — 분류는 approachGroups, 장치는 tag로 묶인다.
  *   outcome(장치마다 학습자가 얻는 결과 한 줄 — GPT 개편안(/BI/gpt/)의 문구)은 예전 ProgramsPage의 deviceOutcomes를 옮겼다.
  */
+/** outcome은 지금 화면에 쓰지 않는다(2026-10-27 커리큘럼 탭에서 뺌) — 문구는 남겨 둔다 */
 export type Device = { name: string; tag: string; outcome: string; body: string };
 export const devices: Device[] = [
   { name: '라이브데모', tag: '세션 안에서', outcome: '전문가의 사고 과정을 직접 본다', body: "전문가가 학습자의 과제를 실시간으로 푸는 과정을 시연합니다. 푸는 과정에서 '나라면?'이라는 문두를 활용하여 학습자와 전문가의 차이가 나는 지점을 직접적으로 드러냅니다." },

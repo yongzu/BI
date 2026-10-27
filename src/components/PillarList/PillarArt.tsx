@@ -272,17 +272,13 @@ function Sharing() {
 
 const ARTS = [Aesthetic, Articulation, Structural, Problem, Reframing, Active, Unknowns, Unpacking, Dissatisfaction, Sharing];
 
-/** 그래픽 수 — 푸터에서 차례로 떠오르는 카드(FooterMark)가 돌려 쓴다 */
-export const ART_COUNT = ARTS.length;
-
-/** 이미지 박스 — 세로 트랙에 열 장, 고른 장(active)으로 넘어간다. 가운데엔 영문 이름.
- *  arts: 장마다 쓸 그래픽 번호(기본은 차례대로) — 채용 연계처럼 다른 목록이 이 그래픽을 골라 쓸 때(2026-10-27) */
-export function PillarArt({ titles, active, arts }: { titles: string[]; active: number; arts?: number[] }) {
+/** 이미지 박스 — 세로 트랙에 열 장, 고른 장(active)으로 넘어간다. 가운데엔 영문 이름 */
+export function PillarArt({ titles, active }: { titles: string[]; active: number }) {
   return (
     <div className="pa-box" aria-hidden="true">
       <div className="pa-track" style={v({ '--i': active })}>
         {titles.map((title, i) => {
-          const Art = ARTS[(arts?.[i] ?? i) % ARTS.length];
+          const Art = ARTS[i % ARTS.length];
           return (
             <div key={title} className="pa-slide" data-active={i === active}>
               <Art />

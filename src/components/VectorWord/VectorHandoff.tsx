@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { lockScrollInput, scrollToTarget } from '../../smoothScroll';
+import { scrollToTarget } from '../../smoothScroll';
 import './VectorHandoff.css';
 
 /**
@@ -12,7 +12,9 @@ import './VectorHandoff.css';
  *
  * - 진행 t: 교육 철학 무대가 풀리는 순간(제목이 화면 아래 섹션 윗여백만큼 밖) 0 → 제목이 화면 위 END_TOP에 오면 1. 스크롤 자리에 묶여 있다.
  * - 저절로 진행(사용자 지시 2026-10-24): 아래로 내려 무대가 풀리는 자리에 닿으면(교육 철학의 마지막 단락 맞춤 스크롤 포함) 그대로
- *   역량과 태도 제목 자리까지 AUTO_S초 동안 스크롤해 준다 — 그동안 스크롤 입력은 막는다. 위로 올릴 땐 스크롤 그대로(되감기).
+ *   역량과 태도 제목 자리까지 AUTO_S초 동안 스크롤해 준다. 위로 올릴 땐 스크롤 그대로(되감기).
+ *   2026-10-27(사용자 지시): 그동안 스크롤 입력을 막던 것을 풀었다 — 끝나기 전에도 휠 · 터치 · 키로 스크롤하면 사용자 스크롤이 이어받는다
+ *   (Lenis는 사용자 입력이 오면 진행 중인 scrollTo를 새 목표로 바꾼다).
  *   0 – APPEAR: 제자리에서 벡터 보기가 켜진다 · APPEAR – 1: 내려간다 · FILL – 1: 검정으로 채워진다
  * - 그동안 원래 낱말과 실제 제목은 숨긴다(겹쳐 두 개로 보이지 않게).
  * - 좁은 화면 · 움직임 줄이기에선 하지 않는다.
@@ -77,12 +79,9 @@ export function VectorHandoff({ targetSelector }: { targetSelector: string }) {
       const down = window.scrollY > lastY;
       lastY = window.scrollY;
       if (!playing && down && raw > -0.01 && raw < 0.6) {
-        lockScrollInput(true);
         scrollToTarget(window.scrollY + tr.top - END_TOP, { duration: AUTO_S });
-        playing = window.setTimeout(() => {
-          playing = 0;
-          lockScrollInput(false);
-        }, AUTO_S * 1000 + 120);
+        // 한 번 진행하는 동안은 다시 시작하지 않는다(사용자가 이어받아 스크롤해도)
+        playing = window.setTimeout(() => { playing = 0; }, AUTO_S * 1000 + 120);
       }
       const sr = textRect(source); // 낱말은 글자마다 나뉘어 있어(ScrollReveal) 상자 대신 글자 범위로 잰다
       // 낱말이 아직 근처에 있을 때만. 끝(1)은 조금 앞에서 — 저절로 내려간 스크롤이 소수점만큼 모자라도 실제 제목으로 바뀐다
@@ -108,10 +107,7 @@ export function VectorHandoff({ targetSelector }: { targetSelector: string }) {
     update();
     return () => {
       cancelAnimationFrame(raf);
-      if (playing) {
-        window.clearTimeout(playing);
-        lockScrollInput(false);
-      }
+      window.clearTimeout(playing);
       window.removeEventListener('scroll', onScroll);
       window.removeEventListener('resize', onScroll);
       mq.removeEventListener('change', onScroll);
