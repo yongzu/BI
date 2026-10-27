@@ -74,13 +74,11 @@ function inkRect(el: HTMLElement) {
 /**
  * boxOnly: 앵커 없이 바운딩 박스 · 안내선 — 글자는 바깥 윤곽선만 · 흰 속(여덟 방향 그림자, 본문 낱말, 사용자 지시 2026-10-23).
  * 제목 낱말은 윤곽 + 앵커까지.
- * auto: 마우스 없이 벡터 보기를 켠다(교육 철학 제목이 커지며 낱말마다 차례로 — 사용자 지시 2026-10-27). 박스 · 안내선은 부르는 쪽이 그린다.
  */
-export function VectorWord({ word, boxOnly = false, auto = false }: { word: string; boxOnly?: boolean; auto?: boolean }) {
+export function VectorWord({ word, boxOnly = false }: { word: string; boxOnly?: boolean }) {
   const glyph = data.words[word];
   const ref = useRef<HTMLSpanElement>(null);
   const [px, setPx] = useState(0); // 1px이 몇 em인지 — 앵커 크기를 화면 px로 맞춘다. 0이면 꺼짐
-  const [autoPx, setAutoPx] = useState(0);
   // 글자 자리(em) — 브라우저가 실제로 그린 자리에 윤곽을 둔다(사용자 지시 2026-10-27 — 마우스를 올리면 낱말이 살짝 움직여 보였다).
   // 미리 뽑은 윤곽(정적 Pretendard Bold · kern)과 화면 글자(가변 글꼴 · GPOS 커닝)는 'To' 같은 자리의 커닝이 달라,
   // 같은 글꼴 · 자간으로 캔버스에서 앞 글자들까지의 폭을 재 글자마다 옮긴다(em 단위라 크기가 바뀌어도 그대로)
@@ -124,10 +122,6 @@ export function VectorWord({ word, boxOnly = false, auto = false }: { word: stri
   }, []);
 
   useEffect(() => {
-    setAutoPx(auto && ref.current ? 1 / parseFloat(getComputedStyle(ref.current).fontSize) : 0);
-  }, [auto]);
-
-  useEffect(() => {
     if (boxOnly || !glyph) return;
     const align = () => {
       const el = ref.current;
@@ -158,7 +152,7 @@ export function VectorWord({ word, boxOnly = false, auto = false }: { word: stri
     );
   }
   const h = data.ascent + data.descent;
-  const a = px || autoPx; // 앵커 크기(마우스 · 자동 중 켜진 쪽)
+  const a = px; // 앵커 크기
   return (
     <span ref={ref} className="vw" data-on={a > 0} onPointerEnter={enter} onPointerLeave={leave}>
       {word}
