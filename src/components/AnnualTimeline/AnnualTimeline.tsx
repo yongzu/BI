@@ -1,12 +1,13 @@
+import { useEffect, useRef, useState } from 'react';
 import { Text } from '../Text/Text';
-import { PillarList } from '../PillarList/PillarList';
 import './AnnualTimeline.css';
 
 /**
- * 연간 구조 — 채용 연계와 같은 줄 형식(사용자 지시 2026-10-27): 가는 선, 번호 | 이름(시기 / 짧은 기간) | 설명 줄(PillarList flat),
- * 줄 왼쪽에 세로 진행 막대(progress) — 읽어 내려가는 만큼 차오르고 지금 시기가 진해진다.
- * 설명 아래엔 그 시기의 내용(캠프 · 졸업 카드, 1학기 주간 시간표)을 그대로 둔다.
- * 예전(2026-10-24)엔 왼쪽에 붙는 시기 목록 + 오른쪽 시기 카드였고, 그 전(v10)엔 가로로 넘기는 탭이었다.
+ * 연간 구조 — v11(toss.im/company History 형식)의 내용을 세로로(사용자 지시 2026-10-27).
+ * 시기마다 회색 면 하나: 왼쪽 순서(01 / 04) · 그 시기의 질문 · 기간과 핵심 사실, 오른쪽 이름 · 표시(개강 · 수료 · 졸업) · 설명 ·
+ * 내용(1학기 주간 시간표, 캠프 · 수료 & 졸업 카드). v11은 위 탭으로 한 시기씩 옆으로 넘겼지만 여기선 네 시기가 위에서 아래로 이어진다.
+ * 면들 왼쪽 바깥엔 세로 진행 막대 — 화면 가운데까지 읽은 만큼 차오르고, 지난 시기의 점이 진해진다.
+ * 그 전(2026-10-27 잠깐)엔 채용 연계와 같은 줄 형식, 10-24엔 왼쪽 붙는 시기 목록이었다.
  */
 export type StageItem = { name: string; label: string; body: string };
 /** 시간표 블록 — from · to는 시(정수). kind 'free' = 세션이 아닌 블록(월 · 금 개인 작업 등) */
@@ -36,28 +37,80 @@ export type Stage = {
 type Props = { stages: Stage[] };
 
 export function AnnualTimeline({ stages }: Props) {
-  const items = stages.map((s) => ({
-    en: s.name,
-    ko: s.tab,
-    body: s.body,
-    extra: (s.items || s.rhythm) && (
-      <>
-        {s.items && (
-          <div className="annual-step__cards">
-            {s.items.map((item) => (
-              <article key={item.name} className="annual-step__card">
-                <Text as="span" typography="Caption" color="tertiary">{item.label}</Text>
-                <Text as="h4" typography="Body" className="annual-step__card-name">{item.name}</Text>
-                <Text typography="Meta" color="secondary">{item.body}</Text>
-              </article>
-            ))}
+  const listRef = useRef<HTMLDivElement>(null);
+  const [fill, setFill] = useState(0); // 진행 막대가 찬 높이(px)
+  const [passed, setPassed] = useState(0); // 맨 위가 화면 가운데를 지난 시기 수
+
+  useEffect(() => {
+    const list = listRef.current;
+    if (!list) return;
+    let raf = 0;
+    const tick = () => {
+      raf = 0;
+      const mid = window.innerHeight * 0.5;
+      const r = list.getBoundingClientRect();
+      setFill(Math.max(0, Math.min(r.height, mid - r.top)));
+      setPassed([...list.querySelectorAll<HTMLElement>('.history__panel')].filter((el) => el.getBoundingClientRect().top <= mid).length);
+    };
+    const onScroll = () => { if (!raf) raf = requestAnimationFrame(tick); };
+    tick();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll);
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener('scroll', onScroll);
+      window.removeEventListener('resize', onScroll);
+    };
+  }, []);
+
+  return (
+    <div ref={listRef} className="history">
+      <div className="history__progress" aria-hidden="true">
+        <span className="history__progress-fill" style={{ height: fill }} />
+      </div>
+      {stages.map((s, i) => (
+        <section key={s.name} id={`annual-${i + 1}`} className="history__panel" data-passed={i < passed} aria-labelledby={`annual-${i + 1}-title`}>
+          <div className="history__side">
+            <Text as="span" typography="Caption" color="tertiary" className="history__index">
+              {String(i + 1).padStart(2, '0')} / {String(stages.length).padStart(2, '0')}
+            </Text>
+            <Text as="p" typography="Title" className="history__question">“{s.question}”</Text>
+            <dl className="history__facts">
+              <div>
+                <dt>기간</dt>
+                <dd>{s.period}</dd>
+              </div>
+              {s.facts.map(([k, val]) => (
+                <div key={k}>
+                  <dt>{k}</dt>
+                  <dd>{val}</dd>
+                </div>
+              ))}
+            </dl>
           </div>
-        )}
-        {s.rhythm && <WeekRhythm rhythm={s.rhythm} />}
-      </>
-    ),
-  }));
-  return <PillarList groups={[{ label: '연간 구조', items }]} flat progress />;
+          <div className="history__main">
+            <div className="history__title">
+              <Text as="h3" typography="Heading" id={`annual-${i + 1}-title`}>{s.name}</Text>
+              {s.marker && <span className="history__badge">{s.marker}</span>}
+            </div>
+            <Text typography="Body" color="secondary" className="history__body">{s.body}</Text>
+            {s.items && (
+              <div className="history__cards">
+                {s.items.map((item) => (
+                  <article key={item.name} className="history__card">
+                    <Text as="span" typography="Caption" color="tertiary">{item.label}</Text>
+                    <Text as="h4" typography="Body" className="history__card-name">{item.name}</Text>
+                    <Text typography="Meta" color="secondary">{item.body}</Text>
+                  </article>
+                ))}
+              </div>
+            )}
+            {s.rhythm && <WeekRhythm rhythm={s.rhythm} />}
+          </div>
+        </section>
+      ))}
+    </div>
+  );
 }
 
 
