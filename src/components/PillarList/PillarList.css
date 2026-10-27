@@ -50,8 +50,20 @@
 }
 /* 두 묶음 사이(역량 05 → 태도 01)는 띄운다(사용자 지시 2026-10-24). 둘째 묶음 첫 줄 위에도 선 */
 .pillar-group + .pillar-group { margin-top: var(--space-56); }
+/* 구분선은 번호 칸부터(사용자 지시 2026-10-27 — 묶음 이름 칸까지 오지 않게). 줄 자체는 묶음 이름 칸까지라 그 자리에 올려도 줄이 골라진다 */
+.pillar-row { position: relative; }
 .pillar-row + .pillar-row,
-.pillar-group + .pillar-group .pillar-row:first-child { padding-top: var(--space-20); border-top: 1px solid var(--color-border); }
+.pillar-group + .pillar-group .pillar-row:first-child { padding-top: var(--space-20); }
+.pillar-row + .pillar-row::before,
+.pillar-group + .pillar-group .pillar-row:first-child::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: calc(var(--pl-group) + var(--pl-gap));
+  height: 1px;
+  background: var(--color-border);
+}
 .pillar-row__head { display: contents; } /* 묶음 이름 · 번호 · 이름이 줄의 칸에 바로 놓인다(좁은 화면은 한 덩어리) */
 /* 묶음 이름(사용자 지시 2026-10-27 — 이미지 박스 위에서 첫 줄 01 왼쪽으로): 이름과 같은 크기 · 굵기, 늘 진하게. 아래 작은 글(Phi OS) */
 .pillar-row__group {
@@ -96,6 +108,7 @@
   .pillar-row__num { flex: none; width: var(--pl-num); }
   .pillar-row__group { width: 100%; }
   .pillar-row__group:empty { display: none; }
+  .pillar-row::before { left: 0 !important; } /* 묶음 이름이 위 한 줄이라 선은 줄 폭 전체 */
 }
 @media (max-width: 720px) {
   .pillar-list { --pl-num: 28px; --pl-gap: var(--space-12); }

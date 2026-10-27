@@ -1,17 +1,8 @@
 /* 푸터 맨 아래 'Fundamental Over Tools'(2026-10-24) — 2026-10-27: 여백 없이 화면 폭에 꽉 차게 · 맨 아래에 붙인다.
-   글자 뒤에서 직사각형 구역이 슬쩍 떠올랐다 내려간다(FooterMark.tsx). Tokens only — 구역의 임시 파란 면만 값 */
-.footer-mark-wrap {
-  position: relative;
-  isolation: isolate;
-  margin-top: var(--space-96);
-  margin-inline: calc(-1 * var(--side-wide)); /* 푸터 양옆 여백을 지우고 화면 끝까지 */
-}
-/* 구역 길: 글자 아래 끝에서 위로 화면 반 높이까지. 아래 밖에서 기다리는 구역은 여기서 잘린다 —
-   clip-path로만 자르면 보이지 않아도 페이지 아래에 구역 높이만큼 스크롤이 생겼다 */
-.footer-peek-lane { position: absolute; z-index: 0; inset: auto 0 0; height: 50vh; overflow: hidden; pointer-events: none; }
+   맨 아래에 닿아 있으면 글자가 페이지와 함께 올라가며 그 아래에서 숫자 인터랙션 공간(.footer-reveal)이 열렸다 닫힌다(FooterMark.tsx). Tokens only. */
+/* 감싼 칸이 푸터 양옆 여백을 지우고 화면 끝까지 — svg에 직접 음수 여백을 주면 전역 max-width: 100%에 걸려 글줄 폭에 묶였다 */
+.footer-mark-wrap { margin-top: var(--space-96); margin-inline: calc(-1 * var(--side-wide)); }
 .footer-mark {
-  position: relative;
-  z-index: 1;
   display: block;
   width: 100%;
   height: auto;
@@ -19,26 +10,16 @@
   fill: var(--color-text-primary);
 }
 
-/* 떠오르는 구역: 글자 뒤 가운데, 화면 아래 밖에서 기다리다 떠올라 윗부분이 글자 위로 슬쩍 보인다.
-   안은 일단 파란 면(이미지는 나중에, 사용자 지시 2026-10-27) */
-.footer-peek {
-  --fp-fill: #3182f6;
-  position: absolute;
-  bottom: 0;
-  left: 50%;
-  width: clamp(200px, 36vw, 560px);
-  aspect-ratio: 3 / 2;
-  background: var(--fp-fill);
-  transform: translate(-50%, 101%);
-  /* 내려갈 땐 천천히 출발해 빨리 빠진다 */
-  transition: transform 700ms cubic-bezier(0.55, 0, 0.75, 0.2);
+/* 열리는 공간: 닫혀 있을 땐 높이 0. 높이는 FooterMark.tsx가 프레임마다 정한다. 안의 숫자 필드는 열린 높이로 고정해 두고
+   공간이 늘어나는 만큼 위에서부터 드러난다(늘어나는 동안 글자가 늘거나 줄지 않게) */
+.footer-reveal {
+  position: relative;
+  height: 0;
+  margin-inline: calc(-1 * var(--side-wide));
+  overflow: hidden;
 }
-/* 떠오를 땐 빨리 출발해 부드럽게 선다 — 윗부분만 슬쩍 글자 위로(위 버전 기록 줄에 닿지 않게) */
-.footer-peek[data-up='true'] {
-  transform: translate(-50%, 50%);
-  transition: transform 900ms cubic-bezier(0.16, 1, 0.3, 1);
-}
+.footer-reveal__field { position: absolute; top: 0; left: 0; right: 0; height: min(42vh, 420px); }
 
 @media (prefers-reduced-motion: reduce) {
-  .footer-peek { display: none; }
+  .footer-reveal { display: none; }
 }

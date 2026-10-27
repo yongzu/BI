@@ -6,6 +6,7 @@ import { CourseExplorer } from '../components/CourseExplorer/CourseExplorer';
 import { ApplyButton } from '../components/ApplyButton/ApplyButton';
 import { CareerReveal } from '../components/CareerReveal/CareerReveal';
 import GradientASCII from '../components/GradientASCII/GradientASCII';
+import { HERO_ASCII } from '../components/GradientASCII/heroPreset';
 import { BackToTop, SiteHeader } from '../components/SiteHeader/SiteHeader';
 import { FooterMark } from '../components/FooterMark/FooterMark';
 import { VersionLog } from '../components/VersionLog/VersionLog';
@@ -116,26 +117,7 @@ export function ProgramsPage() {
           {/* 배경: react-bits GradientASCII(사용자 지시 2026-10-20, 주소의 값 그대로) — 물방울 파동 · 3D Φ 로고 대신.
               화면 폭 전체 · 히어로 높이, 글자 뒤. 마우스가 지나가면 그 자리 글자가 잠깐 뒤섞인다 */}
           <div className="hero__bg" aria-hidden="true">
-            <GradientASCII
-              colors={['#919191', '#ffffff', '#dfdfdf', '#bfbfbf']}
-              shape="horizon"
-              characters=" 01" /* 글자는 0과 1만(사용자 지시 2026-10-20, 이전 P · H · I) */
-              randomGlyphs /* 밝기 순서로 고르면 거의 1만 나와서, 0과 1을 고르게 섞는다 */
-              cellSize={15}
-              density={0.5}
-              glyphOpacity={0.5}
-              depthOfField={0.08}
-              flicker={0.13}
-              softness={0.8}
-              scale={1.35}
-              flow={0.3}
-              speed={0.9}
-              gradientOpacity={0}
-              grain={0.05}
-              scrambleRadius={0.02}
-              clickEffect="none"
-              lightMode
-            />
+            <GradientASCII {...HERO_ASCII} />
           </div>
           {/* 첫 화면(한 화면 높이, 내용 세로 가운데) — '자세히 보기'는 그 아래 200px(사용자 지시 2026-10-04) */}
           <div className="hero__atf">
@@ -191,7 +173,7 @@ export function ProgramsPage() {
             title="역량과 태도"
             lead={'어떤 환경에서도 스스로 답을 찾을 수 있는 사고방식을 만들기 위해, Phi는 다섯 가지 역량을 기르고 다섯 가지 태도(Phi OS)를 중요시합니다.\n수업과 장치는 이 역량을 기르고 태도를 연습하는 자리입니다.'} /* '중요시합니다.' 뒤에서 줄을 바꾼다(사용자 지시 2026-10-24) */
           />
-          <PillarList groups={[{ label: '역량', items: competencies }, { label: '태도', sub: 'Phi OS', items: attitudes }]} />
+          <PillarList groups={[{ label: '역량', sub: 'Competency', items: competencies }, { label: '태도', sub: 'Phi OS', items: attitudes }]} />
         </section>
 
         {/* ---------- 커리큘럼 ---------- */}
