@@ -19,11 +19,16 @@
   overflow: hidden;
 }
 
-/* ---------- 아래로 스크롤하라는 화살표(사용자 지시 2026-10-27): 단락이 나오면 단락 아래 가운데에서 옅어졌다 진해졌다를 되풀이 ---------- */
+/* ---------- 아래로 스크롤하라는 화살표(사용자 지시 2026-10-27): 단락이 나오면 옅어졌다 진해졌다를 되풀이 ----------
+   자리는 단락 바로 아래(무대 gap 48)와 무대 맨 아래(32 위)의 가운데 — 무대 위아래에 같은 몫(flex 1)을 두고,
+   아래 몫이 화살표 칸이 되어 그 안 가운데(아래 32 비움)에 화살표를 둔다. 제목 · 단락은 그대로 무대 가운데 */
+.philosophy__stage::before { content: ''; flex: 1; }
 .philosophy__hint {
+  flex: 1;
   display: flex;
+  align-items: center;
   justify-content: center;
-  margin-top: var(--space-48); /* 단락 아래(사용자 지시 2026-10-27 — 무대 맨 아래에서 옮김) */
+  padding-bottom: var(--space-32);
   color: var(--color-text-primary);
   opacity: 0;
   pointer-events: none;
