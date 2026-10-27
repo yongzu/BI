@@ -144,7 +144,8 @@ export function Philosophy({ title, paragraphs }: Props) {
         const ty = (vh / 2 - (title.offsetTop + h / 2)) * (1 - eB);
         title.style.transform = k >= 1 ? '' : `translate(0, ${ty.toFixed(1)}px) scale(${sc.toFixed(4)})`;
         // 움직이는 동안만 레이어로 — 제자리에선 풀어야 제 크기로 선명하게 다시 그린다(늘 걸면 작을 때 그린 그림을 확대해 흐렸다)
-        title.style.willChange = k >= 1 ? '' : 'transform';
+        // will-change는 걸지 않는다(2026-10-27) — 걸면 크롬이 처음(작을 때) 그린 그림을 확대해 써서 커지는 동안 제목 · 벡터 윤곽이
+        // 깨져 보였다. 걸지 않으면 크기가 바뀔 때마다 그 크기로 다시 그린다(제목 한 줄이라 부담이 작다)
         // 작을 때 흐렸다가 커지며 또렷하게 — 흐림은 변환 전에 걸리므로 화면에서의 흐림(INTRO_BLUR × 남은 몫)을 배율로 나눈다
         const blur = (INTRO_BLUR * (1 - eA)) / sc;
         title.style.filter = blur > 0.05 ? `blur(${blur.toFixed(2)}px)` : '';
@@ -197,7 +198,13 @@ export function Philosophy({ title, paragraphs }: Props) {
         return;
       }
       let target: number;
-      if (idx < 0) {
+      // 맞춘 자리와 지금 자리가 크게 어긋나면(스크롤이 다른 데서 움직였다) 맞춘 자리를 잊고 들어온 것처럼 다시 고른다
+      if (idx >= 0 && Math.abs(y - a[idx]) > vh * 0.75) {
+        idx = -1;
+        const next = a.findIndex((v) => v > y + 2);
+        const prev = a.reduce((p, v, i) => (v < y - 2 ? i : p), -1);
+        target = down ? (next < 0 ? last : next) : Math.max(0, prev);
+      } else if (idx < 0) {
         // 바깥에서 들어왔다: 내려오는 중이면 첫 단락(제목이 끝까지 줄어든다), 올라오는 중이면 마지막 단락
         target = down ? 1 : n;
       } else {
@@ -263,9 +270,11 @@ export function Philosophy({ title, paragraphs }: Props) {
       window.clearTimeout(settle);
       settle = window.setTimeout(snap, SETTLE_MS);
     };
+    // 크기 · 글꼴이 바뀌면 다시 재서 그리기만 한다 — 끊어 넘기기(snap)는 사용자 스크롤에만(2026-10-27: 처음 열 때 snap이 돌아
+    // 첫 단락 자리를 '맞춘 자리'로 적어 두고는 실제로는 움직이지 않아, 첫 스크롤에 '위로 올라갔다'로 읽혀 맨 처음으로 되돌아갔다)
     const onResize = () => {
       fit();
-      onScroll();
+      if (!raf) raf = requestAnimationFrame(tick);
     };
     window.addEventListener('scroll', onScroll, { passive: true });
     window.addEventListener('resize', onResize);

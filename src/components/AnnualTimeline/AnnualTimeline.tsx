@@ -1,13 +1,15 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { scrollToTarget } from '../../smoothScroll';
 import { Text } from '../Text/Text';
 import './AnnualTimeline.css';
 
 /**
- * 연간 구조 — v11(toss.im/company History 형식)의 내용을 세로로(사용자 지시 2026-10-27).
- * 시기마다 회색 면 하나: 왼쪽 순서(01 / 04) · 그 시기의 질문 · 기간과 핵심 사실, 오른쪽 이름 · 표시(개강 · 수료 · 졸업) · 설명 ·
- * 내용(1학기 주간 시간표, 캠프 · 수료 & 졸업 카드). v11은 위 탭으로 한 시기씩 옆으로 넘겼지만 여기선 네 시기가 위에서 아래로 이어진다.
- * 면들 왼쪽 바깥엔 세로 진행 막대 — 화면 가운데까지 읽은 만큼 차오르고, 지난 시기의 점이 진해진다.
- * 그 전(2026-10-27 잠깐)엔 채용 연계와 같은 줄 형식, 10-24엔 왼쪽 붙는 시기 목록이었다.
+ * 연간 구조 — 커리큘럼처럼 왼쪽 세로 탭 · 오른쪽 내용(사용자 지시 2026-10-27).
+ * - 왼쪽: 시기 이름(+ 개강 · 수료 · 졸업 표시) 탭. 위에 붙어 있고(sticky), 고른 탭 아래에만 기간이 펼쳐진다. 막대 하나가 고른 탭으로 미끄러진다.
+ * - 오른쪽: 네 시기가 위에서 아래로 이어진다 — 시기마다 질문 · 설명 · 기간과 핵심 사실 · 내용(1학기 주간 시간표, 캠프 · 수료 & 졸업 카드).
+ * - 스크롤하면 화면 위쪽(탭 높이 + 화면 30%)을 지난 마지막 시기가 고른 탭이 되어 다음 내용으로 넘어간다. 탭을 누르면 그 시기로 스크롤한다.
+ * - 좁은 화면은 탭 없이 시기 이름을 내용 위에 쓴다.
+ * 그 전(같은 날)엔 v11 시기 면을 세로로 쌓고 왼쪽에 진행 막대, 10-24엔 왼쪽 붙는 시기 목록이었다.
  */
 export type StageItem = { name: string; label: string; body: string };
 /** 시간표 블록 — from · to는 시(정수). kind 'free' = 세션이 아닌 블록(월 · 금 개인 작업 등) */
@@ -36,21 +38,26 @@ export type Stage = {
 
 type Props = { stages: Stage[] };
 
-export function AnnualTimeline({ stages }: Props) {
-  const listRef = useRef<HTMLDivElement>(null);
-  const [fill, setFill] = useState(0); // 진행 막대가 찬 높이(px)
-  const [passed, setPassed] = useState(0); // 맨 위가 화면 가운데를 지난 시기 수
+/** 탭이 붙는 높이(px) — 커리큘럼 탭(CourseExplorer TABS_TOP)과 같다. 시기 맨 위도 여기에 맞춘다(CSS scroll-margin-top) */
+const TABS_TOP = 56;
 
+export function AnnualTimeline({ stages }: Props) {
+  const rootRef = useRef<HTMLDivElement>(null);
+  const tabsRef = useRef<HTMLDivElement>(null);
+  const barRef = useRef<HTMLSpanElement>(null);
+  const [active, setActive] = useState(0);
+
+  // 스크롤을 따라 고른 탭 — 맨 위가 탭 높이 + 화면 30%를 지난 마지막 시기
   useEffect(() => {
-    const list = listRef.current;
-    if (!list) return;
+    const root = rootRef.current;
+    if (!root) return;
     let raf = 0;
     const tick = () => {
       raf = 0;
-      const mid = window.innerHeight * 0.5;
-      const r = list.getBoundingClientRect();
-      setFill(Math.max(0, Math.min(r.height, mid - r.top)));
-      setPassed([...list.querySelectorAll<HTMLElement>('.history__panel')].filter((el) => el.getBoundingClientRect().top <= mid).length);
+      const line = TABS_TOP + window.innerHeight * 0.3;
+      const panels = [...root.querySelectorAll<HTMLElement>('.annual-x__panel')];
+      const i = panels.reduce((last, el, idx) => (el.getBoundingClientRect().top <= line ? idx : last), 0);
+      setActive(i);
     };
     const onScroll = () => { if (!raf) raf = requestAnimationFrame(tick); };
     tick();
@@ -63,19 +70,72 @@ export function AnnualTimeline({ stages }: Props) {
     };
   }, []);
 
+  // 막대: 고른 탭의 자리 · 높이로(탭 아래 기간이 펼쳐지며 높이가 바뀌므로 크기가 바뀔 때마다 다시 잰다)
+  useLayoutEffect(() => {
+    const tabs = tabsRef.current;
+    const bar = barRef.current;
+    if (!tabs || !bar) return;
+    const place = () => {
+      const tab = tabs.querySelectorAll<HTMLElement>('.annual-x__tab')[active];
+      if (!tab) return;
+      bar.style.setProperty('--y', `${tab.offsetTop}px`);
+      bar.style.setProperty('--h', `${tab.offsetHeight}px`);
+    };
+    place();
+    const ro = new ResizeObserver(place);
+    tabs.querySelectorAll('.annual-x__tab').forEach((t) => ro.observe(t));
+    return () => ro.disconnect();
+  }, [active]);
+
+  const go = (i: number) => {
+    const panel = rootRef.current?.querySelectorAll<HTMLElement>('.annual-x__panel')[i];
+    if (!panel) return;
+    setActive(i);
+    scrollToTarget(panel);
+  };
+
   return (
-    <div ref={listRef} className="history">
-      <div className="history__progress" aria-hidden="true">
-        <span className="history__progress-fill" style={{ height: fill }} />
+    <div ref={rootRef} className="annual-x">
+      <div ref={tabsRef} className="annual-x__tabs" role="list" aria-label="연간 구조 시기">
+        <span ref={barRef} className="annual-x__bar" aria-hidden="true" />
+        {stages.map((s, i) => (
+          <button
+            key={s.name}
+            type="button"
+            role="listitem"
+            className="annual-x__tab"
+            data-active={i === active}
+            aria-current={i === active ? 'step' : undefined}
+            onClick={() => go(i)}
+          >
+            <span className="annual-x__tab-name">{s.name}</span>
+            {s.marker && <span className="annual-x__tab-marker">{s.marker}</span>}
+            {/* 고른 탭 아래에만 기간 — 커리큘럼 탭 아래 설명처럼 펼쳐진다 */}
+            <span className="annual-x__tab-brief">
+              <span className="annual-x__tab-brief-inner">{s.period}</span>
+            </span>
+          </button>
+        ))}
       </div>
-      {stages.map((s, i) => (
-        <section key={s.name} id={`annual-${i + 1}`} className="history__panel" data-passed={i < passed} aria-labelledby={`annual-${i + 1}-title`}>
-          <div className="history__side">
-            <Text as="span" typography="Caption" color="tertiary" className="history__index">
-              {String(i + 1).padStart(2, '0')} / {String(stages.length).padStart(2, '0')}
-            </Text>
-            <Text as="p" typography="Title" className="history__question">“{s.question}”</Text>
-            <dl className="history__facts">
+
+      <div className="annual-x__panels">
+        {stages.map((s, i) => (
+          <section
+            key={s.name}
+            id={`annual-${i + 1}`}
+            className="annual-x__panel"
+            data-active={i === active}
+            aria-labelledby={`annual-${i + 1}-title`}
+            style={{ scrollMarginTop: TABS_TOP }}
+          >
+            {/* 시기 이름은 넓은 화면에선 왼쪽 탭이 맡는다 — 여기선 좁은 화면에서만 보인다(읽기 도구엔 늘) */}
+            <div className="annual-x__name">
+              <Text as="h3" typography="Title" id={`annual-${i + 1}-title`}>{s.name}</Text>
+              {s.marker && <span className="annual-x__tab-marker">{s.marker}</span>}
+            </div>
+            <Text as="p" typography="Title" className="annual-x__question">“{s.question}”</Text>
+            <Text typography="Body" color="secondary" className="annual-x__body">{s.body}</Text>
+            <dl className="annual-x__facts">
               <div>
                 <dt>기간</dt>
                 <dd>{s.period}</dd>
@@ -87,13 +147,6 @@ export function AnnualTimeline({ stages }: Props) {
                 </div>
               ))}
             </dl>
-          </div>
-          <div className="history__main">
-            <div className="history__title">
-              <Text as="h3" typography="Heading" id={`annual-${i + 1}-title`}>{s.name}</Text>
-              {s.marker && <span className="history__badge">{s.marker}</span>}
-            </div>
-            <Text typography="Body" color="secondary" className="history__body">{s.body}</Text>
             {s.items && (
               <div className="history__cards">
                 {s.items.map((item) => (
@@ -106,9 +159,9 @@ export function AnnualTimeline({ stages }: Props) {
               </div>
             )}
             {s.rhythm && <WeekRhythm rhythm={s.rhythm} />}
-          </div>
-        </section>
-      ))}
+          </section>
+        ))}
+      </div>
     </div>
   );
 }

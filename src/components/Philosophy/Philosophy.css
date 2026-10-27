@@ -69,8 +69,7 @@
 /* 제목은 떠오르지 않는다(사용자 지시 2026-10-23) — v21: 화면 가운데 작은 크기에서 꽉 찬 폭으로 커진 뒤 제자리로 올라간다(Philosophy.tsx, transform).
    가운데를 축으로 키운다 */
 .philosophy__title { transform-origin: 50% 50%; }
-/* will-change는 커지는 동안만(Philosophy.tsx). 늘 걸어 두면 크롬이 처음(작을 때) 그린 그림을 확대해 써서 제목 · 벡터 윤곽이
-   흐리게 보였다(사용자 제보 2026-10-27) — 제자리에 오면 풀어 제 크기로 다시 그리게 한다 */
+/* will-change: transform은 걸지 않는다(2026-10-27, Philosophy.tsx) — 걸면 크롬이 처음(작을 때) 그린 그림을 확대해 써서 제목 · 벡터 윤곽이 깨져 보였다 */
 /* 단락 칸은 제목이 제자리로 옮겨 가는 동안 스크롤을 따라 페이드인(Philosophy.tsx가 opacity · transform을 직접 준다) */
 .philosophy__body { will-change: opacity, transform; }
 

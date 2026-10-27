@@ -72,7 +72,8 @@
 /* 연간 구조는 자기 섹션의 머리글 아래 — 다른 섹션의 첫 그룹과 같은 간격으로 */
 .section-header + .annual,
 .section-header + .annual-map,
-.section-header + .history { margin-top: var(--space-after-header); }
+.section-header + .history,
+.section-header + .annual-x { margin-top: var(--space-after-header); }
 
 /* ---------- Courses: 필터 · 목록 · 상세는 components/CourseExplorer ---------- */
 
