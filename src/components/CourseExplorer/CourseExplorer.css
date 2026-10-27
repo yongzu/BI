@@ -112,6 +112,8 @@
 .course-tab[aria-selected='true'] .course-tab__brief-inner { opacity: 1; transition: opacity 360ms var(--ease) 160ms; }
 .course-tab__cadence { padding-top: var(--space-4); font-size: var(--typo-caption-size); line-height: 1.4; font-weight: var(--font-weight-bold); color: var(--color-text-tertiary); }
 .course-tab__summary { font-size: var(--typo-meta-size); line-height: 1.5; font-weight: var(--font-weight-regular); letter-spacing: var(--tracking-body); color: var(--color-text-secondary); }
+/* 작은 글씨 없이 설명만 있는 탭(수업을 관통하는 접근) — 작은 글씨가 있던 자리만큼 이름과 띄운다 */
+.course-tab__summary:first-child { padding-top: var(--space-4); }
 /* 좁은 화면에서만 — 탭 줄 아래 고른 분류의 글 */
 .course-tabs__brief { display: none; }
 

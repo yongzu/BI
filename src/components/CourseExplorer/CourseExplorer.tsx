@@ -231,14 +231,15 @@ export function CourseExplorer({ types, profiles, approaches, devices }: Props) 
           {approaches.map((g, j) => {
             const i = types.length + j;
             return (
-              <TabButton key={g.id} id={g.id} name={g.name} count={devices.filter((d) => d.tag === g.tag).length} brief={g.brief} summary={g.summary}
+              // 수 알약 · 작은 글씨는 붙이지 않는다(사용자 지시 2026-10-27) — 이름과 압축 설명만
+              <TabButton key={g.id} id={g.id} name={g.name} summary={g.summary}
                 selected={tab === i} onPick={() => pickTab(i)} buttonRef={(el) => { tabRefs.current[i] = el; }} />
             );
           })}
         </div>
         {/* 좁은 화면(탭이 가로 줄): 탭 안에 펼칠 자리가 없어 고른 분류의 글을 탭 줄 아래에 한 번 싣는다 */}
         <p className="course-tabs__brief" aria-hidden="true">
-          <span className="course-tab__cadence">{current.brief}</span>
+          {'brief' in current && <span className="course-tab__cadence">{current.brief}</span>}
           <span className="course-tab__summary">{current.summary}</span>
         </p>
 
@@ -308,7 +309,7 @@ type TabProps = {
   id: string;
   name: string;
   count?: number;
-  brief: string;
+  brief?: string;
   summary: string;
   selected: boolean;
   onPick: () => void;
@@ -335,7 +336,7 @@ function TabButton({ id, name, count, brief, summary, selected, onPick, buttonRe
       {/* 이름은 이름 · 수만, 이 글은 설명으로 읽힌다 */}
       <span id={`course-brief-${id}`} className="course-tab__brief" aria-hidden="true">
         <span className="course-tab__brief-inner">
-          <span className="course-tab__cadence">{brief}</span>
+          {brief && <span className="course-tab__cadence">{brief}</span>}
           <span className="course-tab__summary">{summary}</span>
         </span>
       </span>

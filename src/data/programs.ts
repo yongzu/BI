@@ -309,12 +309,13 @@ export const devices: Device[] = [
 
 /**
  * 수업을 관통하는 접근의 분류 탭(사용자 지시 2026-10-27) — 커리큘럼 '프로그램 구조' 탭 아래에 같은 모양으로.
- * 이름은 과목 분류 탭(Fundamental …)처럼 영어, 고른 탭 아래 작은 글씨(brief) · 압축 설명(summary)도 같다.
+ * 이름은 과목 분류 탭(Fundamental …)처럼 영어, 고른 탭 아래엔 압축 설명(summary)만 — 수 알약과 작은 글씨(세션 안에서 · 세션 밖에서)는
+ * 뺐다(사용자 지시 2026-10-27).
  * 예전 이름 '세션 안에서' · '스스로 돌아보기'는 devices의 tag로 남아 장치를 묶는다.
  */
-export type ApproachGroup = { id: string; tag: string; name: string; brief: string; summary: string };
+export type ApproachGroup = { id: string; tag: string; name: string; summary: string };
 export const approachGroups: ApproachGroup[] = [
-  { id: 'live-session', tag: '세션 안에서', name: 'Live Session', brief: '세션 안에서, 전문가 · 동료와 함께', summary: '전문가가 생각하는 과정을 눈앞에서 보고, 동료와 같은 기준으로 피드백을 주고받습니다.' },
-  { id: 'reflection', tag: '스스로 돌아보기', name: 'Reflection', brief: '세션 밖에서, 스스로', summary: '배운 것을 스스로 평가하고 기록하며, 동료에게 설명하면서 다시 배웁니다.' },
+  { id: 'live-session', tag: '세션 안에서', name: 'Live Session', summary: '전문가가 생각하는 과정을 눈앞에서 보고, 동료와 같은 기준으로 피드백을 주고받습니다.' },
+  { id: 'reflection', tag: '스스로 돌아보기', name: 'Reflection', summary: '배운 것을 스스로 평가하고 기록하며, 동료에게 설명하면서 다시 배웁니다.' },
 ];
 
