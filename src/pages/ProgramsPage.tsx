@@ -40,8 +40,7 @@ const toc: TocItem[] = [
   { id: 'pillars', label: '역량과 태도' }, // 맨 위(v18 — 교육 철학은 목차에 넣지 않는다). 역량 · Phi OS를 합침(2026-10-20)
   { id: 'curriculum', label: '커리큘럼' }, // 수업을 관통하는 접근은 커리큘럼 탭 안으로 옮겨 목차에서 뺐다(사용자 지시 2026-10-27)
   { id: 'curriculum-annual', label: '연간 구조' },
-  { id: 'career', label: '채용 연계' },
-  { id: 'overview', label: '과정 개요' }, // 맨 아래 — 지원 페이지로 잇는다(사용자 지시 2026-10-27)
+  { id: 'career', label: '채용 연계' }, // 맨 아래 과정 개요(표 · 지원 버튼)는 목차에 넣지 않는다(사용자 지시 2026-10-27)
 ];
 
 /** Blocks that rise in on scroll */
@@ -155,9 +154,9 @@ export function ProgramsPage() {
           items={careerItems}
         />
 
-        {/* ---------- 과정 개요 — 맨 아래(사용자 지시 2026-10-27): 기간 · 시수 · 방식 · 규모 · 개강 표, 그리고 지원 조건 · 선발 과제를 볼 수 있는 지원 페이지로 ---------- */}
-        <section id="overview" className="section section--wide section--last">
-          <SectionHeader title="과정 개요" lead="지원 조건과 선발 과제, 모집 일정은 지원 페이지에서 확인할 수 있습니다." />
+        {/* ---------- 과정 개요 — 맨 아래(사용자 지시 2026-10-27): 기간 · 시수 · 방식 · 규모 · 개강 표, 그리고 지원 조건 · 선발 과제를 볼 수 있는 지원 페이지로.
+            제목 · 설명은 뺐다(같은 날 사용자 지시) — 이름은 읽기 도구용으로만 ---------- */}
+        <section id="overview" className="section section--wide section--last" aria-label="과정 개요">
           <dl className="overview-facts">
             {facts.map((f) => (
               <div key={f.label} className="overview-facts__row">

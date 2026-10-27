@@ -99,6 +99,7 @@ export function Philosophy({ title, paragraphs }: Props) {
     let readAll = false;
     let lastOn = 0;
     let inside = false;
+    let guardY = window.scrollY; // 앞 스크롤 자리 — 무대 끝을 '이어서' 넘었는지(한 번에 뛰어넘은 이동은 막지 않는다)
     let unlock = 0;
     // 단락 i가 다 드러나는 시간(ms): 문장이 SENTENCE_GAP초 간격으로 시작해 마지막 문장이 READ_S초 동안 드러난다
     const hold = (i: number) => ((paragraphs[i].length - 1) * SENTENCE_GAP + READ_S) * 1000;
@@ -222,12 +223,17 @@ export function Philosophy({ title, paragraphs }: Props) {
       const y = window.scrollY;
       const { vh, anchors: a } = geometry();
       const end = a[n + 1];
+      const prev = guardY;
+      guardY = y;
       if (y >= a[0] && y <= end + 2) {
         inside = true;
         return;
       }
       if (y < a[0]) inside = false;
-      if (!inside || y > end + vh * 2.5 || isNavigating() || performance.now() < snapping) return;
+      // 무대 안에서 스크롤이 이어져 끝을 막 넘은 순간만(앞 자리가 무대 안, 한 프레임 이동이 한 화면 미만).
+      // 한 번에 멀리 뛰는 이동(주소 링크 · 스크롤바 끌기 · 목차)은 막지 않는다
+      const crossed = prev <= end + 2 && y - prev < vh;
+      if (!inside || !crossed || isNavigating() || performance.now() < snapping) return;
       const now = performance.now();
       if (readAll || (wasOn && atShown >= n - 1 && now >= holdUntil)) return;
       // 보던 단락이 아직 다 드러나지 않았으면 그 단락, 다 드러났으면 다음 단락(자리 i + 1 = 단락 i)
