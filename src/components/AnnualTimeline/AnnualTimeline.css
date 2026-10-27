@@ -74,12 +74,14 @@
 /* 고르지 않은 시기는 옅게 — 스크롤하며 다음 시기로 넘어가는 것이 보이게 */
 .annual-x__panel { transition: opacity 360ms var(--ease); }
 .annual-x__panel[data-active='false'] { opacity: 0.35; }
-.annual-x__name { display: none; align-items: center; gap: var(--space-8); } /* 좁은 화면에서만(아래) */
+/* 시기 이름 · 기간(사용자 지시 2026-10-27): 질문 자리에 이름(Title) + 표시 알약, 그 아래 기간. 질문은 그 밑 굵은 본문 한 줄로 */
+.annual-x__head { display: flex; flex-direction: column; gap: var(--space-4); }
+.annual-x__name { display: flex; align-items: center; gap: var(--space-8); }
 /* 시기 안 두 칸(사용자 지시 2026-10-27 — 탭까지 세 칸): 글과 표 4 | 시간표 · 상자 5 */
 .annual-x__cols { display: grid; grid-template-columns: minmax(0, 4fr) minmax(0, 5fr); column-gap: var(--grid-gap); align-items: start; }
 .annual-x__text { display: flex; flex-direction: column; gap: var(--space-20); min-width: 0; }
 .annual-x__visual { display: flex; flex-direction: column; gap: var(--space-12); min-width: 0; }
-.annual-x__question { line-height: 1.35; color: var(--color-text-primary); }
+.annual-x__question { font-weight: var(--font-weight-bold); color: var(--color-text-primary); }
 
 .annual-x__facts { display: flex; flex-direction: column; border-top: 1px solid var(--color-border); }
 .annual-x__facts > div { display: grid; grid-template-columns: 88px minmax(0, 1fr); gap: var(--space-12); padding: var(--space-12) 0; border-bottom: 1px solid var(--color-border); }
@@ -167,7 +169,6 @@
   /* 좁은 화면: 탭 없이 시기를 위에서 아래로, 이름은 내용 위에 */
   .annual-x__tabs { display: none; }
   .annual-x__panels { grid-column: 1 / -1; }
-  .annual-x__name { display: flex; }
   .annual-x__cols { grid-template-columns: minmax(0, 1fr); row-gap: var(--space-24); }
   .annual-x__panel[data-active='false'] { opacity: 1; }
   .annual-x__panel { padding-bottom: var(--space-64); }

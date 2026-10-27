@@ -129,21 +129,19 @@ export function AnnualTimeline({ stages }: Props) {
             aria-labelledby={`annual-${i + 1}-title`}
             style={{ scrollMarginTop: TABS_TOP }}
           >
-            {/* 시기 이름은 넓은 화면에선 왼쪽 탭이 맡는다 — 여기선 좁은 화면에서만 보인다(읽기 도구엔 늘) */}
-            <div className="annual-x__name">
-              <Text as="h3" typography="Title" id={`annual-${i + 1}-title`}>{s.name}</Text>
-              {s.marker && <span className="annual-x__tab-marker">{s.marker}</span>}
-            </div>
             <div className="annual-x__cols">
-              {/* 왼쪽 칸: 글과 표 */}
+              {/* 왼쪽 칸: 시기 이름 · 기간(사용자 지시 2026-10-27 — 질문만으론 어떤 기간인지 바로 와닿지 않았다), 질문 · 글 · 표 */}
               <div className="annual-x__text">
-                <Text as="p" typography="Title" className="annual-x__question">“{s.question}”</Text>
+                <div className="annual-x__head">
+                  <div className="annual-x__name">
+                    <Text as="h3" typography="Title" id={`annual-${i + 1}-title`}>{s.name}</Text>
+                    {s.marker && <span className="annual-x__tab-marker">{s.marker}</span>}
+                  </div>
+                  <Text typography="Meta" color="secondary" className="annual-x__period">{s.period}</Text>
+                </div>
+                <Text typography="Body" className="annual-x__question">“{s.question}”</Text>
                 <Text typography="Body" color="secondary" className="annual-x__body">{s.body}</Text>
                 <dl className="annual-x__facts">
-                  <div>
-                    <dt>기간</dt>
-                    <dd>{s.period}</dd>
-                  </div>
                   {s.facts.map(([k, val]) => (
                     <div key={k}>
                       <dt>{k}</dt>

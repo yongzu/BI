@@ -103,9 +103,11 @@ export function Philosophy({ title, paragraphs }: Props) {
     // 단락 i가 다 드러나는 시간(ms): 문장이 SENTENCE_GAP초 간격으로 시작해 마지막 문장이 READ_S초 동안 드러난다
     const hold = (i: number) => ((paragraphs[i].length - 1) * SENTENCE_GAP + READ_S) * 1000;
     // 맞출 자리(페이지 y): 0 = 무대가 붙는 순간(큰 제목), i = 단락 i - 1이 지금이 되는 지점, n + 1 = 무대가 풀리는 자리
+    // 화면 높이는 무대 높이(100svh)로 잰다(2026-10-27 — 맨 처음으로 되돌아가던 원인 ①): 휴대폰은 스크롤하면 주소창이 접히며
+    // innerHeight가 바뀌는데, 그 값으로 잰 단락 자리가 수십 px 위아래로 밀려 '위로 올라갔다'로 읽혔다(→ 큰 제목 자리 = 맨 위로)
     const geometry = () => {
       const r = track.getBoundingClientRect();
-      const vh = window.innerHeight;
+      const vh = stage.offsetHeight;
       const top = window.scrollY + r.top;
       const span = r.height - vh; // 무대가 붙어 있는 동안의 스크롤 길이
       const intro = INTRO * vh;
@@ -153,8 +155,9 @@ export function Philosophy({ title, paragraphs }: Props) {
       // 벡터 인터랙션 · 십자선은 늘 켠다(사용자 지시 2026-10-27 — 단락이 나오기 전, 제목이 커지는 동안에도 호버되게).
       // 예전(v19)엔 큰 제목인 동안 꺼 뒀다. 스크롤하는 동안 박스는 VectorGuides가 매 프레임 다시 잰다
       setVectorZone(root, true);
-      // 단락 글자는 ②가 시작되면 드러나기 시작한다
-      const on = k > GROW && r.bottom > vh * 0.4;
+      // 단락 글자는 단락 칸이 제자리에 다 들어온 뒤(② 끝)에 드러나기 시작한다(사용자 제보 2026-10-27): 예전엔 ②가 시작되면 시작해,
+      // 칸이 아직 투명한 동안 글자가 다 드러나 버려 칸이 나타날 땐 한꺼번에 · 흐리게 떴다. ② 동안 아래 스크롤을 막던 것(hold)도 함께 풀린다
+      const on = k >= 1 && r.bottom > vh * 0.4;
       setShown(on);
       const q = span > intro ? Math.min(0.999, Math.max(0, (-r.top - intro) / (span - intro))) : 0;
       const atT = Math.floor(q * n);
@@ -194,6 +197,12 @@ export function Philosophy({ title, paragraphs }: Props) {
         idx = -1; // 무대 밖 — 맞추지 않는다
         return;
       }
+      // 제목이 커지는 길(첫 단락 자리 위)에서 위로 가는 중이면 맞추지 않는다(사용자 제보 2026-10-27 — 원인 ②): 예전엔 첫 단락에서
+      // 조금만 올라가도 큰 제목 자리(= 페이지 맨 위)로 저절로 날아가 '처음으로 되돌아갔다'. 제목은 스크롤을 그대로 따르므로 둬도 된다
+      if (y < a[1] - 2 && !down) {
+        idx = -1;
+        return;
+      }
       let target: number;
       // 맞춘 자리와 지금 자리가 크게 어긋나면(스크롤이 다른 데서 움직였다) 맞춘 자리를 잊고 들어온 것처럼 다시 고른다
       if (idx >= 0 && Math.abs(y - a[idx]) > vh * 0.75) {
@@ -210,6 +219,10 @@ export function Philosophy({ title, paragraphs }: Props) {
         if (target < 0) return; // 큰 제목에서 위로 — 무대 밖으로 나가게 둔다
       }
       target = Math.min(last, target);
+      if (target === 0) {
+        idx = -1; // 맨 위(큰 제목 자리)로는 저절로 가지 않는다(원인 ②)
+        return;
+      }
       // 마지막 단락에서 무대가 풀리는 자리로는 저절로 가지 않는다(사용자 지시 2026-10-27 — 읽는 도중 다음으로 넘어가 버렸다).
       // 사용자가 직접 스크롤해 내려가게 둔다
       if (target === last && idx === n) return;
@@ -280,7 +293,7 @@ export function Philosophy({ title, paragraphs }: Props) {
     const holding = () => {
       if (reduced || !wasOn || performance.now() >= holdUntil) return false;
       const r = track.getBoundingClientRect();
-      return r.top <= 1 && r.bottom >= window.innerHeight - 1;
+      return r.top <= 1 && r.bottom >= stage.offsetHeight - 1;
     };
     const stop = (e: Event) => { e.preventDefault(); e.stopPropagation(); };
     const onWheel = (e: WheelEvent) => { if (e.deltaY > 0 && holding()) stop(e); };

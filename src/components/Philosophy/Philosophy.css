@@ -29,6 +29,7 @@
   align-items: center;
   justify-content: center;
   padding-bottom: var(--space-32);
+  translate: 0 -40px; /* 가운데 자리에서 40px 위로(사용자 지시 2026-10-27) — 깜빡임(transform)과 따로 */
   color: var(--color-text-primary);
   opacity: 0;
   pointer-events: none;
