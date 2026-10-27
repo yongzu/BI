@@ -60,6 +60,8 @@ const SNAP_S = 0.7;
 const SENTENCE_GAP = 0.45; // 0.9 → 0.45 — 두 배 빠르게(사용자 지시 2026-10-24)
 /** 한 문장이 드러나 읽히는 시간(초) — 막 드러난 단락은 이만큼 머문 뒤에야 다음 단락으로 넘어간다 */
 const READ_S = 0.6; // 1.2 → 0.6
+/** '**'로 시작하는 문장은 굵게(사용자 지시 2026-10-27) */
+const strong = (text: string) => text.startsWith('**');
 /** 문장 → ScrollReveal children: 글은 그대로, [ ]로 감싼 낱말은 벡터 낱말 — 본문은 박스만(앵커 없이, 사용자 지시 2026-10-23) */
 function sentence(text: string): ReactNode[] {
   return text.split(/(\[[^\]]+\])/).filter(Boolean).map((part, i) =>
@@ -132,8 +134,9 @@ export function Philosophy({ title, paragraphs }: Props) {
         body.style.opacity = eB >= 1 ? '' : eB.toFixed(3);
         body.style.transform = eB >= 1 ? '' : `translateY(${(ty + (1 - eB) * 24).toFixed(1)}px)`;
       }
-      // 큰 제목인 동안은 벡터 인터랙션 · 십자선을 꺼 둔다
-      setVectorZone(root, k >= 1);
+      // 벡터 인터랙션 · 십자선은 늘 켠다(사용자 지시 2026-10-27 — 단락이 나오기 전, 제목이 커지는 동안에도 호버되게).
+      // 예전(v19)엔 큰 제목인 동안 꺼 뒀다. 스크롤하는 동안 박스는 VectorGuides가 매 프레임 다시 잰다
+      setVectorZone(root, true);
       // 단락 글자는 ②가 시작되면 드러나기 시작한다
       const on = k > GROW && r.bottom > vh * 0.4;
       setShown(on);
@@ -249,7 +252,7 @@ export function Philosophy({ title, paragraphs }: Props) {
                       <ScrollReveal
                         key={j}
                         as="p"
-                        containerClassName="philosophy__sentence sr-plain"
+                        containerClassName={`philosophy__sentence sr-plain${strong(s) ? ' philosophy__sentence--strong' : ''}`}
                         mode="scrub"
                         splitBy="chars"
                         effect="fade"
@@ -265,7 +268,7 @@ export function Philosophy({ title, paragraphs }: Props) {
                         progress={fill(i)}
                         delay={j * SENTENCE_GAP}
                       >
-                        {sentence(s)}
+                        {sentence(strong(s) ? s.slice(2) : s)}
                       </ScrollReveal>
                     ))}
                   </div>

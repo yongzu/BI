@@ -61,10 +61,10 @@
      (사용자 지시 2026-10-27). 좁은 화면(가로 막대)은 예전처럼 미끄러지는 곡선(아래 미디어 쿼리) */
   transition: transform 480ms var(--ce-ease), height 480ms var(--ce-ease);
 }
-/* v15(2026-10-23): 이름 24 → 20px — 탭(길잡이)이 수업 이름(16px)보다 훨씬 커 위계가 거꾸로였다. 2026-10-27 다섯 단계: 수업 이름이 32라 탭은 다시 24(Lead).
+/* v15(2026-10-23): 이름 24 → 20px — 탭(길잡이)이 수업 이름(16px)보다 훨씬 커 위계가 거꾸로였다. 2026-10-27 다섯 단계: 수업 이름이 32라 탭은 다시 24(Title — 섹션 설명 Lead가 18로 줄어 Title을 쓴다).
    이름 아래 한글 한 줄(short)은 2026-10-24에 뺐다(사용자 지시) — 이름 + 수 알약 한 줄 */
 .course-tab { flex-wrap: wrap; row-gap: var(--space-4); }
-.course-tab__name { font-size: var(--typo-lead-size); line-height: 1.2; font-weight: var(--font-weight-bold); letter-spacing: var(--tracking-heading); }
+.course-tab__name { font-size: var(--typo-title-size); line-height: 1.2; font-weight: var(--font-weight-bold); letter-spacing: var(--tracking-heading); }
 /* 수업 수는 알약(사용자 지시 2026-10-24) — 수업 줄의 역량 태그와 같은 모양. 고른 칸은 잉크 바탕, 회색 면 위에선 흰 바탕 */
 .course-tab__count {
   align-self: center;

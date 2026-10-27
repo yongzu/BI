@@ -8,7 +8,7 @@
      Heading    48 / Bold / 1.2 / -4%   section titles                         (≤900px 32)
      Subheading 32 / Bold / 1.2 / -4%   큰 줄 이름 — 수업 · 기기 · 연간 시기     (≤900px 24)
      Title      24 / Bold / 1.2 / -4%   item & group titles                    (≤900px 20)
-     Lead       24 / Regular / 1.4 / -2%  section intro — Title과 같은 크기, 굵기만 다름
+     Lead       18 / Regular / 1.4 / -2%  section intro (≤900px 16) — 24 → 18(사용자 지시 2026-10-27 — 섹션 설명이 너무 컸다)
      Body       16 / Regular / 1.6 / -2%  item copy · Label(영문 보조)
      Meta       14 / Regular / 1.5 / -2%  secondary info, tabs, nav, detail panel · Caption(작은 라벨)
 
@@ -39,7 +39,7 @@
   --typo-heading-size: 3rem;        /* 48 */
   --typo-subheading-size: 2rem;     /* 32 */
   --typo-title-size: 1.5rem;        /* 24 */
-  --typo-lead-size: var(--typo-title-size); /* 24 — Title과 같은 크기, Regular */
+  --typo-lead-size: 1.125rem;       /* 18 — 섹션 설명(24 → 18, 사용자 지시 2026-10-27) */
   --typo-label-size: 1rem;          /* 16 */
   --typo-body-size: 1rem;           /* 16 */
   --typo-meta-size: 0.875rem;       /* 14 */
@@ -50,6 +50,7 @@
     --typo-heading-size: 2rem;      /* 32 */
     --typo-subheading-size: 1.5rem; /* 24 */
     --typo-title-size: 1.25rem;     /* 20 */
+    --typo-lead-size: 1rem;         /* 16 */
   }
 }
 
