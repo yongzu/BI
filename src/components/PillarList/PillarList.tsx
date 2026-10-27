@@ -1,4 +1,4 @@
-import { useId, useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 import type { Pillar } from '../../data/programs';
 import { PillarArt } from './PillarArt';
 import './PillarList.css';
@@ -26,11 +26,37 @@ export type PillarGroup = { label: string; sub?: string; items: PillarItem[] };
 export function PillarList({ groups, flat = false }: { groups: PillarGroup[]; flat?: boolean }) {
   const [active, setActive] = useState(0);
   const uid = useId(); // 한 페이지에 둘(역량과 태도 · 채용 연계) — 묶음 제목 id가 겹치지 않게
+  const ref = useRef<HTMLDivElement>(null);
+
+  // 줄 양옆 빈 여백(화면 끝까지)에 마우스를 올려도 그 높이의 줄을 고른다(사용자 지시 2026-10-27, 역량과 태도).
+  // 줄 목록의 위아래 안에서만 — 묶음 사이 틈은 가까운 줄, 왼쪽 이미지 박스 위는 그대로 둔다(그래픽이 마우스 밑에서 바뀌지 않게)
+  useEffect(() => {
+    const root = ref.current;
+    if (flat || !root) return;
+    const onMove = (e: PointerEvent) => {
+      if (e.pointerType !== 'mouse') return;
+      if (e.target instanceof Element && e.target.closest('.pillar-list__side')) return;
+      const rows = root.querySelectorAll<HTMLElement>('.pillar-row');
+      const first = rows[0]?.getBoundingClientRect();
+      const last = rows[rows.length - 1]?.getBoundingClientRect();
+      if (!first || !last || e.clientY < first.top || e.clientY >= last.bottom) return;
+      let best = 0;
+      let bestDist = Infinity;
+      rows.forEach((row, i) => {
+        const r = row.getBoundingClientRect();
+        const d = e.clientY < r.top ? r.top - e.clientY : e.clientY >= r.bottom ? e.clientY - r.bottom : 0;
+        if (d < bestDist) { best = i; bestDist = d; }
+      });
+      setActive(best);
+    };
+    document.addEventListener('pointermove', onMove, { passive: true });
+    return () => document.removeEventListener('pointermove', onMove);
+  }, [flat]);
 
   // 묶음을 이어 센 줄 번호의 시작(고른 줄 비교용) — 역량 0–4, 태도 5–9
   const starts = groups.map((_, gi) => groups.slice(0, gi).reduce((sum, g) => sum + g.items.length, 0));
   return (
-    <div className={flat ? 'pillar-list pillar-list--flat' : 'pillar-list'}>
+    <div ref={ref} className={flat ? 'pillar-list pillar-list--flat' : 'pillar-list'}>
       <div className="pillar-list__rule" aria-hidden="true" />
       <div className="pillar-list__body">
         {!flat && <div className="pillar-list__side">
