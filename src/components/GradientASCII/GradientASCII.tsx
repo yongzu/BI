@@ -1,5 +1,5 @@
 /* GradientASCII — react-bits(David Haz) 원본을 TypeScript로 옮겼다. https://reactbits.dev/backgrounds/gradient-ascii (MIT + Commons Clause)
-   동작 · 셰이더는 원본 그대로(타입만 붙였다). 바꾼 곳은 정리할 때 컨텍스트를 버리지 않는 한 줄과 randomGlyphs 옵션(아래 BI 수정) */
+   동작 · 셰이더는 원본 그대로(타입만 붙였다). 바꾼 곳은 정리할 때 컨텍스트를 버리지 않는 한 줄과 randomGlyphs · flipY 옵션(아래 BI 수정) */
 import { useEffect, useRef, type CSSProperties, type HTMLAttributes } from 'react';
 import './GradientASCII.css';
 
@@ -54,6 +54,7 @@ uniform vec4 uClicks[4];
 uniform int uClickEffect;
 uniform float uIntro;
 uniform float uFrame;
+uniform float uFlipY;
 in vec2 vUv;
 layout(location = 0) out vec4 outColor;
 layout(location = 1) out vec4 outAux;
@@ -152,7 +153,7 @@ vec4 tone(float t) {
 void main() {
   vec2 p = (vUv - 0.5) * vec2(uAspect, 1.0);
   float time = uTime;
-  vec2 q = p / uScale;
+  vec2 q = vec2(p.x, p.y * uFlipY) / uScale; // (BI 수정) flipY: 모양만 위아래로 뒤집는다 — 글자 · 마우스 자리는 그대로
   vec2 warp = vec2(
     noise(q * 1.6 + uSeed + vec2(0.0, time * 0.3)),
     noise(q * 1.6 + uSeed.yx + vec2(4.3, -time * 0.24))
@@ -454,6 +455,8 @@ type Props = {
   lightMode?: boolean;
   /** (BI 수정) true면 글자를 밝기 순서 대신 고르게 섞는다. 밝기는 글자가 놓이는 자리와 진하기만 정한다 */
   randomGlyphs?: boolean;
+  /** (BI 수정) true면 모양(글자가 몰리는 자리)을 위아래로 뒤집는다 — 글자는 똑바로. 푸터 아래 공간(2026-10-27) */
+  flipY?: boolean;
   fontFamily?: string;
   dpr?: number;
   className?: string;
@@ -483,6 +486,7 @@ const GradientASCII = ({
   intro = true,
   lightMode = false,
   randomGlyphs = false,
+  flipY = false,
   fontFamily = DEFAULT_FONT,
   dpr,
   className = '',
@@ -516,6 +520,7 @@ const GradientASCII = ({
     intro,
     lightMode,
     randomGlyphs,
+    flipY,
     fontFamily: fontFamily || DEFAULT_FONT,
     dpr
   };
@@ -672,6 +677,7 @@ const GradientASCII = ({
       gl.uniform1i(fu.uClickEffect, s.clickEffect);
       gl.uniform1f(fu.uIntro, introClock);
       gl.uniform1f(fu.uFrame, frameSeed);
+      gl.uniform1f(fu.uFlipY, s.flipY ? -1 : 1);
       gl.drawArrays(gl.TRIANGLES, 0, 3);
 
       const glowing = s.glow > 0.001;

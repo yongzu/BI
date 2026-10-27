@@ -121,7 +121,9 @@ export function FooterMark() {
       {/* 화면 아래에서 올라오는 공간 — 히어로의 숫자 인터랙션. body에 붙여 올라가는 푸터의 transform에 묶이지 않게 */}
       {createPortal(
         <div ref={panelRef} className="footer-reveal" aria-hidden="true">
-          {ascii && <GradientASCII {...HERO_ASCII} />}
+          {/* 모양은 위아래로 뒤집는다 — 히어로는 위쪽에 글자가 몰리고 아래가 비는데, 여기선 위(올라간 글자와 맞닿는 쪽)가 비어
+              페이지 바탕과 이어지고 아래로 갈수록 숫자가 짙어진다(사용자 지시 2026-10-27) */}
+          {ascii && <GradientASCII {...HERO_ASCII} flipY />}
         </div>,
         document.body,
       )}
