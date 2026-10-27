@@ -19,6 +19,27 @@
   overflow: hidden;
 }
 
+/* ---------- 아래로 스크롤하라는 화살표(사용자 지시 2026-10-27): 단락이 나오면 무대 아래 가운데에서 옅어졌다 진해졌다를 되풀이 ---------- */
+.philosophy__hint {
+  position: absolute;
+  left: 50%;
+  bottom: var(--space-32);
+  translate: -50% 0;
+  color: var(--color-text-primary);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 400ms var(--ease);
+}
+.philosophy__hint svg { display: block; }
+.philosophy__hint[data-on='true'] { animation: ph-hint 1.8s ease-in-out infinite; }
+@keyframes ph-hint {
+  0%, 100% { opacity: 0.15; transform: translateY(0); }
+  50% { opacity: 0.6; transform: translateY(4px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .philosophy__hint[data-on='true'] { animation: none; opacity: 0.4; }
+}
+
 /* ---------- 제목 아래 단락(v19: 오른쪽 Φ 모션을 뺐다 — 단락이 본문 칸을 다 쓴다) ---------- */
 /* 단락은 가운데 정렬(사용자 지시 2026-10-27 — 교육 철학이 첫 화면(히어로)이 되며). 같은 날 앞서는 왼쪽 정렬이었다 */
 .philosophy__body { width: 100%; }

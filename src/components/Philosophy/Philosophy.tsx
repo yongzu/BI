@@ -1,6 +1,6 @@
 import { Fragment, useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import ScrollReveal from '../ScrollReveal/ScrollReveal';
-import { holdAutoplay, isNavigating, lockScrollInput, scrollToTarget } from '../../smoothScroll';
+import { isNavigating, lockScrollInput, scrollToTarget } from '../../smoothScroll';
 import { VectorGuides, VectorWord, setVectorZone } from '../VectorWord/VectorWord';
 import './Philosophy.css';
 
@@ -60,7 +60,7 @@ const SNAP_S = 0.7;
 /** 한 단락 안 문장들이 차례로 드러나는 간격(초) */
 const SENTENCE_GAP = 0.45; // 0.9 → 0.45 — 두 배 빠르게(사용자 지시 2026-10-24)
 /** 한 문장이 드러나 읽히는 시간(초) — 막 드러난 단락은 이만큼 머문 뒤에야 다음 단락으로 넘어간다 */
-const READ_S = 0.6; // 1.2 → 0.6
+const READ_S = 1.2; // 1.2 → 0.6 → 1.2(2026-10-27 — 글자가 다 나온 뒤에야 내려갈 수 있게, 아래 막기와 함께)
 /** '**'로 시작하는 문장은 굵게(사용자 지시 2026-10-27) */
 const strong = (text: string) => text.startsWith('**');
 /** 문장 → ScrollReveal children: 글은 그대로, [ ]로 감싼 낱말은 벡터 낱말 — 본문은 박스만(앵커 없이, 사용자 지시 2026-10-23) */
@@ -210,6 +210,9 @@ export function Philosophy({ title, paragraphs }: Props) {
         if (target < 0) return; // 큰 제목에서 위로 — 무대 밖으로 나가게 둔다
       }
       target = Math.min(last, target);
+      // 마지막 단락에서 무대가 풀리는 자리로는 저절로 가지 않는다(사용자 지시 2026-10-27 — 읽는 도중 다음으로 넘어가 버렸다).
+      // 사용자가 직접 스크롤해 내려가게 둔다
+      if (target === last && idx === n) return;
       // 막 드러난 단락을 읽는 중이면 그 단락 자리로 되돌린다(내용이 나오자마자 넘어가지 않게, 사용자 지시 2026-10-23)
       if (atShown + 1 < target && performance.now() < holdUntil) target = atShown + 1;
       idx = target;
@@ -251,7 +254,6 @@ export function Philosophy({ title, paragraphs }: Props) {
       atShown = target - 1;
       readAll = false;
       holdUntil = now + dur * 1000 + hold(atShown);
-      holdAutoplay(dur * 1000 + 300);
       // 관성(트랙패드)이 남아 있는 동안도 막는다 — 되돌아간 뒤 0.4초 더
       lockScrollInput(true);
       window.clearTimeout(unlock);
@@ -273,6 +275,28 @@ export function Philosophy({ title, paragraphs }: Props) {
       fit();
       if (!raf) raf = requestAnimationFrame(tick);
     };
+    // 글자가 다 나오기 전엔 아래로 못 내려간다(사용자 지시 2026-10-27) — 무대가 붙어 있고 단락이 드러나는 중(hold)이면
+    // 아래로 가는 휠 · 터치 · 키만 막는다(위로는 된다). Lenis보다 먼저(capture) 받아 막는다
+    const holding = () => {
+      if (reduced || !wasOn || performance.now() >= holdUntil) return false;
+      const r = track.getBoundingClientRect();
+      return r.top <= 1 && r.bottom >= window.innerHeight - 1;
+    };
+    const stop = (e: Event) => { e.preventDefault(); e.stopPropagation(); };
+    const onWheel = (e: WheelEvent) => { if (e.deltaY > 0 && holding()) stop(e); };
+    let touchY = 0;
+    const onTouchStart = (e: TouchEvent) => { touchY = e.touches[0]?.clientY ?? 0; };
+    const onTouchMove = (e: TouchEvent) => {
+      const y = e.touches[0]?.clientY ?? touchY;
+      if (touchY - y > 0 && holding()) stop(e); // 손가락이 위로 = 아래로 스크롤
+    };
+    const DOWN_KEYS = new Set(['ArrowDown', 'PageDown', 'End', ' ']);
+    const onKey = (e: KeyboardEvent) => { if (DOWN_KEYS.has(e.key) && !e.shiftKey && holding()) stop(e); };
+    const BLOCK = { capture: true, passive: false } as const;
+    window.addEventListener('wheel', onWheel, BLOCK);
+    window.addEventListener('touchstart', onTouchStart, { capture: true, passive: true });
+    window.addEventListener('touchmove', onTouchMove, BLOCK);
+    window.addEventListener('keydown', onKey, BLOCK);
     window.addEventListener('scroll', onScroll, { passive: true });
     window.addEventListener('resize', onResize);
     onResize();
@@ -287,6 +311,10 @@ export function Philosophy({ title, paragraphs }: Props) {
         window.clearTimeout(unlock);
         lockScrollInput(false);
       }
+      window.removeEventListener('wheel', onWheel, BLOCK);
+      window.removeEventListener('touchstart', onTouchStart, { capture: true });
+      window.removeEventListener('touchmove', onTouchMove, BLOCK);
+      window.removeEventListener('keydown', onKey, BLOCK);
       window.removeEventListener('scroll', onScroll);
       window.removeEventListener('resize', onResize);
       title.style.transform = title.style.fontSize = title.style.filter = title.style.willChange = '';
@@ -349,6 +377,12 @@ export function Philosophy({ title, paragraphs }: Props) {
                 ))}
             </div>
           </div>
+          {/* 아래로 스크롤하라는 화살표(사용자 지시 2026-10-27) — 단락이 나오면 무대 아래 가운데에서 옅어졌다 진해졌다를 되풀이 */}
+          <span className="philosophy__hint" data-on={shown} aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 4v15M5.5 12.5 12 19l6.5-6.5" />
+            </svg>
+          </span>
         </div>
       </div>
     </section>

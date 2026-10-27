@@ -124,10 +124,3 @@ export function markNavigation() {
 }
 export const isNavigating = () => navigating;
 
-/**
- * 저절로 진행되는 연출 잠깐 멈추기(2026-10-27) — 교육 철학이 다 읽지 않은 단락으로 되돌리는 동안(Philosophy) 무대 끝의 이어 주기
- * (VectorHandoff)가 반대로 '다음 섹션으로' 스크롤을 시작하지 않게
- */
-let autoplayHeldUntil = 0;
-export const holdAutoplay = (ms: number) => { autoplayHeldUntil = performance.now() + ms; };
-export const autoplayHeld = () => performance.now() < autoplayHeldUntil;

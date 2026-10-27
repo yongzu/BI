@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { autoplayHeld, scrollToTarget } from '../../smoothScroll';
 import './VectorHandoff.css';
 
 /**
@@ -11,10 +10,8 @@ import './VectorHandoff.css';
  * 속이 검정으로 채워지고, 상자 · 안내선이 흐려지며 실제 제목으로 바뀐다.
  *
  * - 진행 t: 교육 철학 무대가 풀리는 순간(제목이 화면 아래 섹션 윗여백만큼 밖) 0 → 제목이 화면 위 END_TOP에 오면 1. 스크롤 자리에 묶여 있다.
- * - 저절로 진행(사용자 지시 2026-10-24): 아래로 내려 무대가 풀리는 자리에 닿으면(교육 철학의 마지막 단락 맞춤 스크롤 포함) 그대로
- *   역량과 태도 제목 자리까지 AUTO_S초 동안 스크롤해 준다. 위로 올릴 땐 스크롤 그대로(되감기).
- *   2026-10-27(사용자 지시): 그동안 스크롤 입력을 막던 것을 풀었다 — 끝나기 전에도 휠 · 터치 · 키로 스크롤하면 사용자 스크롤이 이어받는다
- *   (Lenis는 사용자 입력이 오면 진행 중인 scrollTo를 새 목표로 바꾼다).
+ * - 저절로 진행은 뺐다(사용자 지시 2026-10-27 — 둘째 단락을 읽는 도중 다음으로 넘어가 버렸다). 사용자가 직접 스크롤하는 만큼만 진행된다.
+ *   (2026-10-24 ~ 10-27엔 무대가 풀리는 자리에 닿으면 역량과 태도 제목 자리까지 1.8초 동안 저절로 스크롤해 줬다)
  *   0 – APPEAR: 제자리에서 벡터 보기가 켜진다 · APPEAR – 1: 내려간다 · FILL – 1: 검정으로 채워진다
  * - 그동안 원래 낱말과 실제 제목은 숨긴다(겹쳐 두 개로 보이지 않게).
  * - 좁은 화면 · 움직임 줄이기에선 하지 않는다.
@@ -24,8 +21,6 @@ const WORD = '역량과 태도';
 const END_TOP = 160;
 const APPEAR = 0.12;
 const FILL = 0.72;
-/** 저절로 내려가는 시간(초) */
-const AUTO_S = 1.8;
 const MEDIA = '(min-width: 901px) and (prefers-reduced-motion: no-preference)';
 
 const clamp01 = (x: number) => Math.min(1, Math.max(0, x));
@@ -51,8 +46,6 @@ export function VectorHandoff({ targetSelector }: { targetSelector: string }) {
     let raf = 0;
     let source: HTMLElement | null = null;
     let target: HTMLElement | null = null;
-    let lastY = window.scrollY;
-    let playing = 0; // 저절로 내려가는 중이면 끝나는 타이머
     const show = (el: HTMLElement | null, on: boolean) => { if (el) el.style.visibility = on ? '' : 'hidden'; };
 
     const find = () => {
@@ -75,14 +68,6 @@ export function VectorHandoff({ targetSelector }: { targetSelector: string }) {
       const start = vh + pad;
       const raw = (start - tr.top) / (start - END_TOP);
       const t = clamp01(raw);
-      // 아래로 내려 무대가 풀리는 자리에 닿으면 제목 자리까지 저절로
-      const down = window.scrollY > lastY;
-      lastY = window.scrollY;
-      if (!playing && down && !autoplayHeld() && raw > -0.01 && raw < 0.6) {
-        scrollToTarget(window.scrollY + tr.top - END_TOP, { duration: AUTO_S });
-        // 한 번 진행하는 동안은 다시 시작하지 않는다(사용자가 이어받아 스크롤해도)
-        playing = window.setTimeout(() => { playing = 0; }, AUTO_S * 1000 + 120);
-      }
       const sr = textRect(source); // 낱말은 글자마다 나뉘어 있어(ScrollReveal) 상자 대신 글자 범위로 잰다
       // 낱말이 아직 근처에 있을 때만. 끝(1)은 조금 앞에서 — 저절로 내려간 스크롤이 소수점만큼 모자라도 실제 제목으로 바뀐다
       const active = t > 0 && t < 0.995 && sr.bottom > -vh;
@@ -107,7 +92,6 @@ export function VectorHandoff({ targetSelector }: { targetSelector: string }) {
     update();
     return () => {
       cancelAnimationFrame(raf);
-      window.clearTimeout(playing);
       window.removeEventListener('scroll', onScroll);
       window.removeEventListener('resize', onScroll);
       mq.removeEventListener('change', onScroll);
