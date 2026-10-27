@@ -155,8 +155,9 @@ export function ProgramsPage() {
         />
 
         {/* ---------- 과정 개요 — 맨 아래(사용자 지시 2026-10-27): 기간 · 시수 · 방식 · 규모 · 개강 표, 그리고 지원 조건 · 선발 과제를 볼 수 있는 지원 페이지로.
-            제목 · 설명은 뺐다(같은 날 사용자 지시) — 이름은 읽기 도구용으로만 ---------- */}
-        <section id="overview" className="section section--wide section--last" aria-label="과정 개요">
+            설명은 빼고 제목은 '1 Year Program'(같은 날 사용자 지시) ---------- */}
+        <section id="overview" className="section section--wide section--last">
+          <SectionHeader title="1 Year Program" />
           <dl className="overview-facts">
             {facts.map((f) => (
               <div key={f.label} className="overview-facts__row">

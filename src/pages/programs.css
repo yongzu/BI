@@ -80,6 +80,7 @@
 /* ---------- 채용 연계: components/CareerReveal(아래에서 떠오르는 푸른 원, 2026-10-27) ---------- */
 
 /* ---------- 과정 개요(맨 아래, 2026-10-27) — 이름 | 값 줄 표, 아래 지원 페이지로 가는 버튼 ---------- */
+.section-header + .overview-facts { margin-top: var(--space-56); }
 .overview-facts { border-top: 1px solid var(--color-border); }
 .overview-facts__row {
   display: grid;
