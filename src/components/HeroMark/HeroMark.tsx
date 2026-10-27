@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef, useState, type CSSProperties } from 'react';
+import { useLayoutEffect, useRef, type CSSProperties } from 'react';
 import type { PhiHero } from './phi-hero-rings';
 import './HeroMark.css';
 
@@ -12,8 +12,7 @@ import './HeroMark.css';
  *  2막(3D) phi.design 히어로의 three.js 링(phi-hero-rings.js, 키프레임 그대로)이 마크 자세에서 깨어나 한 바퀴(5.61초 ÷ 1.5) 돌고 다시 멈춘다
  * 프레임 값 · 이징은 예제(30fps) 그대로이고, 시간(ms)으로 바꿔 requestAnimationFrame으로 그린다(Remotion 없이).
  *
- * 화면 배치: 1막 · 다리는 화면 한가운데에서, 3D가 돌기 시작하면 크기 그대로 소개 위 제자리로 조금 올라가고(--dy · FLIP —
- * 사용자 지시 2026-10-27, 예전엔 크게 보였다가 작아졌다), 그 뒤 소개 · 버튼이 위에서부터 나온다(ProgramsPage의 HERO_TEXT_AT).
+ * 화면 배치: 첫 화면 정가운데에 크게, 처음부터 끝까지 제자리(사용자 지시 2026-10-27 — 히어로의 소개 · 버튼을 빼고 로고만).
  * 첫 화면 맨 위에서 열었을 때만 움직인다 — 스크롤된 채 새로 고치거나 움직임 줄이기면 2D 마크로 제자리에.
  */
 
@@ -47,9 +46,6 @@ const HERO_SPEED = 1.5;
 /** 3D 한 바퀴(5.61초)를 HERO_SPEED로 — 끝나면 마크 자세로 멈춘다 */
 const LOOP_MS = 5610;
 const SPIN_MS = LOOP_MS / HERO_SPEED;
-/** 화면 가운데에서 제자리로 옮기기 시작하는 시각(ms) — 3D가 돌기 시작한 직후 */
-export const SETTLE_AT = F(106) + 150;
-export const MOVE_MS = 800;
 const END_MS = T.handoff[0] + SPIN_MS + 100;
 
 // ---------- 이징 ----------
@@ -123,14 +119,10 @@ function ringAt(ms: number, id: RingId): Ellipse {
   return lerpE(e, { ...pose, rotate: pose.rotate + 180 }, toPose);
 }
 
-type Stage = 'still' | 'center' | 'settle';
-
 export function HeroMark() {
   const ref = useRef<HTMLDivElement>(null);
   const svgRef = useRef<SVGSVGElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [stage, setStage] = useState<Stage>('still');
-  const [dy, setDy] = useState(0);
 
   useLayoutEffect(() => {
     const el = ref.current;
@@ -138,10 +130,6 @@ export function HeroMark() {
     const canvas = canvasRef.current;
     if (!el || !svg || !canvas) return;
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches || window.scrollY > 0) return;
-    const r = el.getBoundingClientRect();
-    setDy(window.innerHeight / 2 - (r.top + r.height / 2)); // 제자리 가운데 → 화면 가운데
-    setStage('center');
-
     const line = svg.querySelector<SVGLineElement>('.hero-mark__line')!;
     const rings = [...svg.querySelectorAll<SVGEllipseElement>('.hero-mark__ring')];
     const g2d = svg.querySelector<SVGGElement>('.hero-mark__2d')!;
@@ -189,17 +177,15 @@ export function HeroMark() {
       if (ms < END_MS) raf = requestAnimationFrame(draw);
     };
     draw(); // 첫 그림은 바로 — 칠하기 전에 점 하나(크기 0)로 바꿔 둔다(정지 상태의 2D 마크가 한 프레임 비치지 않게)
-    const t = window.setTimeout(() => setStage('settle'), SETTLE_AT);
     return () => {
       disposed = true;
       cancelAnimationFrame(raf);
-      window.clearTimeout(t);
       hero?.dispose();
     };
   }, []);
 
   return (
-    <div ref={ref} className="hero-mark" data-stage={stage} style={{ '--dy': `${dy}px`, '--move': `${MOVE_MS}ms` } as CSSProperties} aria-hidden="true">
+    <div ref={ref} className="hero-mark" aria-hidden="true">
       <svg ref={svgRef} className="hero-mark__svg" viewBox="0 0 800 800">
         <g className="hero-mark__2d" fill="none" stroke={INK}>
           {/* 점 · 선 구간: 아주 납작한 타원은 끝이 각져 보여 둥근 끝 선으로 그린다(예제와 같다) */}

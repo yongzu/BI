@@ -1,10 +1,8 @@
-import { useEffect, useState, type CSSProperties } from 'react';
 import { Text } from '../components/Text/Text';
 import { Toc, type TocItem } from '../components/Toc/Toc';
 import { AnnualTimeline } from '../components/AnnualTimeline/AnnualTimeline';
 import { CourseExplorer } from '../components/CourseExplorer/CourseExplorer';
-import { ApplyButton } from '../components/ApplyButton/ApplyButton';
-import { HeroMark, MOVE_MS, SETTLE_AT } from '../components/HeroMark/HeroMark';
+import { HeroMark } from '../components/HeroMark/HeroMark';
 import { CareerReveal } from '../components/CareerReveal/CareerReveal';
 import { BackToTop, SiteHeader } from '../components/SiteHeader/SiteHeader';
 import { FooterMark } from '../components/FooterMark/FooterMark';
@@ -23,7 +21,6 @@ import {
   applyPeriod,
   approachGroups,
   devices,
-  heroStatement,
   philosophy,
   stages,
 } from '../data/programs';
@@ -83,23 +80,10 @@ const careerItems: PillarItem[] = [
 
 /* ------------------------------------------------------------------ */
 
-/** 히어로 글자가 나오기 시작하는 시각(초) — 예전엔 GradientASCII 인트로(2.4초)가 끝날 때였다.
- *  2026-10-27(사용자 지시 — 로고가 먼저 나오고 그 아래 내용이 나온다): Φ 마크(HeroMark)가 위로 거의 다 올라왔을 때.
- *  내용은 위에서 아래로 차례로(소개 → 설명 → 기간 → 지원하기), 흐림 없이 떠오른다(programs.css .hero-seq) */
-const HERO_TEXT_AT = (SETTLE_AT + MOVE_MS * 0.6) / 1000;
-
 /* ------------------------------------------------------------------ */
 
 export function ProgramsPage() {
   useScrollReveal(revealTargets);
-  // 첫 화면: Φ 마크(HeroMark)가 화면 가운데에서 재생된 뒤 조금 위 제자리로 올라가면 내용이 위에서부터 차례로 나온다.
-  // 그동안 내용은 숨겨 둔다(data-intro='rise' → 'done')
-  const [introDone, setIntroDone] = useState(() => window.matchMedia('(prefers-reduced-motion: reduce)').matches);
-  useEffect(() => {
-    if (introDone) return;
-    const t = window.setTimeout(() => setIntroDone(true), HERO_TEXT_AT * 1000);
-    return () => window.clearTimeout(t);
-  }, [introDone]);
 
   return (
     <>
@@ -107,38 +91,14 @@ export function ProgramsPage() {
       <BackToTop />
       <main className="page">
         {/* ---------- Hero ---------- (v9의 포인터 깊이 · 스크롤 포털은 v10에서 뺐다 — 사용자 지시 2026-10-19) */}
-        <section className="hero container" aria-labelledby="hero-title" data-intro={introDone ? 'done' : 'rise'}>
-          {/* 배경 GradientASCII(2026-10-20 ~ 10-27)는 뺐다(사용자 지시 2026-10-27) — 흰 바탕 위에 Φ 마크 → 내용 차례로 */}
-          {/* 첫 화면(한 화면 높이, 내용 세로 가운데) — '자세히 보기'는 그 아래 200px(사용자 지시 2026-10-04) */}
+        <section className="hero container" aria-labelledby="hero-title">
+          {/* 첫 화면은 Φ 로고 모션 하나만, 화면 정가운데에 크게(사용자 지시 2026-10-27 — 소개 · 기간 · 지원하기 버튼은 뺐다. 지원은 상단바 '1기 신청').
+              배경 GradientASCII(2026-10-20 ~ 10-27)도 뺐다. 아래로 스크롤하면 바로 교육 철학으로 이어진다 */}
           <div className="hero__atf">
-            {/* Φ 마크: 화면 가운데에서 재생된 뒤 크기 그대로 이 자리로 조금 올라온다(사용자 지시 2026-10-27) */}
             <HeroMark />
-            {/* 제목 'Programs'는 화면에서 뺐다(사용자 지시 2026-10-27 — 큰 글씨 제거). 읽기 도구용 제목으로만 남긴다 */}
+            {/* 제목 'Programs'는 화면에서 뺐다(사용자 지시 2026-10-27). 읽기 도구용 제목으로만 남긴다 */}
             <h1 id="hero-title" className="visually-hidden">Programs</h1>
-            {/* 소개: 큰 글씨 두 줄 + 설명 한 문장 */}
-            {/* 위에서 아래로 차례로(--i), 흐림 없이(사용자 지시 2026-10-27 — 예전엔 ScrollReveal로 단어마다 흐림 → 또렷) */}
-            <div className="hero__intro">
-              <p className="hero__statement typo-title color-primary hero-seq" style={{ '--i': 0 } as CSSProperties}>
-                {heroStatement.lines.join('\n')}
-              </p>
-              <p className="hero__body typo-lead color-secondary hero-seq" style={{ '--i': 1 } as CSSProperties}>
-                {heroStatement.body}
-              </p>
-            </div>
-
-            {/* 과정 개요 대신 지원 기간 + 지원하기 — 토스뱅크 디자인 채용 히어로를 따름(사용자 지시 2026-10-03) */}
-            {/* v6: 기간 옆에 모집 상태를 글자로(파동이 기간 줄을 캔버스로 다시 그리므로 배지 면 대신 흐린 글자) */}
-            <div className="hero__apply">
-              {/* v15(2026-10-23): 모집 상태를 먼저 · 진하게, 기간은 그 아래 보조로. 2026-10-27(사용자 지시): 상태('1기 모집 중')는 빼고 기간만 */}
-              <Text typography="Label" className="hero__period hero-seq" style={{ '--i': 2 } as CSSProperties}>
-                <span className="hero__dates">모집 기간 {applyPeriod.label}</span>
-              </Text>
-              <div className="hero-seq" style={{ '--i': 3 } as CSSProperties}>
-                <ApplyButton href={applyPeriod.href}>{applyPeriod.cta}</ApplyButton>
-              </div>
-            </div>
           </div>
-
         </section>
 
         {/* ---------- 교육 철학 — v18: 과정 개요 자리에 v17의 한 화면 한 단락(sui.io 큰 글). 목차 레일 밖이라 이 동안 목차는 숨어 있다 ---------- */}

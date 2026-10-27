@@ -1,13 +1,11 @@
-/* 히어로 Φ 로고 모션(2026-10-27, phi-motion-study 예제 Ref11의 마크 모션) — 화면 가운데에서 재생된 뒤
-   크기 그대로 소개 위 제자리로 조금 올라간다(HeroMark.tsx). 2D(SVG 타원 둘)와 3D(three.js 캔버스)를 같은 가운데에 겹친다. */
+/* 히어로 Φ 로고 모션(2026-10-27, phi-motion-study 예제 Ref11의 마크 모션) — 첫 화면 정가운데에서 제자리로 재생한다(HeroMark.tsx).
+   2D(SVG 타원 둘)와 3D(three.js 캔버스)를 같은 가운데에 겹친다. */
 .hero-mark {
-  --mark: max(120px, 200 * var(--hs, 1px)); /* 크기 — 1440 × 1080 이상에서 200. 가운데에서도 제자리에서도 같다(사용자 지시 2026-10-27 — 줄어들지 않게) */
+  --mark: max(220px, 400 * var(--hs, 1px)); /* 크기 — 1440 × 1080 이상에서 400(사용자 지시 2026-10-27 — 더 크게) */
   position: relative;
   z-index: 1;
   width: var(--mark);
   height: var(--mark);
-  margin-bottom: max(32px, 56 * var(--hs, 1px));
-  transition: transform var(--move, 900ms) cubic-bezier(0.65, 0, 0.35, 1);
 }
 .hero-mark__svg { display: block; width: 100%; height: 100%; max-width: none; overflow: visible; }
 /* 3D 캔버스: 2D 마크 한 변 × 1.49, 가운데를 맞춰 겹친다. 2D → 3D 크로스페이드 전엔 투명 */
@@ -17,16 +15,8 @@
   top: 50%;
   width: calc(var(--mark) * var(--k3, 1.49));
   height: calc(var(--mark) * var(--k3, 1.49));
+  max-width: none;
   translate: -50% -50%;
   opacity: 0;
   pointer-events: none;
-}
-
-/* 1) 화면 가운데에서 */
-.hero-mark[data-stage='center'] { transform: translateY(var(--dy)); transition: none; }
-/* 2) 제자리로 — 크기 그대로 위로 조금 옮긴다(전환 시간은 --move) */
-.hero-mark[data-stage='settle'] { transform: none; }
-
-@media (prefers-reduced-motion: reduce) {
-  .hero-mark { transition: none; }
 }
