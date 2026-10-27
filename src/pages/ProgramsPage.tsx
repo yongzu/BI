@@ -49,7 +49,7 @@ const toc: TocItem[] = [
 /** Blocks that rise in on scroll */
 // 히어로는 첫 화면 순서(흐린 제목 → 맑아짐 → 소개 · 기간)를 따로 가지므로 떠오르는 등장에서 뺀다
 // 섹션 제목 · 리드는 ScrollReveal이 맡으므로 뺐다(2026-10-20)
-const revealTargets = ['.group-label', '.group__lead', '.annual-map', '.pillar-row'].join(', ');
+const revealTargets = ['.group-label', '.group__lead', '.pillar-row'].join(', ');
 
 /* ------------------------------------------------------------------ */
 
@@ -200,7 +200,7 @@ export function ProgramsPage() {
             title="연간 구조"
             lead="2026년 8월 개강부터 2027년 8월 졸업까지, 두 학기와 방학 캠프, 졸업 프로젝트로 이어지는 1년입니다."
           />
-          {/* 왼쪽 붙는 시기 목록 · 오른쪽 세로로 이어지는 네 시기 — 수업을 관통하는 접근과 같은 문법(사용자 지시 2026-10-24). 예전엔 가로로 넘기는 탭 */}
+          {/* 채용 연계와 같은 줄 형식 + 왼쪽 세로 진행 막대(사용자 지시 2026-10-27). 예전엔 왼쪽 붙는 시기 목록(10-24), 그 전엔 가로로 넘기는 탭 */}
           <AnnualTimeline stages={stages} />
         </section>
 

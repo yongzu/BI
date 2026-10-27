@@ -1,17 +1,12 @@
-import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Text } from '../Text/Text';
-import { scrollToTarget } from '../../smoothScroll';
+import { PillarList } from '../PillarList/PillarList';
 import './AnnualTimeline.css';
 
 /**
- * 연간 구조 — 세로로 내려가며 네 시기를 모두 본다(사용자 지시 2026-10-24, 수업을 관통하는 접근과 같은 문법).
- *
- * - 왼쪽: 화면에 붙은 시기 목록(한 줄에 하나) — 순서 · 이름 · 짧은 기간. 누르면 그 시기로 이동한다.
- * - 오른쪽: 네 시기가 위에서 아래로 이어진다 — 이름과 기간 한 줄 · 설명 · 내용(캠프 · 졸업 카드, 주간 시간표).
- *   예전(v10)엔 탭을 고르면 가로 트랙이 옆 시기로 미끄러졌다 — 한 번에 한 시기만 보여 전체 구조가 안 보였다.
- * - 읽어 내려가면 지금 시기가 왼쪽 목록에서 잉크로 표시되고, 설명 옆 선의 막대 하나가 그 시기 자리로 미끄러져 간다.
- *   글은 하나도 흐리게 하지 않는다(WCAG 1.4.3).
- * - 좁은 화면에선 목록 없이 시기 줄만.
+ * 연간 구조 — 채용 연계와 같은 줄 형식(사용자 지시 2026-10-27): 가는 선, 번호 | 이름(시기 / 짧은 기간) | 설명 줄(PillarList flat),
+ * 줄 왼쪽에 세로 진행 막대(progress) — 읽어 내려가는 만큼 차오르고 지금 시기가 진해진다.
+ * 설명 아래엔 그 시기의 내용(캠프 · 졸업 카드, 1학기 주간 시간표)을 그대로 둔다.
+ * 예전(2026-10-24)엔 왼쪽에 붙는 시기 목록 + 오른쪽 시기 카드였고, 그 전(v10)엔 가로로 넘기는 탭이었다.
  */
 export type StageItem = { name: string; label: string; body: string };
 /** 시간표 블록 — from · to는 시(정수). kind 'free' = 세션이 아닌 블록(월 · 금 개인 작업 등) */
@@ -41,101 +36,28 @@ export type Stage = {
 type Props = { stages: Stage[] };
 
 export function AnnualTimeline({ stages }: Props) {
-  const [active, setActive] = useState(0);
-  const refs = useRef<(HTMLElement | null)[]>([]);
-  const barRef = useRef<HTMLSpanElement>(null);
-
-  // 화면 가운데 띠(위 40% · 아래 40%를 뺀 곳)에 들어온 시기를 지금 시기로
-  useEffect(() => {
-    const io = new IntersectionObserver(
-      (entries) => {
-        const seen = entries.filter((e) => e.isIntersecting).sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)[0];
-        if (seen) setActive(refs.current.indexOf(seen.target as HTMLElement));
-      },
-      { rootMargin: '-40% 0px -40% 0px' },
-    );
-    refs.current.forEach((el) => el && io.observe(el));
-    return () => io.disconnect();
-  }, []);
-
-  // 막대 자리 · 길이 = 지금 시기의 글 높이(위아래 여백 뺌) — 높이가 바뀌어도(글꼴 · 폭) 다시 잰다
-  useLayoutEffect(() => {
-    const bar = barRef.current;
-    const list = bar?.parentElement;
-    if (!bar || !list) return;
-    const place = () => {
-      const step = refs.current[active];
-      if (!step) return;
-      const cs = getComputedStyle(step);
-      const pt = parseFloat(cs.paddingTop);
-      const pb = parseFloat(cs.paddingBottom);
-      bar.style.height = `${step.offsetHeight - pt - pb}px`;
-      bar.style.transform = `translate(${step.offsetLeft - 1}px, ${step.offsetTop + pt}px)`;
-    };
-    place();
-    const ro = new ResizeObserver(place);
-    ro.observe(list);
-    return () => ro.disconnect();
-  }, [active]);
-
-  return (
-    <div className="annual-map">
-      <nav className="annual-map__nav" aria-label="연간 구조 시기">
-        <ol className="annual-map__stages">
-          {stages.map((s, i) => (
-            <li key={s.name}>
-              <button
-                type="button"
-                className="annual-map__node"
-                aria-current={active === i ? 'step' : undefined}
-                onClick={() => { const el = refs.current[i]; if (el) scrollToTarget(el); }}
-              >
-                <span className="annual-map__num">{String(i + 1).padStart(2, '0')}</span>
-                <span className="annual-map__label">
-                  <span className="annual-map__name">{s.name}</span>
-                  <span className="annual-map__period">{s.tab}</span>
-                </span>
-              </button>
-            </li>
-          ))}
-        </ol>
-      </nav>
-
-      <div className="annual-map__list">
-        <span ref={barRef} className="annual-map__bar" aria-hidden="true" />
-        {stages.map((s, i) => (
-          <section
-            key={s.name}
-            id={`annual-${i + 1}`}
-            ref={(el) => { refs.current[i] = el; }}
-            className="annual-step"
-            data-active={active === i}
-            aria-labelledby={`annual-${i + 1}-title`}
-          >
-            {/* 머리: 이름 옆에 기간 · 표시를 한 줄로(사용자 지시 2026-10-24) — 번호 캡슐 · 표시 알약 · 사실 표는 뺐다.
-                번호는 왼쪽 목록이, 사실은 설명 · 내용이 이미 말하고 있었다 */}
-            <div className="annual-step__head">
-              <Text as="h3" typography="Title" id={`annual-${i + 1}-title`}>{s.name}</Text>
-              <Text as="span" typography="Label" color="tertiary">{[s.period, s.marker].filter(Boolean).join(' · ')}</Text>
-            </div>
-            <Text typography="Body" color="secondary" className="annual-step__body">{s.body}</Text>
-            {s.items && (
-              <div className="annual-step__cards">
-                {s.items.map((item) => (
-                  <article key={item.name} className="annual-step__card">
-                    <Text as="span" typography="Caption" color="tertiary">{item.label}</Text>
-                    <Text as="h4" typography="Body" className="annual-step__card-name">{item.name}</Text>
-                    <Text typography="Meta" color="secondary">{item.body}</Text>
-                  </article>
-                ))}
-              </div>
-            )}
-            {s.rhythm && <WeekRhythm rhythm={s.rhythm} />}
-          </section>
-        ))}
-      </div>
-    </div>
-  );
+  const items = stages.map((s) => ({
+    en: s.name,
+    ko: s.tab,
+    body: s.body,
+    extra: (s.items || s.rhythm) && (
+      <>
+        {s.items && (
+          <div className="annual-step__cards">
+            {s.items.map((item) => (
+              <article key={item.name} className="annual-step__card">
+                <Text as="span" typography="Caption" color="tertiary">{item.label}</Text>
+                <Text as="h4" typography="Body" className="annual-step__card-name">{item.name}</Text>
+                <Text typography="Meta" color="secondary">{item.body}</Text>
+              </article>
+            ))}
+          </div>
+        )}
+        {s.rhythm && <WeekRhythm rhythm={s.rhythm} />}
+      </>
+    ),
+  }));
+  return <PillarList groups={[{ label: '연간 구조', items }]} flat progress />;
 }
 
 
