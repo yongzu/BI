@@ -44,12 +44,8 @@ type Props = { title: string; paragraphs: string[][] };
 const STEP = 1.2;
 /** 제목이 커지는 스크롤 길이(화면 높이 배수) */
 const INTRO = 1;
-/** 처음 제목 폭 = 화면 폭 × 이 값 — v21: 1.7(화면을 넘친다) → 0.3(가운데 작게, 사용자 지시 2026-10-24) → 0.12(더 작게, 2026-10-27) */
-const INTRO_WIDTH = 0.12;
-/** 처음 제목 폭의 하한(px) — 좁은 화면에서 아주 작아지지 않게 */
-const INTRO_MIN = 120;
-/** 처음 흐림(화면 px) — 커지며 걷힌다(사용자 지시 2026-10-27) */
-const INTRO_BLUR = 14;
+/** 처음 제목 폭(px) — 아주 작은 점에서 시작한다(사용자 지시 2026-10-27). 이전: 화면 폭 × 0.3 → 0.12(최소 120px) */
+const DOT_PX = 6;
 /** 몰입 길 중 가운데에서 커지는 몫 — 나머지는 제자리(위)로 올라가며 단락이 페이드인 */
 const GROW = 0.6;
 /** 지금 단락 자리에서 이만큼(px) 넘게 움직이고 멈추면 다음 · 이전 단락으로 넘긴다 */
@@ -138,7 +134,7 @@ export function Philosophy({ title, paragraphs }: Props) {
       if (!reduced) {
         const w = title.offsetWidth;
         const h = title.offsetHeight;
-        const s0 = Math.max(window.innerWidth * INTRO_WIDTH, Math.min(w, INTRO_MIN)) / w;
+        const s0 = Math.min(1, DOT_PX / w);
         const sc = s0 ** (1 - eA); // 크기는 비율로 커져야 고르게 보인다
         // 제목은 가로 가운데에 놓여 있어(CSS) 가운데를 축으로 키우면 된다. 세로는 ① 화면 가운데 → ② 제자리(무대가 붙어 있어 무대 위 = 화면 위)
         const ty = (vh / 2 - (title.offsetTop + h / 2)) * (1 - eB);
@@ -146,9 +142,7 @@ export function Philosophy({ title, paragraphs }: Props) {
         // 움직이는 동안만 레이어로 — 제자리에선 풀어야 제 크기로 선명하게 다시 그린다(늘 걸면 작을 때 그린 그림을 확대해 흐렸다)
         // will-change는 걸지 않는다(2026-10-27) — 걸면 크롬이 처음(작을 때) 그린 그림을 확대해 써서 커지는 동안 제목 · 벡터 윤곽이
         // 깨져 보였다. 걸지 않으면 크기가 바뀔 때마다 그 크기로 다시 그린다(제목 한 줄이라 부담이 작다)
-        // 작을 때 흐렸다가 커지며 또렷하게 — 흐림은 변환 전에 걸리므로 화면에서의 흐림(INTRO_BLUR × 남은 몫)을 배율로 나눈다
-        const blur = (INTRO_BLUR * (1 - eA)) / sc;
-        title.style.filter = blur > 0.05 ? `blur(${blur.toFixed(2)}px)` : '';
+        // 흐림은 없다(사용자 지시 2026-10-27 — 히어로의 블러 효과 제거). 같은 날 앞서는 작을 때 흐렸다가 또렷해졌다
         // 단락 칸은 ②를 따라 페이드인 — v21: 제목과 함께 올라온다(제목 밑에 붙어, 24px 더 아래에서 제자리로). 따로 두면 올라오는 제목과 겹쳤다
         body.style.opacity = eB >= 1 ? '' : eB.toFixed(3);
         body.style.transform = eB >= 1 ? '' : `translateY(${(ty + (1 - eB) * 24).toFixed(1)}px)`;
@@ -340,8 +334,7 @@ export function Philosophy({ title, paragraphs }: Props) {
                         baseOpacity={0.1}
                         baseRotation={0}
                         baseOffset={0}
-                        enableBlur
-                        blurStrength={2} // 4 → 2(사용자 지시 2026-10-24)
+                        enableBlur={false} // 흐림 없이 옅은 글자에서 진해지기만(사용자 지시 2026-10-27 — 히어로의 블러 효과 제거)
                         // 단락이 자리 잡으면 문장이 차례로 시간으로 끝까지 드러난다
                         progress={fill(i)}
                         delay={j * SENTENCE_GAP}

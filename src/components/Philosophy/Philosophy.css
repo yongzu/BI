@@ -77,26 +77,25 @@
    지금(now): 펼쳐져 또렷. 지난(past): 흐려지며 살짝 작아지고 위로 기울며 빠진다.
    다음(next): 위 경첩에서 아래쪽이 깊게 젖혀진 채 납작하게 접혀 흐린 상태로 기다리다, 차례가 오면 아래로 펼쳐지며 흐림이 걷힌다 */
 .philosophy__para {
+  /* 흐림(filter: blur)은 뺐다(사용자 지시 2026-10-27 — 히어로의 블러 효과 제거). 펼침 · 옅어짐만 */
   transition:
     opacity 700ms var(--ease),
-    filter 900ms var(--ph-ease),
     transform 1100ms var(--ph-ease);
 }
-.philosophy__para[data-state='now'] { opacity: 1; filter: blur(0); transform: none; }
+.philosophy__para[data-state='now'] { opacity: 1; transform: none; }
 .philosophy__para[data-state='past'] {
   opacity: 0;
-  filter: blur(14px);
   transform: rotateX(-14deg) scale(0.96) translateY(-6%);
   pointer-events: none;
 }
 .philosophy__para[data-state='next'] {
   opacity: 0;
-  filter: blur(16px);
   transform: rotateX(48deg) scaleY(0.7);
   pointer-events: none;
 }
-/* 들어오는 단락은 나가는 단락이 흐려지기 시작한 뒤 살짝 늦게 펼친다 */
-.philosophy__para[data-state='now'] { transition-delay: 120ms; }
+/* 흐림 없이 두 단락이 겹쳐 보이지 않게(2026-10-27): 나가는 단락은 빨리(280ms) 사라지고, 들어오는 단락은 그 뒤에 펼친다 */
+.philosophy__para:is([data-state='past'], [data-state='next']) { transition-duration: 280ms, 600ms; }
+.philosophy__para[data-state='now'] { transition-delay: 260ms; }
 
 @media (max-width: 720px) {
   .philosophy__stage { gap: var(--space-32); }
