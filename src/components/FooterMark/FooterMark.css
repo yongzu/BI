@@ -1,5 +1,5 @@
 /* 푸터 맨 아래 'Fundamental Over Tools'(2026-10-24) — 2026-10-27: 여백 없이 화면 폭에 꽉 차게 · 맨 아래에 붙인다.
-   맨 아래에서 더 스크롤하면 페이지가 들려 올라가며 뒤에 고정된 숫자 그래픽(.footer-reveal)이 드러났다 다시 덮인다(FooterMark.tsx). Tokens only. */
+   Tokens only. */
 /* 감싼 칸이 푸터 양옆 여백을 지우고 화면 끝까지 — svg에 직접 음수 여백을 주면 전역 max-width: 100%에 걸려 글줄 폭에 묶였다 */
 .footer-mark-wrap { margin-top: var(--space-96); margin-inline: calc(-1 * var(--side-wide)); }
 .footer-mark {
@@ -8,26 +8,4 @@
   height: auto;
   overflow: visible;
   fill: var(--color-text-primary);
-}
-
-/* 뒤에 숨은 그래픽: 화면 바닥에 고정, 페이지 뒤(z 0). 높이는 예전 열리는 공간의 절반(사용자 지시 2026-10-27 — 42vh · 420 → 21vh · 210).
-   채용 연계 · 푸터는 바탕을 칠하고 그 위(z 1)에 있어 평소엔 가린다. 맨 아래에서 더 스크롤하면(html[data-footer-lift]) 둘이 --fr-lift만큼
-   위로 들려 그 아래로 그래픽이 드러난다 — 그래픽은 움직이지 않는다. 들리지 않았을 땐 숨겨 다른 섹션의 투명한 바탕 뒤로 비치지 않게 */
-.footer-reveal {
-  position: fixed;
-  z-index: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: min(21vh, 210px);
-  visibility: hidden;
-  pointer-events: none;
-}
-:root[data-footer-lift] .footer-reveal { visibility: visible; }
-#career,
-.footer { position: relative; z-index: 1; background: var(--color-bg-default); }
-:root[data-footer-lift] :is(#career, .footer) { transform: translateY(calc(-1 * var(--fr-lift, 0px))); }
-
-@media (prefers-reduced-motion: reduce) {
-  .footer-reveal { display: none; }
 }

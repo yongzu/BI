@@ -1,128 +1,154 @@
-/* 역량과 태도 이미지 박스 그래픽(2026-10-24) — 모노톤: 어두운 면 위 흰 선 · 점 · 픽셀. 고른 장만 움직인다 */
+/* 역량과 태도 이미지 박스 그래픽(2026-10-27) — linear.app 'Purpose-built' 라인 드로잉 참고: 어두운 면 위 가는 흰 선의 등각 와이어프레임.
+   면 · 정육면체 · 세운 선을 CSS 3D(preserve-3d, 원근 없음)로 쌓는다. 고른 장만 움직인다.
+   주의: 3D로 쌓은 묶음(정육면체 등)엔 opacity를 주지 않는다 — 1보다 작으면 브라우저가 납작하게 눌러 버린다. 흐림은 면(잎)에만 */
 .pa-box {
   --pa-bg: #1a1a1a; /* 모노톤 어두운 면 — 잉크(#333)보다 한 단계 깊게 */
   --pa-fg: #ffffff;
+  --pa-line: rgb(255 255 255 / 0.55);
+  --pa-faint: rgb(255 255 255 / 0.16);
   --pa-ease: cubic-bezier(0.65, 0, 0.35, 1);
   position: relative;
   width: 100%;
-  max-width: 280px; /* 240 → 280(사용자 지시 2026-10-27) */
+  max-width: 304px; /* 280 → 304(사용자 지시 2026-10-27 — 약간 크게) */
   aspect-ratio: 240 / 315;
   overflow: hidden;
   border-radius: 40px;
   background: var(--pa-bg);
   isolation: isolate;
 }
-/* 세로 트랙 — 고른 장(--i)으로 넘어간다(토스 이미지 박스) */
-/* 넘어가는 시간 · 곡선은 PillarList의 --pl-move · --pl-ease(420ms ease-out, 2026-10-27) — 예전 800ms ease-in-out은 느렸다 */
+/* 세로 트랙 — 고른 장(--i)으로 넘어간다(토스 이미지 박스). 시간 · 곡선은 PillarList의 --pl-move · --pl-ease */
 .pa-track { height: 100%; transform: translateY(calc(var(--i, 0) * -100%)); transition: transform var(--pl-move, 420ms) var(--pl-ease, cubic-bezier(0.16, 1, 0.3, 1)); }
 .pa-slide { position: relative; height: 100%; overflow: hidden; }
-.pa-svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+/* 이름: 왼쪽 아래, 크고 얇게(사용자 지시 2026-10-27 — 가운데 굵은 20px에서). 두 낱말이면 두 줄(PillarArt.tsx) */
 .pa-title {
   position: absolute;
-  inset: 0;
   z-index: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0 var(--space-24);
-  text-align: center;
-  font-size: var(--typo-lead-size);
-  line-height: 1.25;
-  font-weight: var(--font-weight-bold);
-  letter-spacing: var(--tracking-heading);
+  left: var(--space-28);
+  right: var(--space-28);
+  bottom: var(--space-28);
+  font-size: 1.625rem;
+  line-height: 1.15;
+  font-weight: var(--font-weight-regular);
+  letter-spacing: -0.02em;
   color: var(--pa-fg);
-  text-shadow: 0 0 24px var(--pa-bg), 0 0 8px var(--pa-bg);
 }
 /* 보이지 않는 장은 멈춘다 */
 .pa-slide:not([data-active='true']) * { animation-play-state: paused !important; }
 
+/* ---------- 등각 무대: 이름 자리를 빼고 가운데. 정사각형 132px을 눕혀(60°) 45° 돌린다 ---------- */
+.pa-stage { position: absolute; inset: 0 0 96px; display: grid; place-items: center; }
+.pa-iso { position: relative; width: 132px; height: 132px; transform-style: preserve-3d; transform: rotateX(60deg) rotateZ(-45deg); scale: 1.3; } /* 박스(304)에 맞춰 키운다 */
+.pa-iso--spin { animation: pa-iso-spin 48s linear infinite; }
+@keyframes pa-iso-spin { from { transform: rotateX(60deg) rotateZ(-45deg); } to { transform: rotateX(60deg) rotateZ(315deg); } }
+
+.pa-plane { position: absolute; border: 1px solid var(--pa-line); transform: translateZ(var(--z, 0)); transform-style: preserve-3d; }
+.pa-plane--faint { border-color: var(--pa-faint); }
+.pa-plane--ghost { border: 1px dashed var(--pa-faint); }
+.pa-plane--float { background: color-mix(in srgb, var(--pa-bg) 70%, transparent); }
+.pa-plane--threshold { border: 1px dashed var(--pa-line); }
+.pa-grid {
+  border-color: var(--pa-faint);
+  background-image: linear-gradient(var(--pa-faint) 1px, transparent 1px), linear-gradient(90deg, var(--pa-faint) 1px, transparent 1px);
+  background-size: 16.5px 16.5px;
+}
+.pa-plane__svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+/* 세운 선: 판 위 (x, y)에서 위로 — 왼쪽 위를 축으로 세운다 */
+.pa-riser { position: absolute; width: 0; border-left: 1px solid var(--pa-line); transform-origin: 0 0; transform: translateZ(var(--z, 0)) rotateX(90deg); }
+.pa-riser--dashed { border-left: 1px dashed var(--pa-faint); }
+
+/* 정육면체: 바닥 · 윗면 · 네 옆면을 세운다. 면은 어두운 바탕으로 칠해 뒤쪽 선을 가린다 */
+.pa-cube { position: absolute; transform-style: preserve-3d; transform: translateZ(var(--z, 0)); }
+.pa-cube__face { position: absolute; inset: 0; border: 1px solid var(--pa-fg); background: var(--pa-bg); }
+.pa-cube__face--top { transform: translateZ(var(--s)); background: color-mix(in srgb, var(--pa-fg) 8%, var(--pa-bg)); }
+.pa-cube__face--front { transform-origin: 50% 100%; transform: rotateX(-90deg); }
+.pa-cube__face--back { transform-origin: 50% 0; transform: rotateX(90deg); }
+.pa-cube__face--left { transform-origin: 0 50%; transform: rotateY(-90deg); }
+.pa-cube__face--right { transform-origin: 100% 50%; transform: rotateY(90deg); }
+
+/* 판 위의 점 · 막대 · 마디 */
+.pa-dot { position: absolute; width: 4px; height: 4px; margin: -2px 0 0 -2px; border-radius: 50%; background: var(--pa-fg); opacity: 0.5; }
+.pa-dot--blink { animation: pa-blink-soft 3.2s ease-in-out var(--d, 0s) infinite; }
+.pa-bar { position: absolute; height: 3px; border-radius: 2px; background: var(--pa-fg); opacity: 0.6; transform-origin: left center; }
+.pa-bar--short { opacity: 0.3; }
+.pa-bar--type { animation: pa-type 6s steps(16, end) var(--d, 0s) infinite; }
+.pa-caret { position: absolute; width: 2px; height: 10px; margin-top: -4px; background: var(--pa-fg); animation: pa-blink 1s steps(1, end) infinite; }
+.pa-node { position: absolute; width: 8px; height: 8px; margin: -4px 0 0 -4px; border: 1px solid var(--pa-fg); border-radius: 50%; background: var(--pa-bg); animation: pa-light 5s ease-out var(--d, 0s) infinite; }
+.pa-node--big { width: 12px; height: 12px; margin: -6px 0 0 -6px; }
+.pa-link { fill: none; stroke: var(--pa-fg); stroke-width: 1; opacity: 0.35; }
+@keyframes pa-blink-soft { 0%, 100% { opacity: 0.15; } 50% { opacity: 0.7; } }
+@keyframes pa-type { 0% { transform: scaleX(0); opacity: 0.6; } 14% { transform: scaleX(1); } 82% { transform: scaleX(1); opacity: 0.6; } 92%, 100% { transform: scaleX(1); opacity: 0; } }
+@keyframes pa-blink { 0%, 50% { opacity: 1; } 51%, 100% { opacity: 0; } }
+@keyframes pa-light { 0%, 6% { background: var(--pa-bg); } 14%, 70% { background: var(--pa-fg); } 90%, 100% { background: var(--pa-bg); } }
+
 /* ---------- 01 Aesthetic Sense ---------- */
-.pa-thin { fill: none; stroke: var(--pa-fg); stroke-width: 0.75; opacity: 0.16; animation: pa-breathe 6s ease-in-out var(--d, 0s) infinite; }
-.pa-draw { fill: none; stroke: var(--pa-fg); stroke-width: 1.5; stroke-linecap: round; stroke-dasharray: 1; animation: pa-draw 6s var(--pa-ease) infinite; }
+.pa-thin { fill: none; stroke: var(--pa-fg); stroke-width: 0.75; opacity: 0.2; animation: pa-breathe 6s ease-in-out var(--d, 0s) infinite; }
+.pa-draw { fill: none; stroke: var(--pa-fg); stroke-width: 1.25; stroke-linecap: round; stroke-dasharray: 1; animation: pa-draw 6s var(--pa-ease) infinite; }
 .pa-eye { fill: var(--pa-fg); transform-box: fill-box; transform-origin: center; animation: pa-pulse 2s ease-in-out infinite; }
-@keyframes pa-breathe { 0%, 100% { opacity: 0.12; } 50% { opacity: 0.32; } }
+@keyframes pa-breathe { 0%, 100% { opacity: 0.14; } 50% { opacity: 0.4; } }
 @keyframes pa-draw { 0% { stroke-dashoffset: 1; opacity: 0.9; } 60% { stroke-dashoffset: 0; } 88% { stroke-dashoffset: 0; opacity: 0.9; } 100% { stroke-dashoffset: 0; opacity: 0; } }
 @keyframes pa-pulse { 0%, 100% { transform: scale(1); opacity: 0.9; } 50% { transform: scale(1.8); opacity: 0.4; } }
 
-/* ---------- 02 Articulation ---------- */
-.pa-quote { fill: var(--pa-fg); opacity: 0.3; font-size: 88px; font-weight: 700; }
-.pa-line { fill: var(--pa-fg); opacity: 0.5; transform-box: fill-box; transform-origin: left center; animation: pa-type 6s steps(14, end) var(--d, 0s) infinite; }
-.pa-caret { fill: var(--pa-fg); animation: pa-blink 1s steps(1, end) infinite; }
-@keyframes pa-type { 0% { transform: scaleX(0); opacity: 0.5; } 14% { transform: scaleX(1); } 82% { transform: scaleX(1); opacity: 0.5; } 92%, 100% { transform: scaleX(1); opacity: 0; } }
-@keyframes pa-blink { 0%, 50% { opacity: 1; } 51%, 100% { opacity: 0; } }
-
-/* ---------- 03 Structural Thinking ---------- */
-.pa-edge { fill: none; stroke: var(--pa-fg); stroke-width: 1; opacity: 0.55; stroke-dasharray: 1; animation: pa-grow 5s var(--pa-ease) var(--d, 0s) infinite; }
-.pa-node { fill: var(--pa-bg); stroke: var(--pa-fg); stroke-width: 1; animation: pa-light 5s ease-out var(--d, 0s) infinite; }
-@keyframes pa-grow { 0% { stroke-dashoffset: 1; } 22%, 84% { stroke-dashoffset: 0; opacity: 0.55; } 100% { stroke-dashoffset: 0; opacity: 0; } }
-@keyframes pa-light { 0%, 6% { fill: var(--pa-bg); } 14%, 70% { fill: var(--pa-fg); } 90%, 100% { fill: var(--pa-bg); } }
-
 /* ---------- 04 Problem Definition ---------- */
 .pa-noise { fill: var(--pa-fg); opacity: var(--o, 0.15); animation: pa-flicker var(--t, 1.2s) steps(1, end) var(--d, 0s) infinite; }
-.pa-target { fill: var(--pa-fg); animation: pa-lock 4s ease-out infinite; }
-.pa-reticle { fill: none; stroke: var(--pa-fg); stroke-width: 1; animation: pa-narrow 4s var(--pa-ease) infinite; }
+.pa-target { fill: var(--pa-fg); animation: pa-target 4s ease-out infinite; }
+.pa-lock { position: absolute; transform-style: preserve-3d; }
+.pa-lock__frame { position: absolute; inset: 0; border: 1.5px solid var(--pa-fg); animation: pa-descend 4s var(--pa-ease) infinite; }
 @keyframes pa-flicker { 0%, 49% { opacity: var(--o, 0.15); } 50%, 100% { opacity: 0.03; } }
-@keyframes pa-lock { 0%, 45% { opacity: 0.2; } 60%, 90% { opacity: 1; } 100% { opacity: 0.2; } }
-@keyframes pa-narrow { 0% { transform: scale(2.6) rotate(-45deg); opacity: 0; } 15% { opacity: 0.9; } 55%, 88% { transform: scale(1) rotate(0deg); opacity: 0.9; } 100% { transform: scale(1); opacity: 0; } }
+@keyframes pa-target { 0%, 50% { opacity: 0.15; } 60%, 88% { opacity: 1; } 100% { opacity: 0.15; } }
+@keyframes pa-descend { 0% { transform: translateZ(96px) scale(5); opacity: 0; } 12% { opacity: 0.9; } 55%, 86% { transform: translateZ(0) scale(1); opacity: 1; } 100% { transform: translateZ(0) scale(1); opacity: 0; } }
 
-/* ---------- 05 Reframing: 와이어 정육면체 ---------- */
-.pa-cube-stage { position: absolute; inset: 0; display: grid; place-items: center; perspective: 520px; }
-.pa-cube { --half: 48px; grid-area: 1 / 1; position: relative; width: calc(var(--half) * 2); height: calc(var(--half) * 2); transform-style: preserve-3d; animation: pa-spin 14s linear infinite; }
-.pa-cube--inner { --half: 22px; animation: pa-spin-back 9s linear infinite; }
-.pa-face { position: absolute; inset: 0; border: 1px solid color-mix(in srgb, var(--pa-fg) 55%, transparent); }
-.pa-cube--inner .pa-face { border-color: color-mix(in srgb, var(--pa-fg) 30%, transparent); background: color-mix(in srgb, var(--pa-fg) 4%, transparent); }
-.pa-face--front { transform: translateZ(var(--half)); }
-.pa-face--back { transform: rotateY(180deg) translateZ(var(--half)); }
-.pa-face--right { transform: rotateY(90deg) translateZ(var(--half)); }
-.pa-face--left { transform: rotateY(-90deg) translateZ(var(--half)); }
-.pa-face--top { transform: rotateX(90deg) translateZ(var(--half)); }
-.pa-face--bottom { transform: rotateX(-90deg) translateZ(var(--half)); }
+/* ---------- 05 Reframing: 와이어 정육면체(예전 그림 — 원근으로 돈다) ---------- */
+.pa-cube-stage { position: absolute; inset: 0 0 96px; display: grid; place-items: center; perspective: 520px; }
+.pa-wire { --half: 60px; grid-area: 1 / 1; position: relative; width: calc(var(--half) * 2); height: calc(var(--half) * 2); transform-style: preserve-3d; animation: pa-spin 14s linear infinite; }
+.pa-wire--inner { --half: 28px; animation: pa-spin-back 9s linear infinite; }
+.pa-wire__face { position: absolute; inset: 0; border: 1px solid var(--pa-line); }
+.pa-wire--inner .pa-wire__face { border-color: rgb(255 255 255 / 0.3); background: rgb(255 255 255 / 0.04); }
+.pa-wire__face--front { transform: translateZ(var(--half)); }
+.pa-wire__face--back { transform: rotateY(180deg) translateZ(var(--half)); }
+.pa-wire__face--right { transform: rotateY(90deg) translateZ(var(--half)); }
+.pa-wire__face--left { transform: rotateY(-90deg) translateZ(var(--half)); }
+.pa-wire__face--top { transform: rotateX(90deg) translateZ(var(--half)); }
+.pa-wire__face--bottom { transform: rotateX(-90deg) translateZ(var(--half)); }
 @keyframes pa-spin { from { transform: rotateX(-22deg) rotateY(0deg); } to { transform: rotateX(-22deg) rotateY(360deg); } }
 @keyframes pa-spin-back { from { transform: rotateX(30deg) rotateY(360deg) rotateZ(0deg); } to { transform: rotateX(30deg) rotateY(0deg) rotateZ(360deg); } }
 
-/* ---------- 06 Active Learning ---------- */
-.pa-dot { fill: var(--pa-fg); opacity: 0.22; }
-.pa-step { fill: var(--pa-fg); opacity: 0; animation: pa-trail 6s linear var(--d, 0s) infinite; }
-@keyframes pa-trail { 0% { opacity: 0; } 2% { opacity: 1; } 30% { opacity: 0.35; } 70% { opacity: 0.12; } 82%, 100% { opacity: 0; } }
+/* ---------- 06 Active Learning: 정육면체가 한 칸씩 계단처럼 — 자리는 묶음이, 흐림은 면이 ---------- */
+.pa-cube--step { animation: pa-step-move 5.5s ease-out var(--d, 0s) infinite; }
+.pa-cube--step .pa-cube__face { animation: pa-step-fade 5.5s ease-out var(--d, 0s) infinite; }
+@keyframes pa-step-move { 0% { transform: translateZ(calc(var(--z) + 16px)); } 10%, 100% { transform: translateZ(var(--z)); } }
+@keyframes pa-step-fade { 0% { opacity: 0; } 10%, 70% { opacity: 1; } 86%, 100% { opacity: 0; } }
 
-/* ---------- 07 Discovering Unknowns ---------- */
-.pa-tile__frame { fill: none; stroke: var(--pa-fg); stroke-width: 0.75; opacity: 0.22; }
-.pa-tile__fill { fill: var(--pa-fg); opacity: 0; animation: pa-reveal 9s var(--pa-ease) var(--d, 0s) infinite; }
-.pa-tile__q { fill: var(--pa-fg); opacity: 0.45; font-size: 14px; font-weight: 700; text-anchor: middle; }
-/* 한 번에 열에 서넛만 드러나게 — 너무 많이 · 밝게 드러나면 가운데 이름이 묻혔다 */
-@keyframes pa-reveal { 0% { transform: scaleX(0); opacity: 0; } 4% { transform: scaleX(1); opacity: 0.5; } 30% { transform: scaleX(1); opacity: 0.5; } 35%, 100% { transform: scaleX(0); opacity: 0; } }
+/* ---------- 07 Discovering Unknowns: 타일이 떠올라 속이 드러난다 ---------- */
+.pa-tile { position: absolute; border: 1px solid var(--pa-faint); animation: pa-tile 8s var(--pa-ease) var(--d, 0s) infinite; }
+@keyframes pa-tile {
+  0%, 60%, 100% { transform: translateZ(0); background: transparent; border-color: var(--pa-faint); }
+  68%, 86% { transform: translateZ(22px); background: rgb(255 255 255 / 0.55); border-color: var(--pa-fg); }
+}
 
-/* ---------- 08 Unpacking the Compression ---------- */
-.pa-layer { animation: pa-unpack 5s var(--pa-ease) var(--d, 0s) infinite alternate; }
-.pa-layer line { stroke: var(--pa-fg); stroke-width: 1; opacity: 0.6; }
-.pa-layer rect { fill: var(--pa-fg); opacity: 0.8; }
-.pa-layer .pa-layer__mark { opacity: 0.5; }
-@keyframes pa-unpack { 0%, 18% { transform: translateY(0); } 62%, 100% { transform: translateY(var(--dy, 0px)); } }
+/* ---------- 08 Unpacking the Compression: 판 여섯 장이 펼쳐졌다 접힌다 ---------- */
+.pa-layer { inset: 0; background: color-mix(in srgb, var(--pa-bg) 82%, transparent); animation: pa-unpack 5s var(--pa-ease) infinite alternate; }
+.pa-layer--0 { background-image: linear-gradient(var(--pa-faint) 1px, transparent 1px), linear-gradient(90deg, var(--pa-faint) 1px, transparent 1px); background-size: 22px 22px; }
+@keyframes pa-unpack { 0%, 18% { transform: translateZ(calc(var(--i) * 3px)); } 62%, 100% { transform: translateZ(calc(var(--i) * 17px)); } }
 
-/* ---------- 09 Dissatisfaction Sensor ---------- */
-.pa-grid { stroke: var(--pa-fg); stroke-width: 0.5; opacity: 0.08; }
-.pa-threshold { stroke: var(--pa-fg); stroke-width: 1; stroke-dasharray: 3 4; opacity: 0.45; }
+/* ---------- 09 Dissatisfaction Sensor: 세운 판 위로 흐르는 신호 · 기준 판 ---------- */
+.pa-wall { position: absolute; border-left: 1px solid var(--pa-faint); border-right: 1px solid var(--pa-faint); transform-origin: 0 0; transform: rotateX(90deg); }
+.pa-wall__svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: hidden; }
 .pa-wave { animation: pa-scroll 6s linear infinite; }
-.pa-wave polyline { fill: none; stroke: var(--pa-fg); stroke-width: 1.25; stroke-linejoin: round; opacity: 0.85; }
-.pa-scan { stroke: var(--pa-fg); stroke-width: 1; opacity: 0.25; }
-.pa-alert { fill: none; stroke: var(--pa-fg); stroke-width: 1.25; opacity: 0; animation: pa-alert 6s linear infinite; }
-@keyframes pa-scroll { from { transform: translateX(0); } to { transform: translateX(-240px); } }
-/* 튐(파형의 150–166px)이 가운데 선(120px)을 지나는 때 — 6초 중 약 0.75–1.15초 */
-@keyframes pa-alert { 0%, 10% { opacity: 0; } 12%, 24% { opacity: 1; } 30%, 100% { opacity: 0; } }
+.pa-wave polyline { fill: none; stroke: var(--pa-fg); stroke-width: 1.25; stroke-linejoin: round; opacity: 0.85; vector-effect: non-scaling-stroke; }
+.pa-alert { position: absolute; border: 1.5px solid var(--pa-fg); opacity: 0; animation: pa-alert 6s linear infinite; }
+@keyframes pa-scroll { from { transform: translateX(0); } to { transform: translateX(-132px); } }
+@keyframes pa-alert { 0%, 4% { opacity: 0; } 8%, 22% { opacity: 1; background: rgb(255 255 255 / 0.25); } 30%, 100% { opacity: 0; } }
 
-/* ---------- 10 Learning by Sharing ---------- */
-.pa-ripple { fill: none; stroke: var(--pa-fg); stroke-width: 1; animation: pa-ripple 3s ease-out var(--d, 0s) infinite; }
-.pa-link { stroke: var(--pa-fg); stroke-width: 0.75; stroke-dasharray: 2 4; opacity: 0.3; animation: pa-flow 1.2s linear infinite; }
-.pa-peer { fill: var(--pa-bg); stroke: var(--pa-fg); stroke-width: 1; animation: pa-peer 1s ease-out var(--d, 0s) infinite; }
-.pa-source { fill: var(--pa-fg); }
+/* ---------- 10 Learning by Sharing: 물결 · 둘레의 정육면체 ---------- */
+.pa-ripple { position: absolute; left: 50%; top: 50%; width: 112px; height: 112px; margin: -56px 0 0 -56px; border: 1px solid var(--pa-fg); border-radius: 50%; animation: pa-ripple 3s ease-out var(--d, 0s) infinite; }
+.pa-cube--source .pa-cube__face--top { background: var(--pa-fg); }
+.pa-cube--peer .pa-cube__face--top { animation: pa-peer 1s ease-out var(--d, 0s) infinite; }
 @keyframes pa-ripple { 0% { transform: scale(0); opacity: 0.7; } 100% { transform: scale(1); opacity: 0; } }
-@keyframes pa-flow { to { stroke-dashoffset: -12; } }
-@keyframes pa-peer { 0%, 60% { fill: var(--pa-bg); } 75% { fill: var(--pa-fg); } 100% { fill: var(--pa-bg); } }
+@keyframes pa-peer { 0%, 60% { background: color-mix(in srgb, var(--pa-fg) 8%, var(--pa-bg)); } 75% { background: var(--pa-fg); } 100% { background: color-mix(in srgb, var(--pa-fg) 8%, var(--pa-bg)); } }
 
 @media (prefers-reduced-motion: reduce) {
   .pa-track { transition: none; }
   .pa-box * { animation: none !important; }
-  .pa-draw, .pa-edge { stroke-dashoffset: 0; }
-  .pa-line { transform: none; }
-  .pa-step, .pa-tile__fill { opacity: 0.4; }
+  .pa-draw { stroke-dashoffset: 0; }
+  .pa-bar--type { transform: none; }
 }

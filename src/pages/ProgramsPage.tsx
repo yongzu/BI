@@ -9,7 +9,6 @@ import GradientASCII from '../components/GradientASCII/GradientASCII';
 import { HERO_ASCII } from '../components/GradientASCII/heroPreset';
 import { BackToTop, SiteHeader } from '../components/SiteHeader/SiteHeader';
 import { FooterMark } from '../components/FooterMark/FooterMark';
-import { VersionLog } from '../components/VersionLog/VersionLog';
 import { PillarList, type PillarItem } from '../components/PillarList/PillarList';
 import { CurriculumEntry } from '../components/CurriculumEntry/CurriculumEntry';
 import { Philosophy } from '../components/Philosophy/Philosophy';
@@ -220,8 +219,6 @@ export function ProgramsPage() {
         <Text typography="Label" color="tertiary">
           평일 10:00 - 18:00 (점심시간 13:00 - 14:00) · © 2026 Phi Institute of Design · <a href="#system" className="link">Design System</a>
         </Text>
-        {/* 버전 기록 — 이전 버전도 볼 수 있게(v21, 사용자 지시 2026-10-24). 2026-10-27: 'Fundamental Over Tools'가 맨 아래로 가며 그 위로 */}
-        <VersionLog />
         {/* 맨 아래, 여백 없이 화면 폭에 꽉 찬 'Fundamental Over Tools' — 글자 뒤에서 카드가 떠올랐다 내려간다(사용자 지시 2026-10-27) */}
         <FooterMark />
       </footer>
