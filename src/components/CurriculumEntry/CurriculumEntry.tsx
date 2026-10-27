@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import type { CourseType } from '../../data/programs';
-import { lockScrollInput, scrollToTarget } from '../../smoothScroll';
+import { isNavigating, lockScrollInput, scrollToTarget } from '../../smoothScroll';
 import './CurriculumEntry.css';
 
 /**
@@ -22,6 +22,8 @@ import './CurriculumEntry.css';
  *    줄어드는 동안 함께 나오니 어색했다). 탭 이름은 그동안 무대 글자가 대신하다가, 끝에서 실제 탭 이름으로 바뀌고 스크롤이 풀린다.
  * 다시 역량과 태도까지 올라가면(무대가 화면 아래로 다 빠지면) 처음 상태로 돌아가 다음에 또 진행된다.
  * 목차 등으로 무대를 건너뛰어 커리큘럼 안쪽에 바로 오면 진행 없이 끝난 상태로 둔다.
+ * 목차로 이동하는 동안(isNavigating — 부드럽게 스크롤하며 무대를 지나간다)에도 시작하지 않고 끝난 상태로 건너뛴다 —
+ * 예전엔 역량과 태도에서 연간 구조 · 채용 연계로 가는 길에 저절로 진행되며 스크롤을 붙잡아 이동이 막혔다(사용자 제보 2026-10-27).
  *
  * 이어 붙이는 법: 실제 커리큘럼은 무대 바로 뒤에 놓되, 위로 (화면 높이 − LAND_TOP)만큼 끌어올려 무대와 겹친다.
  * 무대는 붙는 길이 없이 한 화면 — 무대 맨 위가 화면 맨 위일 때(진행 중 잠긴 스크롤) 실제 커리큘럼 맨 위가 이미 LAND_TOP에 서 있다.
@@ -178,9 +180,13 @@ export function CurriculumEntry({ types, children }: Props) {
       const now = performance.now();
       const vh = window.innerHeight;
       const top = intro.getBoundingClientRect().top;
+      if (phase === 'play' && isNavigating()) return finish(false); // 진행 중 목차로 떠난다 — 그 자리에서 끝내고 스크롤을 놓는다
       if (phase === 'idle') {
         if (top <= -window.innerHeight * 0.3) return finish(false); // 무대를 건너뛰어 이미 커리큘럼 안쪽
-        if (top < vh * TRIGGER) start(now);
+        if (top < vh * TRIGGER) {
+          if (isNavigating()) return finish(false); // 목차로 지나가는 중 — 진행 없이 끝난 모습
+          start(now);
+        }
       } else if (phase === 'done' && top > vh) {
         phase = 'idle'; // 역량과 태도까지 돌아갔다 — 다음에 다시 진행
         setDone(false);

@@ -99,3 +99,27 @@ export function keepInPlace(target: HTMLElement, ms = 600) {
   };
   requestAnimationFrame(frame);
 }
+
+/**
+ * 목차 이동 중 표시(사용자 지시 2026-10-27 — 역량과 태도에서 연간 구조 · 채용 연계로 가는 동안 커리큘럼 들어가는 길이 저절로 진행되며
+ * 스크롤을 붙잡아 이동이 막혔다). 목차가 이동을 시작할 때 켜고, 스크롤이 SETTLE_MS 동안 멈추면 꺼진다.
+ * 저절로 진행되는 연출(CurriculumEntry)은 이 동안 시작하지 않고 끝난 모습으로 건너뛴다.
+ */
+let navigating = false;
+let navTimer = 0;
+const NAV_SETTLE_MS = 250;
+const endNavigation = () => {
+  navigating = false;
+  window.removeEventListener('scroll', onNavScroll);
+};
+const onNavScroll = () => {
+  window.clearTimeout(navTimer);
+  navTimer = window.setTimeout(endNavigation, NAV_SETTLE_MS);
+};
+export function markNavigation() {
+  navigating = true;
+  window.clearTimeout(navTimer);
+  navTimer = window.setTimeout(endNavigation, 600); // 스크롤이 일어나지 않으면(이미 그 자리) 곧 끈다
+  window.addEventListener('scroll', onNavScroll, { passive: true });
+}
+export const isNavigating = () => navigating;

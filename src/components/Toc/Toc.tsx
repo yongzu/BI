@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { scrollToTarget } from '../../smoothScroll';
+import { markNavigation, scrollToTarget } from '../../smoothScroll';
 import './Toc.css';
 
 /**
@@ -100,6 +100,7 @@ export function Toc({ items, onNavigate }: TocProps) {
   // 가운데 두면 위 끝이 상단바 줄(88px) 위로 올라갈 만큼 길면(커리큘럼 등) 예전처럼 제목이 위 88px에 오게
   const go = (id: string) => {
     onNavigate?.(id);
+    markNavigation(); // 지나가는 길의 저절로 진행되는 연출(커리큘럼 들어가는 길)은 건너뛴다
     requestAnimationFrame(() => {
       const el = document.getElementById(id);
       if (!el) return;
