@@ -30,7 +30,7 @@ import './Philosophy.css';
  *   ② 나머지 동안 같은 높이에서 왼쪽 제자리로 옮겨 가며
  *   단락 칸이 함께 페이드인된다(스크롤을 따라). 큰 제목인 동안(① ~ ②)은 벡터 인터랙션 · 십자선을 꺼 둔다(setVectorZone).
  *   끊어 넘기기도 큰 제목 자리(0) → 단락들(1 … n) → 무대가 풀리는 자리(n + 1) 순서로 맞춘다.
- * - 머묾(사용자 지시 2026-10-23 — 스크롤하다 보면 내용이 나오자마자 넘어갔다): 막 드러난 단락은 문장이 다 드러날 때까지(hold) 다음 단락으로
+ * - 머묾(2026-10-23 ~ 10-27, 2026-10-28에 뺐다 — 넘어가는 딜레이가 심하고 스크롤이 위로 끌려갔다): 막 드러난 단락은 문장이 다 드러날 때까지(hold) 다음 단락으로
  *   넘어가지 않는다. 그동안 더 내려도 단락은 그대로이고, 멈추면 그 단락 자리로 되돌린다. 넘어갈 땐 한 칸씩. 스크롤 자체는 가로채지 않는다.
  * - v21 몰입 뒤집기(사용자 지시 2026-10-24 — 큰 제목이 줄며 왼쪽으로 가던 것을): 제목이 화면 가운데에서 작게(화면 폭의 INTRO_WIDTH배) 시작해
  *   ① GROW 몫 동안 화면 가운데에 선 채 글줄 폭에 꽉 차게(양옆 --side-wide — 다른 섹션과 같은 폭, 2026-10-27. v21은 --gutter) 커지고, ② 나머지 동안 제자리(위)로 올라가며 단락 칸이 페이드인된다.
@@ -55,12 +55,10 @@ const GROW = 0.6;
 const SNAP_PX = 40;
 /** 스크롤이 멈췄다고 보는 시간(ms) */
 const SETTLE_MS = 140;
-/** 단락 자리로 맞춰 가는 시간(초) */
-const SNAP_S = 0.7;
+/** 단락 자리로 맞춰 가는 시간(초) — 0.7 → 0.5(사용자 지시 2026-10-28 — 첫째 → 둘째 단락 넘어가는 딜레이가 심했다) */
+const SNAP_S = 0.5;
 /** 한 단락 안 문장들이 차례로 드러나는 간격(초) */
 const SENTENCE_GAP = 0.45; // 0.9 → 0.45 — 두 배 빠르게(사용자 지시 2026-10-24)
-/** 한 문장이 드러나 읽히는 시간(초) — 막 드러난 단락은 이만큼 머문 뒤에야 다음 단락으로 넘어간다 */
-const READ_S = 1.2; // 1.2 → 0.6 → 1.2(2026-10-27 — 글자가 다 나온 뒤에야 내려갈 수 있게, 아래 막기와 함께)
 /** '**'로 시작하는 문장은 굵게(사용자 지시 2026-10-27) */
 const strong = (text: string) => text.startsWith('**');
 /** 문장 → ScrollReveal children: 글은 그대로, [ ]로 감싼 낱말은 벡터 낱말 — 본문은 박스만(앵커 없이, 사용자 지시 2026-10-23) */
@@ -91,19 +89,15 @@ export function Philosophy({ title, paragraphs }: Props) {
     let snapping = 0; // 맞춰 가는 동안(이 시각까지)은 스크롤 멈춤을 무시한다
     let idx = -1; // 마지막으로 맞춘 자리: 0 = 큰 제목, 1 … n = 단락, n + 1 = 무대가 풀리는 자리. -1 = 바깥
     let lastY = window.scrollY;
-    let atShown = 0; // 보이는 단락 — 스크롤이 가리키는 단락보다 늦을 수 있다(hold)
-    let wasOn = false;
-    let holdUntil = 0;
-    let holdTimer = 0;
-    // 다 읽었나(사용자 지시 2026-10-27 — 빠르게 스크롤하면 둘째 단락을 읽지 않고 역량과 태도로 넘어갔다):
-    // 마지막 단락이 보이고 다 드러난 뒤(hold)에야 true. 무대 안에서 본 마지막 단락(lastOn), 무대에 들어와 있었나(inside)
+    let atShown = 0; // 보이는 단락
+    let aim = -1; // 맞춰 가는 중인 단락 — 가는 동안 미리 그 단락을 보인다(닿을 때까지 기다리지 않게)
+    // 마지막 단락까지 왔나(사용자 지시 2026-10-27 — 빠르게 스크롤하면 둘째 단락을 보지도 않고 역량과 태도로 넘어갔다).
+    // 무대 안에서 본 마지막 단락(lastOn), 무대에 들어와 있었나(inside)
     let readAll = false;
     let lastOn = 0;
     let inside = false;
     let guardY = window.scrollY; // 앞 스크롤 자리 — 무대 끝을 '이어서' 넘었는지(한 번에 뛰어넘은 이동은 막지 않는다)
     let unlock = 0;
-    // 단락 i가 다 드러나는 시간(ms): 문장이 SENTENCE_GAP초 간격으로 시작해 마지막 문장이 READ_S초 동안 드러난다
-    const hold = (i: number) => ((paragraphs[i].length - 1) * SENTENCE_GAP + READ_S) * 1000;
     // 맞출 자리(페이지 y): 0 = 무대가 붙는 순간(큰 제목), i = 단락 i - 1이 지금이 되는 지점, n + 1 = 무대가 풀리는 자리
     // 화면 높이는 무대 높이(100svh)로 잰다(2026-10-27 — 맨 처음으로 되돌아가던 원인 ①): 휴대폰은 스크롤하면 주소창이 접히며
     // innerHeight가 바뀌는데, 그 값으로 잰 단락 자리가 수십 px 위아래로 밀려 '위로 올라갔다'로 읽혔다(→ 큰 제목 자리 = 맨 위로)
@@ -162,29 +156,13 @@ export function Philosophy({ title, paragraphs }: Props) {
       const on = k >= 1 && r.bottom > vh * 0.4;
       setShown(on);
       const q = span > intro ? Math.min(0.999, Math.max(0, (-r.top - intro) / (span - intro))) : 0;
-      const atT = Math.floor(q * n);
-      // 막 드러난 단락은 다 읽힐 때까지(hold) 다음으로 넘기지 않는다 — 한 번에 한 칸씩, 되돌아갈 땐 바로
-      const now = performance.now();
-      if (!on) {
-        atShown = atT;
-        holdUntil = 0;
-      } else if (!wasOn || atT < atShown) {
-        atShown = atT;
-        holdUntil = now + hold(atShown);
-      } else if (atT > atShown) {
-        if (now >= holdUntil) {
-          atShown += 1;
-          holdUntil = now + hold(atShown);
-        }
-        // 다 읽힐 때 다시 본다(그동안 스크롤이 멈춰 있어도)
-        window.clearTimeout(holdTimer);
-        holdTimer = window.setTimeout(onScroll, Math.max(0, holdUntil - now) + 16);
-      }
-      wasOn = on;
+      // 단락은 스크롤을 바로 따른다(사용자 지시 2026-10-28 — 강제하지 않게): 두 단락 자리의 가운데를 넘으면 바뀌고,
+      // 맞춰 가는 중이면 닿기 전에 미리 바뀐다. 예전(10-23 ~ 10-27)엔 막 드러난 단락이 다 읽힐 때까지(hold) 다음으로 넘기지 않고
+      // 아래 스크롤을 막고 그 단락 자리로 되돌려, 첫째 → 둘째 단락이 한참 늦게 넘어가고 스크롤이 위로 끌려가는 듯했다
+      atShown = performance.now() < snapping && aim >= 0 ? aim : Math.min(n - 1, Math.round(q * n));
       if (on) {
         lastOn = atShown;
-        if (atShown >= n - 1 && now >= holdUntil) readAll = true;
-        else if (atShown < n - 1) readAll = false; // 앞 단락으로 되돌아갔다 — 다시 끝까지 읽어야
+        readAll = atShown >= n - 1;
       }
       setAt(atShown);
     };
@@ -213,12 +191,20 @@ export function Philosophy({ title, paragraphs }: Props) {
         const prev = a.reduce((p, v, i) => (v < y - 2 ? i : p), -1);
         target = down ? (next < 0 ? last : next) : Math.max(0, prev);
       } else if (idx < 0) {
-        // 바깥에서 들어왔다: 내려오는 중이면 첫 단락(제목이 끝까지 줄어든다), 올라오는 중이면 마지막 단락
-        target = down ? 1 : n;
+        // 아직 맞춘 자리가 없다(바깥에서 들어왔다 · 쉬지 않고 굴려 왔다): 가던 쪽의 가장 가까운 단락 자리로 —
+        // 내려오는 중이면 앞의 자리(맨 위에서면 첫 단락), 올라오는 중이면 뒤의 자리(아래에서 들어오면 마지막 단락).
+        // 예전엔 늘 첫 단락 · 마지막 단락으로 가, 둘째 단락까지 굴려 온 뒤 멈추면 첫 단락으로 끌려 올라갔다(사용자 제보 2026-10-28)
+        const next = a.findIndex((v) => v >= y - 2);
+        const prev = a.reduce((p, v, i) => (v <= y + 2 ? i : p), 0);
+        target = down ? next : prev;
+        if (target === last && down) return; // 무대가 풀리는 자리로는 저절로 가지 않는다(아래)
       } else {
         const d = y - a[idx];
         target = d > SNAP_PX ? idx + 1 : d < -SNAP_PX ? idx - 1 : idx;
         if (target < 0) return; // 큰 제목에서 위로 — 무대 밖으로 나가게 둔다
+        // 조금(SNAP_PX 이하) 움직이고 멈추면 그 자리에 둔다(사용자 지시 2026-10-28 — 강제하지 않게). 예전엔 단락 자리로 되돌려,
+        // 작게 여러 번 굴리면(트랙패드) 매번 끌려 올라가 앞으로 나가지 못했다. 이어 굴려 SNAP_PX를 넘으면 다음 단락으로 간다
+        if (target === idx) return;
       }
       target = Math.min(last, target);
       if (target === 0) {
@@ -228,17 +214,16 @@ export function Philosophy({ title, paragraphs }: Props) {
       // 마지막 단락에서 무대가 풀리는 자리로는 저절로 가지 않는다(사용자 지시 2026-10-27 — 읽는 도중 다음으로 넘어가 버렸다).
       // 사용자가 직접 스크롤해 내려가게 둔다
       if (target === last && idx === n) return;
-      // 막 드러난 단락을 읽는 중이면 그 단락 자리로 되돌린다(내용이 나오자마자 넘어가지 않게, 사용자 지시 2026-10-23)
-      if (atShown + 1 < target && performance.now() < holdUntil) target = atShown + 1;
       idx = target;
       const dist = Math.abs(a[target] - y);
       if (dist < 2) return;
       // 먼 거리(큰 제목 ↔ 첫 단락)는 조금 더 길게
-      const dur = Math.min(1.1, Math.max(SNAP_S, 0.5 + (dist / vh) * 0.5));
+      const dur = Math.min(0.9, Math.max(SNAP_S, 0.35 + (dist / vh) * 0.4));
       snapping = performance.now() + dur * 1000 + 120;
+      aim = target <= n ? target - 1 : -1;
       scrollToTarget(a[target], { duration: dur });
     };
-    // 무대 끝을 지나쳤는데 아직 다 읽지 않았으면(빠른 스크롤 · 관성) 읽지 않은 단락으로 되돌린다 — 그동안 입력을 막고,
+    // 무대 끝을 지나쳤는데 마지막 단락을 아예 보지 못했으면(빠른 스크롤 · 관성) 그 단락으로 되돌린다 — 그동안 입력을 막고,
     // 무대 끝의 이어 주기(VectorHandoff)도 잠깐 멈춘다. 목차 · 맨 위로 이동(isNavigating)은 막지 않는다
     const guard = () => {
       if (reduced) return;
@@ -256,19 +241,14 @@ export function Philosophy({ title, paragraphs }: Props) {
       // 한 번에 멀리 뛰는 이동(주소 링크 · 스크롤바 끌기 · 목차)은 막지 않는다
       const crossed = prev <= end + 2 && y - prev < vh;
       if (!inside || !crossed || isNavigating() || performance.now() < snapping) return;
-      const now = performance.now();
-      if (readAll || (wasOn && atShown >= n - 1 && now >= holdUntil)) return;
-      // 보던 단락이 아직 다 드러나지 않았으면 그 단락, 다 드러났으면 다음 단락(자리 i + 1 = 단락 i)
-      const doneLast = now >= holdUntil;
-      const target = Math.min(n, lastOn + 1 + (doneLast ? 1 : 0));
+      if (readAll) return;
+      // 보지 못한 다음 단락(자리 i + 1 = 단락 i)
+      const target = Math.min(n, lastOn + 2);
       const dur = 0.8;
       idx = target;
       inside = false; // 되돌아가며 다시 들어온다
-      snapping = now + dur * 1000 + 120;
-      // 그 단락은 되돌아가 닿은 뒤부터 다시 다 드러날 때까지 머문다 — 되돌아가는 동안 시간이 흘러 남은 관성에 바로 다시 넘어가지 않게
-      atShown = target - 1;
-      readAll = false;
-      holdUntil = now + dur * 1000 + hold(atShown);
+      snapping = performance.now() + dur * 1000 + 120;
+      aim = target - 1;
       // 관성(트랙패드)이 남아 있는 동안도 막는다 — 되돌아간 뒤 0.4초 더
       lockScrollInput(true);
       window.clearTimeout(unlock);
@@ -282,6 +262,12 @@ export function Philosophy({ title, paragraphs }: Props) {
       guard();
       if (!raf) raf = requestAnimationFrame(tick);
       window.clearTimeout(settle);
+      // 단락 자리에서 SNAP_PX 넘게 움직이면 멈추길 기다리지 않고 바로 맞춰 간다(사용자 지시 2026-10-28 — 넘어가는 딜레이).
+      // 부드러운 스크롤(Lenis)은 휠을 놓은 뒤에도 한참 미끄러져, 멈춤(SETTLE_MS)을 기다리면 그만큼 늦었다
+      if (!reduced && idx >= 1 && idx <= n && performance.now() >= snapping) {
+        const d = window.scrollY - geometry().anchors[idx];
+        if (Math.abs(d) > SNAP_PX) return snap();
+      }
       settle = window.setTimeout(snap, SETTLE_MS);
     };
     // 크기 · 글꼴이 바뀌면 다시 재서 그리기만 한다 — 끊어 넘기기(snap)는 사용자 스크롤에만(2026-10-27: 처음 열 때 snap이 돌아
@@ -292,28 +278,6 @@ export function Philosophy({ title, paragraphs }: Props) {
       cancelAnimationFrame(raf);
       tick();
     };
-    // 글자가 다 나오기 전엔 아래로 못 내려간다(사용자 지시 2026-10-27) — 무대가 붙어 있고 단락이 드러나는 중(hold)이면
-    // 아래로 가는 휠 · 터치 · 키만 막는다(위로는 된다). Lenis보다 먼저(capture) 받아 막는다
-    const holding = () => {
-      if (reduced || !wasOn || performance.now() >= holdUntil) return false;
-      const r = track.getBoundingClientRect();
-      return r.top <= 1 && r.bottom >= stage.offsetHeight - 1;
-    };
-    const stop = (e: Event) => { e.preventDefault(); e.stopPropagation(); };
-    const onWheel = (e: WheelEvent) => { if (e.deltaY > 0 && holding()) stop(e); };
-    let touchY = 0;
-    const onTouchStart = (e: TouchEvent) => { touchY = e.touches[0]?.clientY ?? 0; };
-    const onTouchMove = (e: TouchEvent) => {
-      const y = e.touches[0]?.clientY ?? touchY;
-      if (touchY - y > 0 && holding()) stop(e); // 손가락이 위로 = 아래로 스크롤
-    };
-    const DOWN_KEYS = new Set(['ArrowDown', 'PageDown', 'End', ' ']);
-    const onKey = (e: KeyboardEvent) => { if (DOWN_KEYS.has(e.key) && !e.shiftKey && holding()) stop(e); };
-    const BLOCK = { capture: true, passive: false } as const;
-    window.addEventListener('wheel', onWheel, BLOCK);
-    window.addEventListener('touchstart', onTouchStart, { capture: true, passive: true });
-    window.addEventListener('touchmove', onTouchMove, BLOCK);
-    window.addEventListener('keydown', onKey, BLOCK);
     window.addEventListener('scroll', onScroll, { passive: true });
     window.addEventListener('resize', onResize);
     onResize();
@@ -323,15 +287,10 @@ export function Philosophy({ title, paragraphs }: Props) {
     return () => {
       cancelAnimationFrame(raf);
       window.clearTimeout(settle);
-      window.clearTimeout(holdTimer);
       if (unlock) {
         window.clearTimeout(unlock);
         lockScrollInput(false);
       }
-      window.removeEventListener('wheel', onWheel, BLOCK);
-      window.removeEventListener('touchstart', onTouchStart, { capture: true });
-      window.removeEventListener('touchmove', onTouchMove, BLOCK);
-      window.removeEventListener('keydown', onKey, BLOCK);
       window.removeEventListener('scroll', onScroll);
       window.removeEventListener('resize', onResize);
       title.style.transform = title.style.fontSize = title.style.filter = title.style.willChange = '';
