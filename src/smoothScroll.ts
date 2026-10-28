@@ -9,7 +9,24 @@ import Lenis from 'lenis';
  */
 export const lenis: Lenis | null = window.matchMedia('(prefers-reduced-motion: reduce)').matches
   ? null
-  : new Lenis({ lerp: 0.09, wheelMultiplier: 1, autoRaf: true });
+  : new Lenis({
+      lerp: 0.09,
+      wheelMultiplier: 0.8, // 1 → 0.8 — 조금 덜 민감하게(사용자 지시 2026-10-28)
+      autoRaf: true,
+      // 휠 한 번이 움직일 거리를 Lenis가 쓰기 전에 고칠 수 있게(setWheelFilter) — false면 그 입력은 버린다
+      virtualScroll: (data) => (wheelFilter ? wheelFilter(data) !== false : true),
+    });
+
+/** Lenis가 받은 휠 입력(deltaY는 고쳐 쓸 수 있다 — Lenis는 이 함수 뒤에 값을 읽는다) */
+export type WheelInput = { deltaX: number; deltaY: number; event: WheelEvent | TouchEvent };
+let wheelFilter: ((data: WheelInput) => boolean | void) | null = null;
+/**
+ * 휠 입력 거르개 — 교육 철학이 단락 자리를 넘치지 않게 거리를 자른다(사용자 지시 2026-10-28 — 넘었다가 되돌아오지 않고 그 자리에 걸리게).
+ * 하나만 둔다. null이면 뗀다
+ */
+export function setWheelFilter(f: typeof wheelFilter) {
+  wheelFilter = f;
+}
 
 // No hover pause while scrolling: turning pointer events off during the glide (as the IPS page
 // does) swallowed any click made mid-scroll — the press lands on <html> before anything can turn
@@ -43,6 +60,19 @@ export function scrollToTarget(target: number | HTMLElement, { immediate = false
   }
   if (typeof target === 'number') window.scrollTo({ top: target, behavior: immediate ? 'auto' : 'smooth' });
   else target.scrollIntoView({ behavior: immediate ? 'auto' : 'smooth', block: 'start' });
+}
+
+/**
+ * 그 자리로 바로 가 남은 미끄러짐을 끊는다. Lenis는 목표가 이미 그 자리면 즉시 이동을 건너뛰어(목표엔 다 왔는데 실제 자리는 아직
+ * 따라오는 중일 때) 마지막 몇 px를 천천히 마저 갔다 — 목표를 지금 자리로 돌려놓고 간다(2026-10-28, 교육 철학 단락 자리에 걸기)
+ */
+export function jumpTo(y: number) {
+  if (lenis) {
+    if (lenis.targetScroll === y) lenis.targetScroll = lenis.animatedScroll;
+    lenis.scrollTo(y, { immediate: true, force: true });
+    return;
+  }
+  window.scrollTo({ top: y, behavior: 'auto' });
 }
 
 /** 연출 중 막는 키 — 스크롤을 움직이는 키 */

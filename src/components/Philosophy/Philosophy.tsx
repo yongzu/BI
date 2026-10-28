@@ -1,6 +1,6 @@
 import { Fragment, useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import ScrollReveal from '../ScrollReveal/ScrollReveal';
-import { isNavigating, lockScrollInput, scrollToTarget } from '../../smoothScroll';
+import { isNavigating, jumpTo, lenis, lockScrollInput, scrollToTarget, setWheelFilter, type WheelInput } from '../../smoothScroll';
 import { VectorGuides, VectorWord, setVectorZone } from '../VectorWord/VectorWord';
 import './Philosophy.css';
 
@@ -19,9 +19,8 @@ import './Philosophy.css';
  *   마우스를 올리면 벡터 보기(VectorWord — 윤곽 · 최소한의 앵커 · 바운딩 박스 · 안내선 · 좌표).
  * - 본문은 react-bits ScrollReveal(사용자 제공 설정: chars · fade · stagger 0.05 · smoothing 2 · baseOpacity 0.1 · blur 4).
  *   2026-10-24: 흐림 4 → 2, 드러나는 시간 · 문장 간격 · 머무는 시간 모두 절반(두 배 빠르게, 사용자 지시).
- * - 단락마다 끊어 넘긴다(사용자 지시 2026-10-23 — 스크롤에 따라 반쯤 흐린 글이 남았다): 무대가 붙어 있는 동안 스크롤이 멈추면
- *   단락 자리로 맞춰 간다. 지금 단락에서 SNAP_PX 넘게 내려왔으면 다음 단락, 올라갔으면 이전 단락, 아니면 제자리로.
- *   마지막 단락에서 더 내리면 무대가 풀리는 자리로 보내 다음 섹션으로 이어진다. 바깥에서 들어오면 위에선 첫 단락, 아래에선 마지막 단락으로.
+ * - 단락마다 끊어 넘긴다(사용자 지시 2026-10-23 — 스크롤에 따라 반쯤 흐린 글이 남았다). 2026-10-28부터는 멈춘 뒤 맞춰 가지 않고,
+ *   아래로 가다 단락 자리에 닿으면 그 자리에 걸려 CATCH_MS 머문 뒤 바로 이어 갈 수 있다(catchAt).
  *   글은 스크롤 위치(scrub)가 아니라 단락이 자리 잡으면 시간으로 끝까지 드러난다 — 문장은 차례로(SENTENCE_GAP초 간격).
  * - v19(사용자 지시 2026-10-23): 오른쪽 Φ 모션그래픽(PhiMotion)을 뺐다 — v18엔 단락 오른쪽에 화면 밖으로 잘리는 큰 Φ가 있었다.
  * - v19 몰입(사용자 지시 2026-10-23): 무대 앞에 INTRO 화면 높이만큼의 길을 더 두고, 그동안 제목이 화면을 넘칠 만큼 크게(화면 폭의 INTRO_WIDTH배)
@@ -51,12 +50,10 @@ const INTRO_WIDTH = 0.12;
 const INTRO_MIN = 120;
 /** 몰입 길 중 가운데에서 커지는 몫 — 나머지는 제자리(위)로 올라가며 단락이 페이드인 */
 const GROW = 0.6;
-/** 지금 단락 자리에서 이만큼(px) 넘게 움직이고 멈추면 다음 · 이전 단락으로 넘긴다 */
-const SNAP_PX = 40;
 /** 스크롤이 멈췄다고 보는 시간(ms) */
 const SETTLE_MS = 140;
-/** 단락 자리로 맞춰 가는 시간(초) — 0.7 → 0.5(사용자 지시 2026-10-28 — 첫째 → 둘째 단락 넘어가는 딜레이가 심했다) */
-const SNAP_S = 0.5;
+/** 단락 자리에 걸려 머무는 시간(ms) — 그 뒤엔 바로 이어 내려갈 수 있다(사용자 지시 2026-10-28) */
+const CATCH_MS = 100;
 /** 한 단락 안 문장들이 차례로 드러나는 간격(초) */
 const SENTENCE_GAP = 0.45; // 0.9 → 0.45 — 두 배 빠르게(사용자 지시 2026-10-24)
 /** '**'로 시작하는 문장은 굵게(사용자 지시 2026-10-27) */
@@ -86,18 +83,9 @@ export function Philosophy({ title, paragraphs }: Props) {
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     let raf = 0;
     let settle = 0;
-    let snapping = 0; // 맞춰 가는 동안(이 시각까지)은 스크롤 멈춤을 무시한다
-    let idx = -1; // 마지막으로 맞춘 자리: 0 = 큰 제목, 1 … n = 단락, n + 1 = 무대가 풀리는 자리. -1 = 바깥
-    let lastY = window.scrollY;
-    let atShown = 0; // 보이는 단락
-    let aim = -1; // 맞춰 가는 중인 단락 — 가는 동안 미리 그 단락을 보인다(닿을 때까지 기다리지 않게)
-    // 마지막 단락까지 왔나(사용자 지시 2026-10-27 — 빠르게 스크롤하면 둘째 단락을 보지도 않고 역량과 태도로 넘어갔다).
-    // 무대 안에서 본 마지막 단락(lastOn), 무대에 들어와 있었나(inside)
-    let readAll = false;
-    let lastOn = 0;
-    let inside = false;
-    let guardY = window.scrollY; // 앞 스크롤 자리 — 무대 끝을 '이어서' 넘었는지(한 번에 뛰어넘은 이동은 막지 않는다)
+    let lastY = window.scrollY; // 앞 스크롤 자리 — 단락 자리를 '이어서' 넘었는지 · 가던 쪽
     let unlock = 0;
+    let held = -1; // 휠이 걸린 단락 자리(px) — 닿아 CATCH_MS가 지날 때까지 그 자리를 넘지 않는다
     // 맞출 자리(페이지 y): 0 = 무대가 붙는 순간(큰 제목), i = 단락 i - 1이 지금이 되는 지점, n + 1 = 무대가 풀리는 자리
     // 화면 높이는 무대 높이(100svh)로 잰다(2026-10-27 — 맨 처음으로 되돌아가던 원인 ①): 휴대폰은 스크롤하면 주소창이 접히며
     // innerHeight가 바뀌는데, 그 값으로 잰 단락 자리가 수십 px 위아래로 밀려 '위로 올라갔다'로 읽혔다(→ 큰 제목 자리 = 맨 위로)
@@ -156,122 +144,86 @@ export function Philosophy({ title, paragraphs }: Props) {
       const on = k >= 1 && r.bottom > vh * 0.4;
       setShown(on);
       const q = span > intro ? Math.min(0.999, Math.max(0, (-r.top - intro) / (span - intro))) : 0;
-      // 단락은 스크롤을 바로 따른다(사용자 지시 2026-10-28 — 강제하지 않게): 두 단락 자리의 가운데를 넘으면 바뀌고,
-      // 맞춰 가는 중이면 닿기 전에 미리 바뀐다. 예전(10-23 ~ 10-27)엔 막 드러난 단락이 다 읽힐 때까지(hold) 다음으로 넘기지 않고
-      // 아래 스크롤을 막고 그 단락 자리로 되돌려, 첫째 → 둘째 단락이 한참 늦게 넘어가고 스크롤이 위로 끌려가는 듯했다
-      atShown = performance.now() < snapping && aim >= 0 ? aim : Math.min(n - 1, Math.round(q * n));
-      if (on) {
-        lastOn = atShown;
-        readAll = atShown >= n - 1;
-      }
-      setAt(atShown);
+      // 단락은 그 단락 자리(걸리는 자리)에 닿는 순간 바뀐다 — 위로 가면 그 자리 위에서 앞 단락으로
+      setAt(Math.min(n - 1, Math.floor(q * n)));
     };
-    const snap = () => {
-      const y = window.scrollY;
-      const down = y >= lastY;
-      lastY = y;
-      if (reduced || performance.now() < snapping) return;
-      const { vh, anchors: a } = geometry();
-      const last = n + 1;
-      if (y < a[0] - 2 || y > a[last] + 2) {
-        idx = -1; // 무대 밖 — 맞추지 않는다
-        return;
-      }
-      // 제목이 커지는 길(첫 단락 자리 위)에서 위로 가는 중이면 맞추지 않는다(사용자 제보 2026-10-27 — 원인 ②): 예전엔 첫 단락에서
-      // 조금만 올라가도 큰 제목 자리(= 페이지 맨 위)로 저절로 날아가 '처음으로 되돌아갔다'. 제목은 스크롤을 그대로 따르므로 둬도 된다
-      if (y < a[1] - 2 && !down) {
-        idx = -1;
-        return;
-      }
-      let target: number;
-      // 맞춘 자리와 지금 자리가 크게 어긋나면(스크롤이 다른 데서 움직였다) 맞춘 자리를 잊고 들어온 것처럼 다시 고른다
-      if (idx >= 0 && Math.abs(y - a[idx]) > vh * 0.75) {
-        idx = -1;
-        const next = a.findIndex((v) => v > y + 2);
-        const prev = a.reduce((p, v, i) => (v < y - 2 ? i : p), -1);
-        target = down ? (next < 0 ? last : next) : Math.max(0, prev);
-      } else if (idx < 0) {
-        // 아직 맞춘 자리가 없다(바깥에서 들어왔다 · 쉬지 않고 굴려 왔다): 가던 쪽의 가장 가까운 단락 자리로 —
-        // 내려오는 중이면 앞의 자리(맨 위에서면 첫 단락), 올라오는 중이면 뒤의 자리(아래에서 들어오면 마지막 단락).
-        // 예전엔 늘 첫 단락 · 마지막 단락으로 가, 둘째 단락까지 굴려 온 뒤 멈추면 첫 단락으로 끌려 올라갔다(사용자 제보 2026-10-28)
-        const next = a.findIndex((v) => v >= y - 2);
-        const prev = a.reduce((p, v, i) => (v <= y + 2 ? i : p), 0);
-        target = down ? next : prev;
-        if (target === last && down) return; // 무대가 풀리는 자리로는 저절로 가지 않는다(아래)
-      } else {
-        const d = y - a[idx];
-        target = d > SNAP_PX ? idx + 1 : d < -SNAP_PX ? idx - 1 : idx;
-        if (target < 0) return; // 큰 제목에서 위로 — 무대 밖으로 나가게 둔다
-        // 조금(SNAP_PX 이하) 움직이고 멈추면 그 자리에 둔다(사용자 지시 2026-10-28 — 강제하지 않게). 예전엔 단락 자리로 되돌려,
-        // 작게 여러 번 굴리면(트랙패드) 매번 끌려 올라가 앞으로 나가지 못했다. 이어 굴려 SNAP_PX를 넘으면 다음 단락으로 간다
-        if (target === idx) return;
-      }
-      target = Math.min(last, target);
-      if (target === 0) {
-        idx = -1; // 맨 위(큰 제목 자리)로는 저절로 가지 않는다(원인 ②)
-        return;
-      }
-      // 마지막 단락에서 무대가 풀리는 자리로는 저절로 가지 않는다(사용자 지시 2026-10-27 — 읽는 도중 다음으로 넘어가 버렸다).
-      // 사용자가 직접 스크롤해 내려가게 둔다
-      if (target === last && idx === n) return;
-      idx = target;
-      const dist = Math.abs(a[target] - y);
-      if (dist < 2) return;
-      // 먼 거리(큰 제목 ↔ 첫 단락)는 조금 더 길게
-      const dur = Math.min(0.9, Math.max(SNAP_S, 0.35 + (dist / vh) * 0.4));
-      snapping = performance.now() + dur * 1000 + 120;
-      aim = target <= n ? target - 1 : -1;
-      scrollToTarget(a[target], { duration: dur });
-    };
-    // 무대 끝을 지나쳤는데 마지막 단락을 아예 보지 못했으면(빠른 스크롤 · 관성) 그 단락으로 되돌린다 — 그동안 입력을 막고,
-    // 무대 끝의 이어 주기(VectorHandoff)도 잠깐 멈춘다. 목차 · 맨 위로 이동(isNavigating)은 막지 않는다
-    const guard = () => {
-      if (reduced) return;
-      const y = window.scrollY;
-      const { vh, anchors: a } = geometry();
-      const end = a[n + 1];
-      const prev = guardY;
-      guardY = y;
-      if (y >= a[0] && y <= end + 2) {
-        inside = true;
-        return;
-      }
-      if (y < a[0]) inside = false;
-      // 무대 안에서 스크롤이 이어져 끝을 막 넘은 순간만(앞 자리가 무대 안, 한 프레임 이동이 한 화면 미만).
-      // 한 번에 멀리 뛰는 이동(주소 링크 · 스크롤바 끌기 · 목차)은 막지 않는다
-      const crossed = prev <= end + 2 && y - prev < vh;
-      if (!inside || !crossed || isNavigating() || performance.now() < snapping) return;
-      if (readAll) return;
-      // 보지 못한 다음 단락(자리 i + 1 = 단락 i)
-      const target = Math.min(n, lastOn + 2);
-      const dur = 0.8;
-      idx = target;
-      inside = false; // 되돌아가며 다시 들어온다
-      snapping = performance.now() + dur * 1000 + 120;
-      aim = target - 1;
-      // 관성(트랙패드)이 남아 있는 동안도 막는다 — 되돌아간 뒤 0.4초 더
-      lockScrollInput(true);
+    // 단락 자리에 걸기(사용자 지시 2026-10-28): 아래로 스크롤하다 단락 자리(a[1] … a[n])를 넘으려 하면 넘치지 않고 그 자리에 딱 멈추고,
+    // CATCH_MS 동안만 입력을 막은 뒤 풀어 바로 이어 내려갈 수 있다. 빠르게 굴려도 단락을 건너뛰지 않는다.
+    // 예전(10-23 ~ 10-28)엔 멈춘 뒤 단락 자리로 맞춰 가거나(snap), 무대 끝을 지나친 뒤 위로 되돌려(guard) 내려갔다 돌아오는 게 어색했고,
+    // 맞춰 가는 사이 관성에 첫 단락을 건너뛰기도 했다. 위로 갈 땐 걸지 않는다
+    const catchAt = (y: number) => {
+      jumpTo(y); // 부드러운 스크롤의 남은 미끄러짐도 함께 끊는다
+      if (!unlock) lockScrollInput(true);
       window.clearTimeout(unlock);
       unlock = window.setTimeout(() => {
         unlock = 0;
+        held = -1;
         lockScrollInput(false);
-      }, dur * 1000 + 400);
-      scrollToTarget(a[target], { duration: dur });
+      }, CATCH_MS);
     };
+    // 휠(부드러운 스크롤)은 입력 단계에서 거리를 잘라 단락 자리를 넘지 않게 한다 — 넘친 뒤 되돌리면 한 프레임 넘었다가 돌아오는 게 보였다.
+    // 그 자리에 닿으면(onScroll) catchAt이 CATCH_MS 동안 걸어 둔다. 터치 · 키 · 스크롤바(브라우저 스크롤)는 닿은 뒤 catchAt이 되돌린다
+    const filterWheel = (data: WheelInput) => {
+      if (!lenis || reduced || !data.event.type.includes('wheel') || isNavigating()) return;
+      if (data.deltaY <= 0) {
+        held = -1; // 위로 — 걸지 않는다
+        return;
+      }
+      // 지금 자리(pos)에서 가려는 자리(Lenis 목표 + 이번 거리)까지 단락 자리가 있으면 거기까지만 — 목표가 이미 단락 자리인
+      // 맞춰 가기(첫 단락으로 마저 가기) 중에도 넘지 않게 지금 자리로 잰다
+      const pos = lenis.animatedScroll;
+      const tgt = lenis.targetScroll;
+      if (held >= 0) {
+        // 거의 닿았는데(마지막 몇 px에서 늘어지는 중) 아직 걸지 않았으면 지금 건다 — 닿기를 기다리다 영영 안 풀리는 일이 없게
+        if (pos >= held - 8 && !unlock) catchAt(held);
+        data.deltaY = Math.max(0, held - tgt);
+        if (data.deltaY > 0) return;
+        // 남은 거리가 없으면 입력을 버린다 — 거리 0을 Lenis에 넘기면 Lenis가 손을 떼 브라우저가 휠 한 칸(100px)을 그냥 스크롤했다
+        data.event.preventDefault();
+        return false;
+      }
+      const a = geometry().anchors;
+      for (let i = 1; i <= n; i++) {
+        // 목표가 아직 그 자리 앞이거나, 목표는 그 자리인데 지금 자리가 아직 오는 중이면(맞춰 가는 중) — 이미 와 있으면(8px 안) 다음 자리를 본다
+        if ((tgt < a[i] - 0.5 || pos < a[i] - 8) && tgt + data.deltaY >= a[i] - 0.5) {
+          held = a[i];
+          data.deltaY = Math.max(0, a[i] - tgt);
+          if (data.deltaY > 0) return;
+          data.event.preventDefault();
+          return false;
+        }
+      }
+    };
+    setWheelFilter(filterWheel);
+    // 제목이 커지는 길(첫 단락 자리 위)에서 내려가다 멈추면 첫 단락 자리로 마저 간다 — 반쯤 커진 제목에 머물지 않게.
+    // 위로 가다 멈추면 그대로 둔다(맨 위로 저절로 가지 않는다 — 2026-10-27)
+    const settleIntro = () => {
+      const y = window.scrollY;
+      if (reduced || unlock || isNavigating() || y <= lastSettle) return void (lastSettle = y);
+      lastSettle = y;
+      const { vh, anchors: a } = geometry();
+      if (y <= a[0] + 2 || y >= a[1] - 2) return;
+      scrollToTarget(a[1], { duration: Math.min(0.9, 0.35 + ((a[1] - y) / vh) * 0.5) });
+    };
+    let lastSettle = window.scrollY;
     const onScroll = () => {
-      guard();
       if (!raf) raf = requestAnimationFrame(tick);
       window.clearTimeout(settle);
-      // 단락 자리에서 SNAP_PX 넘게 움직이면 멈추길 기다리지 않고 바로 맞춰 간다(사용자 지시 2026-10-28 — 넘어가는 딜레이).
-      // 부드러운 스크롤(Lenis)은 휠을 놓은 뒤에도 한참 미끄러져, 멈춤(SETTLE_MS)을 기다리면 그만큼 늦었다
-      if (!reduced && idx >= 1 && idx <= n && performance.now() >= snapping) {
-        const d = window.scrollY - geometry().anchors[idx];
-        if (Math.abs(d) > SNAP_PX) return snap();
+      settle = window.setTimeout(settleIntro, SETTLE_MS);
+      const y = window.scrollY;
+      const prev = lastY;
+      lastY = y;
+      if (reduced || unlock || isNavigating() || y <= prev) return;
+      const { vh, anchors: a } = geometry();
+      // 한 번에 멀리 뛰는 이동(주소 링크 · 스크롤바 끌기)은 걸지 않는다
+      if (y - prev >= vh) return;
+      for (let i = 1; i <= n; i++) {
+        // 휠이 걸린 자리는 8px 앞에서 닿은 것으로 — 부드러운 스크롤이 마지막 1px에 늘어져(0.2초) 걸림이 길어 보였다
+        const reach = a[i] - (held === a[i] ? 8 : 0.5);
+        if (prev < reach && y >= reach) return catchAt(a[i]);
       }
-      settle = window.setTimeout(snap, SETTLE_MS);
     };
-    // 크기 · 글꼴이 바뀌면 다시 재서 그리기만 한다 — 끊어 넘기기(snap)는 사용자 스크롤에만(2026-10-27: 처음 열 때 snap이 돌아
-    // 첫 단락 자리를 '맞춘 자리'로 적어 두고는 실제로는 움직이지 않아, 첫 스크롤에 '위로 올라갔다'로 읽혀 맨 처음으로 되돌아갔다)
+    // 크기 · 글꼴이 바뀌면 다시 재서 그리기만 한다 — 자리 맞추기는 사용자 스크롤에만
     const onResize = () => {
       fit();
       // 재고 바로 그린다 — 글꼴 크기가 바뀐 프레임에 옛 배율이 한 번 보이지 않게
@@ -285,6 +237,7 @@ export function Philosophy({ title, paragraphs }: Props) {
     // 개발용: window.__philosophyTick()로 지금 스크롤 자리의 장면을 바로 그린다(검증 · 스크린샷 — 숨은 창에선 프레임이 돌지 않는다)
     if (import.meta.env.DEV) (window as unknown as Record<string, unknown>).__philosophyTick = tick;
     return () => {
+      setWheelFilter(null);
       cancelAnimationFrame(raf);
       window.clearTimeout(settle);
       if (unlock) {
